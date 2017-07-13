@@ -44,6 +44,7 @@ public class AlicaEngine {
     private AuthorityManager auth;
     private Logger log;
     private VariableSyncModule variableSyncModule;
+    private de.uniks.vs.jalica.unknown.IAlicaClock IAlicaClock;
 
     public void setIAlicaClock(AlicaSystemClock clock) {
         this.clock = clock;
@@ -158,6 +159,39 @@ public class AlicaEngine {
     }
 
     public void start() {
+        this.planBase.start();
+        System.out.println("AE: Engine started");
+    }
+
+    public Logger getLog() {
+        return log;
+    }
+
+    public TeamObserver getTeamObserver() {
+        return teamObserver;
+    }
+
+    public SyncModul getSyncModul() {
+        return syncModul;
+    }
+
+    public AuthorityManager getAuth() {
+        return auth;
+    }
+
+    public RoleAssignment getRoleAssignment() {
+        return roleAssignment;
+    }
+
+    public IAlicaClock getIAlicaClock() {
+        return IAlicaClock;
+    }
+
+    public boolean getStepEngine() {
+        return stepEngine;
+    }
+
+    public void abort(String s) {
 
     }
 }

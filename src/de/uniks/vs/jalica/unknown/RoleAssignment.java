@@ -6,7 +6,7 @@ import de.uniks.vs.jalica.engine.AlicaEngine;
 /**
  * Created by alex on 13.07.17.
  */
-public class RoleAssignment {
+public class RoleAssignment extends IRoleAssignment{
     public RoleAssignment(AlicaEngine alicaEngine) {
 
     }

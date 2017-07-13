@@ -5,11 +5,10 @@ import de.uniks.vs.jalica.engine.AlicaEngine;
 /**
  * Created by alex on 13.07.17.
  */
-public class SyncModul extends ISyncModul{
-    public SyncModul(AlicaEngine alicaEngine) {
-    }
+public class RuleBook {
+    private AlicaEngine ae;
 
-    public void init() {
-
+    public RuleBook(AlicaEngine ae) {
+        this.ae = ae;
     }
 }
