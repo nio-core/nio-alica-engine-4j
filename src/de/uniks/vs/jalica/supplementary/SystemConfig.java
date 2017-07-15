@@ -1,6 +1,5 @@
 package de.uniks.vs.jalica.supplementary;
 
-import java.util.Calendar;
 import java.util.HashMap;
 
 /**
@@ -9,7 +8,9 @@ import java.util.HashMap;
 public class SystemConfig {
 
     private static SystemConfig instance;
+    private  HashMap<String, Configuration> configMap = new HashMap<>();
     HashMap<String, HashMap<String,String>> map = new HashMap<>();
+    private String configPath;
 
     public SystemConfig() {
         HashMap<String,String> alicaConfig = new HashMap<>();
@@ -17,8 +18,20 @@ public class SystemConfig {
         alicaConfig.put("Alica.UseStaticRoles", "false");
         alicaConfig.put("Alica.MaxEpsPerPlan", "10");
         alicaConfig.put("Alica.AllowIdling", "false");
+        alicaConfig.put("Alica.EngineFrequency", "1.0");
+        alicaConfig.put("Alica.MinBroadcastFrequency", "0.5");
+        alicaConfig.put("Alica.MaxBroadcastFrequency", "0.7");
+        alicaConfig.put("Alica.PlanDir", ".");
+        alicaConfig.put("Alica.RoleDir", ".");
+        alicaConfig.put("Alica.TeamTimeOut", "1000");
+        alicaConfig.put("Alica.TeamBlackList.InitiallyFull", "true");
 
         map.put("Alica", alicaConfig);
+
+        configMap.put("Globals", new Configuration());
+
+        //TODO : path
+        configPath = ".";
     }
 
     public HashMap<String, String> get(String name) {
@@ -31,5 +44,13 @@ public class SystemConfig {
             instance = new SystemConfig();
 
         return instance;
+    }
+
+    public String getConfigPath() {
+        return configPath;
+    }
+
+    public Configuration getG(String key) {
+        return configMap.get(key);
     }
 }

@@ -15,7 +15,7 @@ public class PlanRepository {
     HashMap<Long, Plan> plans;
     HashMap<Long, Task> tasks;
     HashMap<Long, Behaviour> behaviours;
-    HashMap<Long, BehaviourConfiguration> behaviourConfigurations;
+    HashMap<Long, BehaviourConfiguration> behaviourConfigurations = new HashMap<>();
     HashMap<Long, PlanType> planTypes;
     HashMap<Long, Role> roles;
     HashMap<Long, Characteristic> characteristics;
@@ -29,4 +29,12 @@ public class PlanRepository {
     HashMap<Long, RoleDefinitionSet > roleDefinitionSets;
     HashMap<Long, TaskRepository > taskRepositorys;
     HashMap<Long, PlanningProblem > planningProblems;
+
+    public HashMap<Long, BehaviourConfiguration> getBehaviourConfigurations() {
+        return behaviourConfigurations;
+    }
+
+    public HashMap<Long, Role> getRoles() {
+        return roles;
+    }
 }

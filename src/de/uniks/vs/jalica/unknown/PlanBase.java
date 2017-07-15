@@ -12,6 +12,7 @@ import de.uniks.vs.jalica.teamobserver.ITeamObserver;
  * Created by alex on 13.07.17.
  */
 public class PlanBase {
+    private condition_variable stepModeCV;
     private  AlicaEngine ae;
     private  Plan masterPlan;
 
@@ -70,7 +71,8 @@ public class PlanBase {
         double freq = Double.valueOf(sc.get("Alica").get("Alica.EngineFrequency"));
         double minbcfreq = Double.valueOf(sc.get("Alica").get("Alica.MinBroadcastFrequency"));
         double maxbcfreq = Double.valueOf(sc.get("Alica").get("Alica.MaxBroadcastFrequency"));
-        this.loopTime = (AlicaTime)fmax(1000000, lround(1.0 / freq * 1000000000));
+        ;
+        this.loopTime = new AlicaTime(Math.max(1000000, Math.round(1.0 / freq * 1000000000)));
         if (this.loopTime.time == 1000000)
         {
             System.out.println("PB: ALICA should not be used with more than 1000Hz . 1000Hz assumed");
@@ -81,8 +83,8 @@ public class PlanBase {
             ae.abort( "PB: Alica.conf: Minimal broadcast frequency must be lower or equal to maximal broadcast frequency!");
         }
 
-        this.minSendInterval = new AlicaTime(fmax(1000000, lround(1.0 / maxbcfreq * 1000000000)));
-        this.maxSendInterval = new AlicaTime(fmax(1000000, lround(1.0 / minbcfreq * 1000000000)));
+        this.minSendInterval = new AlicaTime(Math.max(1000000, Math.round(1.0 / maxbcfreq * 1000000000)));
+        this.maxSendInterval = new AlicaTime(Math.max(1000000, Math.round(1.0 / minbcfreq * 1000000000)));
 
         AlicaTime halfLoopTime = new AlicaTime(this.loopTime.time / 2);
         this.running = false;
@@ -92,21 +94,21 @@ public class PlanBase {
         if (sendStatusMessages)
         {
             double stfreq = Double.valueOf(sc.get("Alica").get("Alica.StatusMessages.Frequency"));
-            this.sendStatusInterval = new AlicaTime(max(1000000.0, round(1.0 / stfreq * 1000000000)));
+            this.sendStatusInterval = new AlicaTime(Math.max(1000000.0, Math.round(1.0 / stfreq * 1000000000)));
             this.statusMessage = new AlicaEngineInfo();
             this.statusMessage.senderID = this.teamObserver.getOwnId();
             this.statusMessage.masterPlan = masterPlan.getName();
         }
-
         this.stepModeCV = null;
+
         if (this.ae.getStepEngine())
         {
             this.stepModeCV = new condition_variable();
         }
 
 //#ifdef PB_DEBUG
-        System.out.println("PB: Engine loop time is " +(loopTime / 1000000)+ "ms, broadcast interval is "+(this.minSendInterval / 1000000)
-                + "ms - " + (this.maxSendInterval / 1000000) + "ms" + );
+        System.out.println("PB: Engine loop time is " +(loopTime.time / 1000000)+ "ms, broadcast interval is "+(this.minSendInterval.time / 1000000)
+                + "ms - " + (this.maxSendInterval.time / 1000000) + "ms" );
 //#endif
         if (halfLoopTime.time < this.minSendInterval.time)
         {

@@ -45,6 +45,7 @@ public class AlicaEngine {
     private Logger log;
     private VariableSyncModule variableSyncModule;
     private de.uniks.vs.jalica.unknown.IAlicaClock IAlicaClock;
+    private String robotName;
 
     public void setIAlicaClock(AlicaSystemClock clock) {
         this.clock = clock;
@@ -193,5 +194,17 @@ public class AlicaEngine {
 
     public void abort(String s) {
 
+    }
+
+    public PlanRepository getPlanRepository() {
+        return planRepository;
+    }
+
+    public String getRobotName() {
+        return robotName;
+    }
+
+    public RoleSet getRoleSet() {
+        return roleSet;
     }
 }
