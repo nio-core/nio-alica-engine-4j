@@ -3,16 +3,14 @@ package de.uniks.vs.jalica.teamobserver;
 import de.uniks.vs.jalica.common.Logger;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
-import de.uniks.vs.jalica.unknown.RobotEngineData;
-import de.uniks.vs.jalica.unknown.RobotProperties;
-import de.uniks.vs.jalica.unknown.SimplePlanTree;
+import de.uniks.vs.jalica.unknown.*;
 
 import java.util.*;
 
 /**
  * Created by alex on 13.07.17.
  */
-public class TeamObserver extends ITeamObserver{
+public class TeamObserver implements ITeamObserver {
 
     private Logger log;
     private HashMap<Integer, SimplePlanTree> simplePlanTrees;
@@ -23,7 +21,7 @@ public class TeamObserver extends ITeamObserver{
     private int myId;
     private Set<Integer> ignoredRobots = new HashSet<>();
     private RobotProperties ownRobotProperties;
-    private ArrayList<RobotProperties> availableRobotProperties;
+    private ArrayList<RobotProperties> availableRobotProperties = new ArrayList<>();
 
     public TeamObserver(AlicaEngine ae) {
         this.teamTimeOut = 0;
@@ -95,6 +93,40 @@ public class TeamObserver extends ITeamObserver{
 
     public ArrayList<RobotProperties> getAvailableRobotProperties() {
         return availableRobotProperties;
+    }
+
+    public void notifyRobotLeftPlan(AbstractPlan plan) {
+
+//        lock_guard<mutex> lock(this.simplePlanTreeMutex);
+
+        for (SimplePlanTree planTree : this.simplePlanTrees.values()) {
+
+            if (planTree.containsPlan(plan)) {
+                return;
+            }
+
+        }
+        this.me.getSuccessMarks().removePlan(plan);
+    }
+
+    @Override
+    public String getOwnId() {
+        return null;
+    }
+
+    @Override
+    public void tick(RunningPlan rootNode) {
+
+    }
+
+    @Override
+    public void doBroadCast(ArrayList<Long> msg) {
+
+    }
+
+    @Override
+    public RobotEngineData getOwnEngineData() {
+        return this.me;
     }
 }
 

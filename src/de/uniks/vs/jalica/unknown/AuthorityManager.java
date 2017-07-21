@@ -12,4 +12,8 @@ public class AuthorityManager {
     public void init() {
 
     }
+
+    public void tick(RunningPlan rootNode) {
+
+    }
 }

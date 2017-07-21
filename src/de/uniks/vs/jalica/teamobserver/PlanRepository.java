@@ -17,7 +17,7 @@ public class PlanRepository {
     HashMap<Long, Behaviour> behaviours;
     HashMap<Long, BehaviourConfiguration> behaviourConfigurations = new HashMap<>();
     HashMap<Long, PlanType> planTypes;
-    HashMap<Long, Role> roles;
+    HashMap<Long, Role> roles = new HashMap();
     HashMap<Long, Characteristic> characteristics;
     HashMap<Long, Capability> capabilities;
     HashMap<Long, State> states;

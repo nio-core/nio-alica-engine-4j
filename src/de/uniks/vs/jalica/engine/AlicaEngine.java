@@ -46,6 +46,7 @@ public class AlicaEngine {
     private VariableSyncModule variableSyncModule;
     private de.uniks.vs.jalica.unknown.IAlicaClock IAlicaClock;
     private String robotName;
+    private IPlanner planner;
 
     public void setIAlicaClock(AlicaSystemClock clock) {
         this.clock = clock;
@@ -155,7 +156,7 @@ public class AlicaEngine {
         return everythingWorked;
     }
 
-    private IAlicaCommunication getCommunicator() {
+    public IAlicaCommunication getCommunicator() {
         return null;
     }
 
@@ -206,5 +207,29 @@ public class AlicaEngine {
 
     public RoleSet getRoleSet() {
         return roleSet;
+    }
+
+    public void setStepCalled(boolean stepCalled) {
+        this.stepCalled = stepCalled;
+    }
+
+    public boolean getStepCalled() {
+        return stepCalled;
+    }
+
+    public void iterationComplete() {
+
+    }
+
+    public PlanSelector getPlanSelector() {
+        return planSelector;
+    }
+
+    public PartialAssignmentPool getPartialAssignmentPool() {
+        return pap;
+    }
+
+    public IPlanner getPlanner() {
+        return planner;
     }
 }

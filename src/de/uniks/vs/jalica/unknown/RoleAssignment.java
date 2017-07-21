@@ -4,9 +4,7 @@ import de.uniks.vs.jalica.dummy_proxy.AlicaDummyCommunication;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.teamobserver.TeamObserver;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * Created by alex on 13.07.17.
@@ -45,73 +43,76 @@ public class RoleAssignment extends IRoleAssignment{
     private void roleUtilities() {
         this.roleSet = ae.getRoleSet();
         this.roles = ae.getPlanRepository().getRoles();
-        if (this.roleSet == null)
-        {
-            cerr << "RA: The current Roleset is null!" << endl;
-            throw new exception();
+
+        if (this.roleSet == null) {
+            System.err.println( "RA: The current Roleset is null!" );
+            try {
+                throw new Exception();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         this.availableRobots = ae.getTeamObserver().getAvailableRobotProperties();
 
-        cout << "RA: Available robots: " << this.availableRobots.size() << endl;
-        cout << "RA: Robot Ids: ";
-        for (auto aRobot : (this.availableRobots))
-        {
-            cout << aRobot.getId() << " ";
+        System.out.println("RA: Available robots: " + this.availableRobots.size() );
+        System.out.println("RA: Robot Ids: ");
+        for (RobotProperties aRobot : (this.availableRobots)) {
+            System.out.println(aRobot.getId() + " ");
         }
-        cout << endl;
+        System.out.println();
         double dutility = 0;
         RobotRoleUtility rc;
         this.sortedRobots.clear();
-        for ( long key : this.roles.keySet())
-        {
-            for (auto robProperties : (this.availableRobots))
-            {
+
+        for ( long key : this.roles.keySet()) {
+
+            for (RobotProperties robProperties : (this.availableRobots)) {
                 int y = 0;
                 dutility = 0;
-                for ( roleCharacEntry : this.roles.get(key).getCharacteristics())
-                {
+                HashMap<String, Characteristic> characteristics = this.roles.get(key).getCharacteristics();
+
+                for ( String roleCharacKey : characteristics.keySet()) {
                     // find the characteristics object of a robot
                     Characteristic rbChar = null;
-                    String roleCharacName = roleCharacEntry.second.getName();
-                    for ( robotCharac : robProperties.getCharacteristics())
-                    {
-                        if (robotCharac.first.compare(roleCharacName) == 0)
-                        {
-                            rbChar = robotCharac.second;
+                    String roleCharacName = characteristics.get(roleCharacKey).getName(); // roleCharacEntry.second.getName();
+
+                    HashMap<String, Characteristic> robPropertiesCharacteristics = robProperties.getCharacteristics();
+
+                    for ( String robotCharacKey : robPropertiesCharacteristics.keySet()) {
+                        if (!robotCharacKey.equals(roleCharacName)) {
+                            rbChar = robPropertiesCharacteristics.get(robotCharacKey); // robotCharac.second;
                             break;
                         }
                     }
 
-                    if (rbChar != null)
-                    {
-                        double individualUtility = roleCharacEntry.second.getCapability().similarityValue(
-                            roleCharacEntry.second.getCapValue(), rbChar.getCapValue());
-                        if (individualUtility == 0)
-                        {
+                    if (rbChar != null) {
+                        double individualUtility = characteristics.get(roleCharacKey)/*roleCharacEntry.second*/.getCapability().similarityValue(
+                                characteristics.get(roleCharacKey).getCapValue(), rbChar.getCapValue());
+                        if (individualUtility == 0) {
                             dutility = 0;
                             break;
                         }
-                        dutility += (roleCharacEntry.second.getWeight() * individualUtility);
+                        dutility += (characteristics.get(roleCharacKey).getWeight() * individualUtility);
                         y++;
                     }
                 }
-                if (y != 0)
-                {
+                if (y != 0) {
                     dutility /= y;
                     rc = new RobotRoleUtility(dutility, robProperties, this.roles.get(key));
                     this.sortedRobots.add(rc);
-                    sort(this.sortedRobots.begin(), this.sortedRobots.end(), RobotRoleUtility::compareTo);
+                    Collections.sort (this.sortedRobots, RobotRoleUtility.compareTo());
+//                    sort(this.sortedRobots.begin(), this.sortedRobots.end(), RobotRoleUtility.compareTo);
                 }
             }
         }
-        if (this.sortedRobots.size() == 0)
-        {
+
+        if (this.sortedRobots.size() == 0) {
             ae.abort("RA: Could not establish a mapping between robots and roles. Please check capability definitions!");
         }
         RolePriority rp = new RolePriority(ae);
         this.robotRoleMapping.clear();
-        while (this.robotRoleMapping.size() < this.availableRobots.size())
-        {
+
+        while (this.robotRoleMapping.size() < this.availableRobots.size()) {
             mapRoleToRobot(rp);
         }
         rp = null;

@@ -8,6 +8,7 @@ import de.uniks.vs.jalica.engine.AlicaEngine;
 public class RobotEngineData {
     private boolean active;
     private RobotProperties properties;
+    private SuccessMarks successMarks;
 
     public RobotEngineData(AlicaEngine ae, RobotProperties rp) {
 
@@ -19,5 +20,9 @@ public class RobotEngineData {
 
     public RobotProperties getProperties() {
         return properties;
+    }
+
+    public SuccessMarks getSuccessMarks() {
+        return successMarks;
     }
 }

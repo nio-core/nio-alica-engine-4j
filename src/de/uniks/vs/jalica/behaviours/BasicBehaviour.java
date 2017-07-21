@@ -1,5 +1,9 @@
 package de.uniks.vs.jalica.behaviours;
 
+import de.uniks.vs.jalica.supplementary.ITrigger;
+import de.uniks.vs.jalica.supplementary.Timer;
+import de.uniks.vs.jalica.unknown.RunningPlan;
+
 /**
  * Created by alex on 14.07.17.
  */
@@ -8,6 +12,14 @@ public class BasicBehaviour extends IBehaviourCreator{
     private Object variables;
     private Object delayedStart;
     private int interval;
+    private RunningPlan runningPlan;
+    private boolean success;
+    private boolean failure;
+    private boolean callInit;
+    private ITrigger behaviourTrigger;
+    private Timer timer;
+    private boolean running;
+
 
     public void setParameters(Object parameters) {
         this.parameters = parameters;
@@ -23,5 +35,36 @@ public class BasicBehaviour extends IBehaviourCreator{
 
     public void setInterval(int interval) {
         this.interval = interval;
+    }
+
+    public void setRunningPlan(RunningPlan runningPlan) {
+        this.runningPlan = runningPlan;
+    }
+
+    public boolean start() {
+        this.callInit = true;
+        if (behaviourTrigger == null)
+        {
+            return this.timer.start();
+        }
+        else
+        {
+            this.running = true;
+        }
+        return true;
+    }
+
+    public boolean stop() {
+        this.success = false;
+        this.failure = false;
+        if (behaviourTrigger == null)
+        {
+            return this.timer.stop();
+        }
+        else
+        {
+            this.running = false;
+        }
+        return true;
     }
 }

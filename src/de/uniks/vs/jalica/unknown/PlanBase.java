@@ -8,6 +8,9 @@ import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.teamobserver.ITeamObserver;
 
+import java.util.ArrayList;
+import java.util.PriorityQueue;
+
 /**
  * Created by alex on 13.07.17.
  */
@@ -44,6 +47,7 @@ public class PlanBase {
     AlicaEngineInfo statusMessage;
     Mutex lomutex;
     Mutex stepMutex;
+    private PriorityQueue<RunningPlan> fpEvents;
 
 
     public PlanBase(AlicaEngine ae, Plan masterPlan) {
@@ -118,10 +122,196 @@ public class PlanBase {
     }
 
     public void run() {
+//#ifdef PB_DEBUG
+        System.out.println("PB: Run-Method of PlanBase started. " );
+//#endif
+        while (this.running) {
+            AlicaTime beginTime = alicaClock.now();
+            this.log.itertionStarts();
 
+            if (ae.getStepEngine()) {
+//#ifdef PB_DEBUG
+                System.out.println("PB: ===CUR TREE===");
+
+                if (this.rootNode == null) {
+                    System.out.println( "PB: NULL" );
+                }
+				else {
+                    rootNode.printRecursive();
+                }
+                System.out.println( "PB: ===END CUR TREE===" );
+//#endif
+                {
+//                    unique_lock<mutex> lckStep(stepMutex);
+                    stepModeCV.wait(lckStep, [&]
+                    {
+                        return this.ae.getStepCalled();
+                    }
+                    );
+
+                    this.ae.setStepCalled(false);
+                    if (!running)
+                        return;
+                }
+                beginTime = alicaClock.now();
+
+            }
+
+
+            //Send tick to other modules
+
+            this.ae.getCommunicator().tick();
+
+
+            this.teamObserver.tick(this.rootNode);
+
+
+            this.ra.tick();
+
+            this.syncModel.tick();
+
+            this.authModul.tick(this.rootNode);
+
+            if (this.rootNode == null) {
+                this.rootNode = ruleBook.initialisationRule(this.masterPlan);
+            }
+            if (this.rootNode.tick(this.ruleBook) == PlanChange.FailChange) {
+                System.out.println("PB: MasterPlan Failed");
+            }
+            //lock for fpEvents
+            {
+//                lock_guard<mutex> lock(lomutex);
+                this.fpEvents = new PriorityQueue<RunningPlan>();
+            }
+
+            AlicaTime now = alicaClock.now();
+
+            if (now.time < this.lastSendTime.time)
+            {
+                // Taker fix
+                System.out.println("PB: lastSendTime is in the future of the current system time, did the system time change?" );
+                this.lastSendTime.time = now.time;
+            }
+
+            if ((this.ruleBook.isChangeOccured() && (this.lastSendTime.time + this.minSendInterval.time) < now.time)
+					|| (this.lastSendTime.time + this.maxSendInterval.time) < now.time)
+            {
+                ArrayList<Long> msg = null;
+                this.deepestNode = this.rootNode;
+                this.treeDepth = 0;
+                this.rootNode.toMessage(msg, this.deepestNode, this.treeDepth, 0);
+                this.teamObserver.doBroadCast(msg);
+                this.lastSendTime = now;
+                this.ruleBook.setChangeOccured(false);
+            }
+
+            if (this.sendStatusMessages && (this.lastSentStatusTime.time + this.sendStatusInterval.time) < alicaClock.now().time)
+            {
+                if (this.deepestNode != null)
+                {
+                    this.statusMessage.robotIDsWithMe.clear();
+                    this.statusMessage.currentPlan = this.deepestNode.getPlan().getName();
+                    if (this.deepestNode.getOwnEntryPoint() != null)
+                    {
+                        this.statusMessage.currentTask = this.deepestNode.getOwnEntryPoint().getTask().getName();
+                    }
+					else
+                    {
+                        this.statusMessage.currentTask = "IDLE";
+                    }
+
+                    if (this.deepestNode.getActiveState() != null)
+                    {
+                        this.statusMessage.currentState = this.deepestNode.getActiveState().getName();
+                        copy(this.deepestNode.getAssignment().getRobotStateMapping().getRobotsInState(
+                            this.deepestNode.getActiveState()).begin(),
+                            this.deepestNode.getAssignment().getRobotStateMapping().getRobotsInState(
+                                this.deepestNode.getActiveState()
+                            ).end(), back_inserter(this.statusMessage.robotIDsWithMe)
+                        );
+
+                    }
+					else
+                    {
+                        this.statusMessage.currentState = "NONE";
+                    }
+                    this.statusMessage.currentRole = this.ra.getOwnRole().getName();
+                    ae.getCommunicator().sendAlicaEngineInfo(this.statusMessage);
+                    this.lastSentStatusTime = alicaClock.now();
+                }
+            }
+
+            this.log.iterationEnds(this.rootNode);
+
+            this.ae.iterationComplete();
+
+            long availTime;
+
+            now = alicaClock.now();
+            if (this.loopTime.time > (now.time - beginTime.time))
+            {
+                availTime = (long)((this.loopTime.time - (now.time - beginTime.time)) / 1000UL);
+            }
+			else
+            {
+                availTime = 0;
+            }
+
+            if (fpEvents.size() > 0)
+            {
+                //lock for fpEvents
+                {
+//                    lock_guard<mutex> lock(lomutex);
+                    while (this.running && availTime > 1000 && fpEvents.size() > 0)
+                    {
+                        RunningPlan rp = fpEvents.peek();//front();
+                        fpEvents.poll();
+
+                        if (rp.isActive())
+                        {
+                            boolean first = true;
+                            while (rp != null)
+                            {
+                                System.out.println( "TICK FPEVENT " );
+                                PlanChange change = this.ruleBook.visit(rp);
+                                System.out.println("AFTER TICK FPEVENT " );
+                                if (!first && change == PlanChange.NoChange)
+                                {
+                                    break;
+                                }
+                                rp = rp.getParent().lock();
+                                first = false;
+                            }
+                        }
+                        now = alicaClock.now();
+                        if (this.loopTime.time > (now.time - beginTime.time))
+                        {
+                            availTime = (long)((this.loopTime.time - (now.time - beginTime.time)) / 1000UL);
+                        }
+						else
+                        {
+                            availTime = 0;
+                        }
+                    }
+                }
+
+            }
+
+//#ifdef PB_DEBUG
+            System.out.println("PB: availTime " + availTime );
+//#endif
+            if (availTime > 1 && !ae.getStepEngine())
+            {
+                alicaClock.sleep(availTime);
+            }
+        }
     }
 
     public void start() {
-
+        if (!this.running)
+        {
+            this.running = true;
+            this.mainThread = new Thread(PlanBase.run(), this);
+        }
     }
 }

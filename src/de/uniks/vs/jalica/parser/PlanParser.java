@@ -194,7 +194,7 @@ public class PlanParser {
         this.mf.attachRoleReferences();
         this.mf.attachCharacteristicReferences();
 //        return r;
-        return null;
+        return new RoleSet();
     }
 
     private void parseFileLoop() {
