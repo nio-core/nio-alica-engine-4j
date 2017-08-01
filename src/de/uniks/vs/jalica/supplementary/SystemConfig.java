@@ -1,16 +1,25 @@
 package de.uniks.vs.jalica.supplementary;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * Created by alex on 13.07.17.
  */
 public class SystemConfig {
-
     private static SystemConfig instance;
-    private  HashMap<String, Configuration> configMap = new HashMap<>();
+
+    //    static mutex configsMapMutex;
+    static String DOMAIN_FOLDER = "DOMAIN_FOLDER";
+    static String DOMAIN_CONFIG_FOLDER = "DOMAIN_CONFIG_FOLDER";
+    protected char NODE_NAME_SEPERATOR = '_';
+    protected  LinkedHashMap<String, Configuration> configs = new LinkedHashMap<>();
+
     HashMap<String, HashMap<String,String>> map = new HashMap<>();
-    private String configPath;
+    protected String rootPath;
+    protected String logPath;
+    protected String configPath;
+    protected String hostname;
 
     public SystemConfig() {
         HashMap<String,String> alicaConfig = new HashMap<>();
@@ -25,10 +34,11 @@ public class SystemConfig {
         alicaConfig.put("Alica.RoleDir", ".");
         alicaConfig.put("Alica.TeamTimeOut", "1000");
         alicaConfig.put("Alica.TeamBlackList.InitiallyFull", "true");
+        alicaConfig.put("Alica.MaxRuleApplications", "1");
 
         map.put("Alica", alicaConfig);
 
-        configMap.put("Globals", new Configuration());
+        configs.put("Globals", new Configuration());
 
         //TODO : path
         configPath = ".";
@@ -51,6 +61,6 @@ public class SystemConfig {
     }
 
     public Configuration getG(String key) {
-        return configMap.get(key);
+        return configs.get(key);
     }
 }

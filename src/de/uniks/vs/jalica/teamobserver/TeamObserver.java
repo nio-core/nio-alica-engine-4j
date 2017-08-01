@@ -7,6 +7,8 @@ import de.uniks.vs.jalica.unknown.*;
 
 import java.util.*;
 
+import static com.oracle.jrockit.jfr.FlightRecorder.isActive;
+
 /**
  * Created by alex on 13.07.17.
  */
@@ -91,6 +93,11 @@ public class TeamObserver implements ITeamObserver {
         return ownRobotProperties;
     }
 
+    @Override
+    public int teamSize() {
+        return 0;
+    }
+
     public ArrayList<RobotProperties> getAvailableRobotProperties() {
         return availableRobotProperties;
     }
@@ -110,8 +117,55 @@ public class TeamObserver implements ITeamObserver {
     }
 
     @Override
-    public String getOwnId() {
+    public ArrayList<Integer> getAvailableRobotIds() {
         return null;
+    }
+
+    @Override
+    public int successesInPlan(Plan plan) {
+        return 0;
+    }
+
+    @Override
+    public LinkedHashMap<Integer, SimplePlanTree> getTeamPlanTrees() {
+        return null;
+    }
+
+    @Override
+    public SuccessCollection getSuccessCollection(Plan plan) {
+        SuccessCollection ret = new SuccessCollection(plan);
+        ArrayList<EntryPoint> suc = new ArrayList<>();
+        for (RobotEngineData r : this.allOtherRobots)
+        {
+            if (r.isActive())
+            {
+                {
+//                    lock_guard<mutex> lock(this.successMark);
+                    suc = r.getSuccessMarks().succeededEntryPoints(plan);
+                }
+                if (suc != null)
+                {
+                    for (EntryPoint ep : suc)
+                    {
+                        ret.setSuccess(r.getProperties().getId(), ep);
+                    }
+                }
+            }
+        }
+        suc = me.getSuccessMarks().succeededEntryPoints(plan);
+        if (suc != null)
+        {
+            for (EntryPoint ep : suc)
+            {
+                ret.setSuccess(myId, ep);
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public int getOwnId() {
+        return myId;
     }
 
     @Override

@@ -5,4 +5,6 @@ package de.uniks.vs.jalica.unknown;
  */
 public interface IAlicaClock {
     AlicaTime now();
+
+    void sleep(long availTime);
 }

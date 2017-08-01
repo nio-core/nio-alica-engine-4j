@@ -28,6 +28,11 @@ public class PlanSelector implements IPlanSelector {
         return ll;
     }
 
+    @Override
+    public RunningPlan getBestSimilarAssignment(RunningPlan rp, Vector<Integer> robots) {
+        return null;
+    }
+
     private ArrayList<RunningPlan> getPlansForStateInternal(RunningPlan planningParent, ArrayList<AbstractPlan> plans, Vector<Integer> robotIDs) {
         ArrayList<RunningPlan> rps = new ArrayList<RunningPlan>();
 //#ifdef PSDEBUG

@@ -3,6 +3,7 @@ package de.uniks.vs.jalica.unknown;
 import de.uniks.vs.jalica.behaviours.BehaviourConfiguration;
 import de.uniks.vs.jalica.common.AssignmentCollection;
 
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.Vector;
@@ -12,10 +13,58 @@ import java.util.Vector;
  */
 public class Assignment implements IAssignment{
 
+    private  int max;
+    private  int min;
     private StateCollection robotStateMapping;
-    private SuccessCollection epSuccessMapping;
     private AssignmentCollection epRobotsMapping;
-    private BehaviourConfiguration plan;
+    private Plan plan;
+    private SuccessCollection epSucMapping;
+    private Vector<Integer> unassignedRobots;
+
+    public Assignment(Plan p, AllocationAuthorityInfo aai) {
+        this.plan = p;
+        this.max = 1;
+        this.min = 1;
+
+        this.epRobotsMapping = new AssignmentCollection(p.getEntryPoints().size());
+
+        Vector<Integer> curRobots;
+        short i = 0;
+        for ( Long epPair : p.getEntryPoints().keySet()) {
+            // set the entrypoint
+            if (!this.epRobotsMapping.setEp(i, p.getEntryPoints().get(epPair))) {
+                System.err.println("Ass: AssignmentCollection Index out of entrypoints bounds!");
+                try {
+                    throw new Exception();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            curRobots = new Vector<Integer>();
+            for (EntryPointRobots epRobots : aai.entryPointRobots) {
+                // find the right entrypoint
+                if (epRobots.entrypoint == p.getEntryPoints().get(epPair).getId()) {
+                    // copy robots
+                    for (int robot : epRobots.robots) {
+                        curRobots.add(robot);
+                    }
+
+                    // set the robots
+                    if (!this.epRobotsMapping.setRobots(i, curRobots)) {
+                        System.err.println("Ass: AssignmentCollection Index out of robots bounds!");
+                        try {
+                            throw new Exception();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    break;
+                }
+            }
+        }
+    }
 
     public void moveRobots(State from, State to) {
 
@@ -31,7 +80,7 @@ public class Assignment implements IAssignment{
     }
 
     public SuccessCollection getEpSuccessMapping() {
-        return epSuccessMapping;
+        return epSucMapping;
     }
 
     public boolean removeRobot(int robotId) {
@@ -64,7 +113,7 @@ public class Assignment implements IAssignment{
     public void clear() {
         this.robotStateMapping.clear();
         this.epRobotsMapping.clear();
-        this.epSuccessMapping.clear();
+        this.epSucMapping.clear();
     }
 
     public void setAllToInitialState(ArrayList<Integer> robots, EntryPoint defep) {
@@ -83,7 +132,7 @@ public class Assignment implements IAssignment{
         return robotStateMapping;
     }
 
-    public BehaviourConfiguration getPlan() {
+    public Plan getPlan() {
         return plan;
     }
 
@@ -107,5 +156,134 @@ public class Assignment implements IAssignment{
 
     public AssignmentCollection getEpRobotsMapping() {
         return epRobotsMapping;
+    }
+
+    public boolean updateRobot(int robot, EntryPoint ep) {
+        boolean ret = false;
+        for (int i = 0; i < this.epRobotsMapping.getSize(); i++)
+        {
+            if (this.epRobotsMapping.getEp(i) == ep)
+            {
+                if (CommonUtils.find(this.epRobotsMapping.getRobots(i),0, this.epRobotsMapping.getRobots(i).size()-1,
+                    robot) != this.epRobotsMapping.getRobots(i).lastElement())
+                {
+                    return false;
+                }
+				else
+                {
+                    this.epRobotsMapping.getRobots(i).add(robot);
+                    ret = true;
+                }
+            }
+			else
+            {
+                Integer iter = CommonUtils.find(this.epRobotsMapping.getRobots(i), 0, this.epRobotsMapping.getRobots(i).size() - 1, robot);
+                if (iter != this.epRobotsMapping.getRobots(i).lastElement())
+                {
+                    this.epRobotsMapping.getRobots(i).remove(iter);
+                    ret = true;
+                }
+            }
+        }
+        if (ret)
+        {
+            this.robotStateMapping.setState(robot, ep.getState());
+        }
+        return ret;
+    }
+
+    public Vector<Integer> getAllRobots() {
+        Vector<Integer> ret = new Vector<Integer>();
+        for (int i = 0; i < this.epRobotsMapping.getSize(); i++)
+        {
+            for (int j = 0; j < this.epRobotsMapping.getRobots(i).size(); j++)
+            {
+                ret.add(this.epRobotsMapping.getRobots(i).get(j));
+            }
+        }
+        return ret;
+    }
+
+    public boolean isValid() {
+        Vector<ArrayList<Integer>> success = this.epSucMapping.getRobots();
+
+        for (int i = 0; i < this.epRobotsMapping.getSize(); ++i)
+        {
+            int c = this.epRobotsMapping.getRobots(i).size() + success.get(i).size();
+            if (c > this.epRobotsMapping.getEp(i).getMaxCardinality()
+                || c < this.epRobotsMapping.getEp(i).getMinCardinality())
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public Vector<Integer> getUnassignedRobots() {
+        return unassignedRobots;
+    }
+
+
+    public int getMax() {
+        return max;
+    }
+
+    public boolean isSuccessfull() {
+        for (int i = 0; i < this.epSucMapping.getCount(); i++)
+        {
+            if (this.epSucMapping.getEntryPoints().get(i).getSuccessRequired())
+            {
+                if (!(this.epSucMapping.getRobots().get(i).size() > 0
+                    && this.epSucMapping.getRobots().get(i).size()
+                    >= this.epSucMapping.getEntryPoints().get(i).getMinCardinality()))
+                {
+                    return false;
+                }
+            }
+
+        }
+        return true;
+    }
+
+    @Override
+    public short getEntryPointCount() {
+        return 0;
+    }
+
+    @Override
+    public ArrayList<Integer> getRobotsWorkingAndFinished(EntryPoint ep) {
+        return null;
+    }
+
+    @Override
+    public ArrayList<Integer> getUniqueRobotsWorkingAndFinished(EntryPoint ep) {
+        ArrayList<Integer>  ret = new ArrayList<>();
+        //if (this.plan.getEntryPoints().find(ep.getId()) != this.plan.getEntryPoints().end())
+        {
+            Vector<Integer> robots = this.epRobotsMapping.getRobotsByEp(ep);
+
+            for (int i = 0; i < robots.size(); i++)
+            {
+                ret.add(robots.get(i));
+            }
+            for (Integer r : this.epSucMapping.getRobots(ep))
+            {
+                if (CommonUtils.find(ret, 0, ret.size()-1, r) == ret.get(ret.size()-1))
+                {
+                    ret.add(r);
+                }
+            }
+        }
+        return ret;
+    }
+
+    @Override
+    public void setMin(double min) {
+
+    }
+
+    @Override
+    public void setMax(double max) {
+
     }
 }

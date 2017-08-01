@@ -8,4 +8,6 @@ import java.util.Vector;
  */
 public interface IPlanSelector {
     ArrayList<RunningPlan> getPlansForState(RunningPlan rp, ArrayList<AbstractPlan> plans, Vector<Integer> robots);
+    RunningPlan getBestSimilarAssignment(RunningPlan rp, Vector<Integer> robots);
+
 }

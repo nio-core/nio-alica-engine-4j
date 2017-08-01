@@ -14,8 +14,8 @@ import java.util.PriorityQueue;
 /**
  * Created by alex on 13.07.17.
  */
-public class PlanBase {
-    private condition_variable stepModeCV;
+public class PlanBase extends Thread{
+    private  condition_variable stepModeCV;
     private  AlicaEngine ae;
     private  Plan masterPlan;
 
@@ -75,7 +75,6 @@ public class PlanBase {
         double freq = Double.valueOf(sc.get("Alica").get("Alica.EngineFrequency"));
         double minbcfreq = Double.valueOf(sc.get("Alica").get("Alica.MinBroadcastFrequency"));
         double maxbcfreq = Double.valueOf(sc.get("Alica").get("Alica.MaxBroadcastFrequency"));
-        ;
         this.loopTime = new AlicaTime(Math.max(1000000, Math.round(1.0 / freq * 1000000000)));
         if (this.loopTime.time == 1000000)
         {
@@ -142,12 +141,13 @@ public class PlanBase {
                 System.out.println( "PB: ===END CUR TREE===" );
 //#endif
                 {
+                    // TODO fix implementation
 //                    unique_lock<mutex> lckStep(stepMutex);
-                    stepModeCV.wait(lckStep, [&]
-                    {
-                        return this.ae.getStepCalled();
-                    }
-                    );
+//                    stepModeCV.wait(
+//                    {
+//                        return this.ae.getStepCalled();
+//                    }
+//                    );
 
                     this.ae.setStepCalled(false);
                     if (!running)
@@ -223,11 +223,12 @@ public class PlanBase {
                     if (this.deepestNode.getActiveState() != null)
                     {
                         this.statusMessage.currentState = this.deepestNode.getActiveState().getName();
-                        copy(this.deepestNode.getAssignment().getRobotStateMapping().getRobotsInState(
-                            this.deepestNode.getActiveState()).begin(),
+                        CommonUtils.copy(this.deepestNode.getAssignment().getRobotStateMapping().getRobotsInState(
+                            this.deepestNode.getActiveState()), 0,
                             this.deepestNode.getAssignment().getRobotStateMapping().getRobotsInState(
                                 this.deepestNode.getActiveState()
-                            ).end(), back_inserter(this.statusMessage.robotIDsWithMe)
+//                            ).size()-1, back_inserter(this.statusMessage.robotIDsWithMe)
+                            ).size()-1, (this.statusMessage.robotIDsWithMe)
                         );
 
                     }
@@ -250,7 +251,7 @@ public class PlanBase {
             now = alicaClock.now();
             if (this.loopTime.time > (now.time - beginTime.time))
             {
-                availTime = (long)((this.loopTime.time - (now.time - beginTime.time)) / 1000UL);
+                availTime = (long)((this.loopTime.time - (now.time - beginTime.time)) / 1000);
             }
 			else
             {
@@ -279,14 +280,14 @@ public class PlanBase {
                                 {
                                     break;
                                 }
-                                rp = rp.getParent().lock();
+                                rp = rp.getParent();
                                 first = false;
                             }
                         }
                         now = alicaClock.now();
                         if (this.loopTime.time > (now.time - beginTime.time))
                         {
-                            availTime = (long)((this.loopTime.time - (now.time - beginTime.time)) / 1000UL);
+                            availTime = (long)((this.loopTime.time - (now.time - beginTime.time)) / 1000);
                         }
 						else
                         {
@@ -311,7 +312,8 @@ public class PlanBase {
         if (!this.running)
         {
             this.running = true;
-            this.mainThread = new Thread(PlanBase.run(), this);
+            this.mainThread = new Thread();
+            this.mainThread.start();
         }
     }
 }

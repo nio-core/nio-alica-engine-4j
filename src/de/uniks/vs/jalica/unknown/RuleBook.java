@@ -84,6 +84,213 @@ public class RuleBook {
         return msChange;
     }
 
+    private PlanChange planPropagationRule(RunningPlan r) {
+//        #ifdef RULE_debug
+        System.out.println("RB: PlanPropagation-Rule called." );
+        System.out.println("RB: PlanPropagation RP \n" + r.toString() );
+//#endif
+        if (r.getParent() != null || !r.getFailHandlingNeeded() || r.isBehaviour())
+            return PlanChange.NoChange;
+        if (r.getFailure() < 3)
+            return PlanChange.NoChange;
+        r.getParent().addFailure();
+        r.setFailHandlingNeeded(false);
+
+//#ifdef RULE_debug
+        System.out.println("RB: PlanPropagation " + r.getPlan().getName() );
+//#endif
+        log.eventOccured("PProp(" + r.getPlan().getName() + ")");
+        return PlanChange.FailChange;
+    }
+
+
+
+    private PlanChange planReplaceRule(RunningPlan r) {
+        
+//#ifdef RULE_debug
+        System.out.println( "RB: PlanReplace-Rule called." );
+        System.out.println( "RB: PlanReplace RP \n" + r.toString() );
+//#endif
+//        if (r.getParent().expired()|| !r.getFailHandlingNeeded() || r.isBehaviour())
+        if (r.getParent()!= null|| !r.getFailHandlingNeeded() || r.isBehaviour())
+            return PlanChange.NoChange;
+        if (r.getFailure() != 2)
+            return PlanChange.NoChange;
+//        auto temp = r.getParent().lock();
+        RunningPlan temp = r.getParent();
+        temp.deactivateChildren();
+        temp.setFailedChild(r.getPlan());
+        temp.setAllocationNeeded(true);
+        temp.clearChildren();
+        r.setFailHandlingNeeded(false);
+
+//#ifdef RULE_debug
+        System.out.println( "RB: PlanReplace" + r.getPlan().getName() );
+//#endif
+        log.eventOccured("PReplace(" + r.getPlan().getName() + ")");
+        return PlanChange.FailChange;
+    }
+
+    private PlanChange planRedoRule(RunningPlan r) {
+//        #ifdef RULE_debug
+        System.out.println("RB: PlanRedoRule-Rule called." );
+        System.out.println("RB: PlanRedoRule RP \n" + r.toString() );
+//#endif
+        if (r.getParent() != null || !r.getFailHandlingNeeded() || r.isBehaviour())
+            return PlanChange.NoChange;
+        if (r.getFailure() != 1)
+            return PlanChange.NoChange;
+        if (r.getOwnEntryPoint() == null)
+            return PlanChange.NoChange;
+        if (r.getActiveState() == r.getOwnEntryPoint().getState())
+        {
+//            r.addFailure();
+//#ifdef RULE_debug
+            System.out.println("RB: PlanRedoRule not executed for " + r.getPlan().getName() + "- Unable to repair, as the current state is already the initial state.");
+//#endif
+            return PlanChange.FailChange;
+        }
+        r.setFailHandlingNeeded(false);
+        r.deactivateChildren();
+        r.clearChildren();
+        Vector<Integer> robots = new Vector<>(r.getAssignment().getRobotStateMapping().getRobotsInState(r.getActiveState()).size());
+
+        CommonUtils.copy(r.getAssignment().getRobotStateMapping().getRobotsInState(r.getActiveState()),0,
+                r.getAssignment().getRobotStateMapping().getRobotsInState(r.getActiveState()).size()-1,
+                robots); // backinserter
+
+        r.getAssignment().getRobotStateMapping().setStates(robots, r.getOwnEntryPoint().getState());
+
+        r.setActiveState(r.getOwnEntryPoint().getState());
+        r.setAllocationNeeded(true);
+//#ifdef RULE_debug
+        System.out.println( "RB: PlanRedoRule executed for " + r.getPlan().getName() );
+//#endif
+        log.eventOccured("PRede(" + r.getPlan().getName() + ")");
+        return PlanChange.InternalChange;
+    }
+
+    private PlanChange planAbortRule(RunningPlan r) {
+        if (r.getFailHandlingNeeded())
+            return PlanChange.NoChange;
+        if (r.isBehaviour())
+            return PlanChange.NoChange;
+        if (r.getStatus() == PlanStatus.Success)
+            return PlanChange.NoChange;
+        if (!r.getCycleManagement().mayDoUtilityCheck())
+        return PlanChange.NoChange;
+
+        if ((r.getActiveState() != null && r.getActiveState().isFailureState()) || !r.getAssignment().isValid()
+                || !r.evalRuntimeCondition())
+        {
+//#ifdef RULE_debug
+            System.out.println("RB: PlanAbort-Rule called." );
+            System.out.println( "RB: PlanAbort RP \n" + r.toString() );
+            System.out.println("RB: PlanAbort " + r.getPlan().getName() );
+//#endif
+            r.addFailure();
+            log.eventOccured("PAbort(" + r.getPlan().getName() + ")");
+            return PlanChange.FailChange;
+        }
+        return PlanChange.NoChange;
+    }
+
+    private PlanChange dynamicAllocationRule(RunningPlan r) {
+//        #ifdef RULE_debug
+        System.out.println("RB: dynAlloc-Rule called.");
+        System.out.println("RB: dynAlloc RP \n" + r.toString() );
+//#endif
+        if (r.isAllocationNeeded() || r.isBehaviour())
+        {
+            return PlanChange.NoChange;
+        }
+//        if (r.getParent().expired())
+        if (r.getParent()== null)
+        {
+            return PlanChange.NoChange; //masterplan excluded
+        }
+        if (!r.getCycleManagement().mayDoUtilityCheck())
+        {
+            return PlanChange.NoChange;
+        }
+
+//        temp = r.getParent().lock();
+        RunningPlan temp = r.getParent();
+        Vector<Integer> robots = new  Vector<Integer>(temp.getAssignment().getRobotStateMapping().getRobotsInState(temp.getActiveState()).size());
+        CommonUtils.copy(temp.getAssignment().getRobotStateMapping().getRobotsInState(temp.getActiveState()),0,
+                temp.getAssignment().getRobotStateMapping().getRobotsInState(temp.getActiveState()).size()-1,
+                robots);
+        RunningPlan newr = ps.getBestSimilarAssignment(r, new Vector<Integer>(robots));
+        if (newr == null)
+        {
+            return PlanChange.NoChange;
+        }
+        double curUtil = 0;
+        if (!r.evalRuntimeCondition())
+        {
+            curUtil = -1.0;
+        }
+        else
+        {
+            curUtil = r.getPlan().getUtilityFunction().eval(r, r);
+        }
+        double possibleUtil = newr.getAssignment().getMax();
+//#ifdef RULE_debug
+        System.out.println("RB: Old U " + curUtil + " | " + " New U:" + possibleUtil );
+        if(curUtil < -0.99) {
+            System.out.println( "#############Assignment is valid?: " + r.getAssignment().isValid() );
+            System.out.println( r.toString() );
+        }
+        System.out.println("RB: New Assignment" + newr.getAssignment().toString());
+        System.out.println( "RB: Old Assignment" + r.getAssignment().toString());
+//remove comments
+//#endif
+
+        if (possibleUtil - curUtil > r.getPlan().getUtilityThreshold())
+        {
+            //cout << "RB: AllocationDifference::Reason::utility " << endl;
+            r.getCycleManagement().setNewAllocDiff(r.getAssignment(), newr.getAssignment(), AllocationDifference.Reason.utility);
+            State before = r.getActiveState();
+            r.adaptAssignment(newr);
+            if (r.getActiveState() != null && r.getActiveState() != before)
+                r.setAllocationNeeded(true);
+//#ifdef RULE_debug
+            System.out.println( "RB: B4 dynChange: Util is " + curUtil + " | " + " suggested is " + possibleUtil + " | " + " threshold " + r.getPlan().getUtilityThreshold() );
+            System.out.println( "RB: DynAlloc" +r.getPlan().getName());
+//#endif
+
+            log.eventOccured("DynAlloc(" + r.getPlan().getName() + ")");
+            return PlanChange.InternalChange;
+        }
+        return PlanChange.NoChange;
+
+    }
+
+    private PlanChange authorityOverrideRule(RunningPlan r) {
+
+//#ifdef RULE_debug
+        System.out.println( "RB: AuthorityOverride-Rule called." );
+//#endif
+        if (r.isBehaviour())
+            return PlanChange.NoChange;
+
+//#ifdef RULE_debug
+        System.out.println(  "RB: AuthorityOverride RP \n" + r.toString() );
+//#endif
+        if (r.getCycleManagement().isOverridden())
+        {
+            if (r.getCycleManagement().setAssignment())
+            {
+                log.eventOccured("AuthorityOverride(" + r.getPlan().getName() + ")");
+//#ifdef RULE_debug
+                System.out.println(  "RB: Authorative set assignment of " + r.getPlan().getName() + " is:" + r.getAssignment().toString());
+//#endif
+                return PlanChange.InternalChange;
+            }
+        }
+        return PlanChange.NoChange;
+    }
+
     private PlanChange allocationRule(RunningPlan rp) {
         
 //#ifdef RULE_debug

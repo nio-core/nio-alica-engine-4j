@@ -8,8 +8,7 @@ import de.uniks.vs.jalica.teamobserver.ITeamObserver;
 import javax.tools.DocumentationTool;
 import java.lang.reflect.Array;
 import java.nio.channels.AsynchronousFileChannel;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 /**
  * Created by alex on 13.07.17.
@@ -35,10 +34,12 @@ public class RunningPlan {
     private PlanStatus status;
     private EntryPoint activeEntryPoint;
     private int ownId;
-    private HashMap<AbstractPlan, Integer> failedSubPlans;
+    private LinkedHashMap<AbstractPlan, Integer> failedSubPlans;
     private boolean failHandlingNeeded;
     private int failCount;
     private ArrayList<Integer> robotsAvail;
+    private CycleManager cycleManagement;
+    private long id;
 
     public RunningPlan(AlicaEngine ae, BehaviourConfiguration bc) {
 
@@ -149,11 +150,11 @@ public class RunningPlan {
         }
     }
 
-    private void clearChildren() {
+    public void clearChildren() {
         this.children.clear();
     }
 
-    private void deactivateChildren() {
+    public void deactivateChildren() {
 
         for (RunningPlan r : this.children) {
             r.deactivate();
@@ -227,7 +228,7 @@ public class RunningPlan {
         return allocationNeeded;
     }
 
-    public void setPlan(BehaviourConfiguration plan) {
+    public void setPlan(AbstractPlan plan) {
         this.plan = plan;
     }
 
@@ -259,7 +260,7 @@ public class RunningPlan {
         }
         try
         {
-            return this.plan.getPreCondition().evaluate(shared_from_this());
+            return this.plan.getPreCondition().evaluate(this);
         }
         catch (Exception  e)
         {
@@ -284,7 +285,7 @@ public class RunningPlan {
         }
         try
         {
-            return this.plan.getRuntimeCondition().evaluate(shared_from_this());
+            return this.plan.getRuntimeCondition().evaluate(this);
         }
         catch (Exception e)
         {
@@ -296,17 +297,177 @@ public class RunningPlan {
     public void addChildren(ArrayList<RunningPlan> runningPlans) {
         for (RunningPlan r : runningPlans)
         {
-            r.setParent(shared_from_this());
+            r.setParent(this);
             this.children.add(r);
-            auto iter = this.failedSubPlans.find(r.getPlan());
-            if (iter != this.failedSubPlans.end())
+            Integer iter = this.failedSubPlans.get(r.getPlan());
+
+            // TODO: fix work around
+            Integer last = 0;
+            for (AbstractPlan key : failedSubPlans.keySet()) {
+                last = failedSubPlans.get(key);
+            }
+
+            if (iter != last)
             {
-                r.failCount = iter.second;
+                r.failCount = iter;
             }
             if (this.active)
             {
                 r.activate();
             }
         }
+    }
+
+    private void activate() {
+        this.active = true;
+        if (this.isBehaviour())
+        {
+            bp.startBehaviour(this);
+        }
+        this.attachPlanConstraints();
+        for (RunningPlan r : this.children)
+        {
+            r.activate();
+        }
+    }
+
+    private void attachPlanConstraints() {
+        //		cout << "RP: attachPlanConstraints " << this.getPlan().getName() << endl;
+        this.constraintStore.addCondition(this.plan.getPreCondition());
+        this.constraintStore.addCondition(this.plan.getRuntimeCondition());
+    }
+
+    public CycleManager getCycleManagement() {
+        return cycleManagement;
+    }
+
+    public ArrayList<RunningPlan> getChildren() {
+        return children;
+    }
+
+    public void limitToRobots(Set<Integer> robots) {
+        if (this.isBehaviour())
+        {
+            return;
+        }
+        if (!this.cycleManagement.mayDoUtilityCheck())
+        {
+            return;
+        }
+        boolean recurse = false;
+        Vector<Integer> curRobots = this.assignment.getAllRobots();
+        for (int r : curRobots)
+        {
+            if (CommonUtils.find(curRobots,0, curRobots.size()-1, r) == curRobots.lastElement())
+            {
+                if (this.activeState != null
+                    && this.assignment.getRobotStateMapping().stateOfRobot(r) == this.activeState)
+                {
+                    recurse = true;
+                }
+                this.assignment.removeRobot(r);
+            }
+        }
+        if (recurse)
+        {
+            for (RunningPlan c : this.children)
+            {
+                c.limitToRobots(robots);
+            }
+        }
+    }
+
+    public void adaptAssignment(RunningPlan r) {
+        State newState = r.getAssignment().getRobotStateMapping().getState(this.ownId);
+        r.getAssignment().getRobotStateMapping().reconsiderOldAssignment(this.assignment, r.getAssignment());
+        boolean reactivate = false;
+
+        if (this.activeState != newState)
+        {
+            this.active = false;
+            this.deactivateChildren();
+            this.revokeAllConstraints();
+            this.clearChildren();
+            this.addChildren(r.getChildren());
+            reactivate = true;
+        }
+		else
+        {
+            Set<Integer> robotsJoined = r.getAssignment().getRobotStateMapping().getRobotsInState(newState);
+            for (RunningPlan r1 : this.children)
+            {
+                r1.limitToRobots(robotsJoined);
+            }
+        }
+
+        this.plan = r.getPlan();
+        this.activeEntryPoint = r.getOwnEntryPoint();
+        this.assignment = r.assignment;
+        this.setActiveState(newState);
+        if (reactivate)
+        {
+            this.activate();
+        }
+
+    }
+
+    public void addFailure() {
+        this.failCount++;
+        this.failHandlingNeeded = true;
+    }
+
+    public PlanStatus getStatus() {
+        if (this.basicBehaviour != null)
+        {
+            if (this.basicBehaviour.isSuccess())
+            {
+                //cout << "RP: " << this.plan.getName() << " BEH Success" << endl;
+                return PlanStatus.Success;
+            }
+			else if (this.basicBehaviour.isFailure())
+            {
+                //cout << "RP: " << this.plan.getName() << " BEH Failed" << endl;
+                return PlanStatus.Failed;
+            }
+			else
+            {
+                //cout << "RP: " << this.plan.getName() << " BEH Running" << endl;
+                return PlanStatus.Running;
+            }
+        }
+        if (this.assignment != null && this.assignment.isSuccessfull())
+        {
+            //cout << "RP: " << this.plan.getName() << " ASS Success" << endl;
+            return PlanStatus.Success;
+        }
+        //cout << "RP: " << this.plan.getName() << " STATUS " << (this.status == PlanStatus::Running ? "RUNNING" : (this.status == PlanStatus::Success ? "SUCCESS" : "FAILED")) << endl;
+        return this.status;
+    }
+
+    public int getFailure() {
+        return this.failCount;
+    }
+
+    public void setFailedChild(AbstractPlan child) {
+
+        // TODO: fix work around
+        Integer last = 0;
+        for (AbstractPlan key : failedSubPlans.keySet()) {
+            last = failedSubPlans.get(key);
+        }
+
+        if (this.failedSubPlans.get(child) != last)
+        {
+            Integer intChild = this.failedSubPlans.get(child);
+            this.failedSubPlans.put(child,intChild++);
+        }
+		else
+        {
+            this.failedSubPlans.put(child, 1);
+        }
+    }
+
+    public long getId() {
+        return id;
     }
 }

@@ -1,6 +1,8 @@
 package de.uniks.vs.jalica.unknown;
 
+import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
 import de.uniks.vs.jalica.common.AssignmentCollection;
+import de.uniks.vs.jalica.common.UtilityFunction;
 
 import java.util.ArrayList;
 import java.util.Vector;
@@ -11,6 +13,19 @@ import java.util.Vector;
 public class PartialAssignment implements IAssignment{
 
 
+    private static final long PRECISION = 1073741824;
+    private double min;
+    private double max;
+    private long compareVal;
+    private Vector<Integer> unassignedRobots;
+    private AssignmentCollection epRobotsMapping;
+    private boolean hashCalculated;
+    private Vector<Integer> robots;
+    private Plan plan;
+    private UtilityFunction utilFunc;
+    private SuccessCollection epSuccessMapping;
+    private Vector<DynCardinality> dynCardinalities;
+
     public static void reset(PartialAssignmentPool pap) {
         pap.curIndex = 0;
     }
@@ -20,7 +35,7 @@ public class PartialAssignment implements IAssignment{
         {
             System.out.println( "max PA count reached!" );
         }
-        PartialAssignment ret = pap.daPAs[pap.curIndex++];
+        PartialAssignment ret = pap.daPAs.get(pap.curIndex++);
         ret.clear();
         ret.robots = robots; // Should already be sorted! (look at TaskAssignment, or PlanSelector)
         ret.plan = plan;
@@ -39,9 +54,9 @@ public class PartialAssignment implements IAssignment{
         }
         // Insert plan entrypoints
         int j = 0;
-        for ( iter : plan.getEntryPoints())
+        for ( Long key : plan.getEntryPoints().keySet())
         {
-            ret.epRobotsMapping.setEp(j++, iter.second);
+            ret.epRobotsMapping.setEp(j++, plan.getEntryPoints().get(key));
         }
 
         // Sort the entrypoint array
@@ -50,28 +65,28 @@ public class PartialAssignment implements IAssignment{
 
         for (int i = 0; i < ret.epRobotsMapping.getSize(); i++)
         {
-            ret.dynCardinalities[i].setMin(ret.epRobotsMapping.getEp(i).getMinCardinality());
-            ret.dynCardinalities[i].setMax(ret.epRobotsMapping.getEp(i).getMaxCardinality());
+            ret.dynCardinalities.get(i).setMin(ret.epRobotsMapping.getEp(i).getMinCardinality());
+            ret.dynCardinalities.get(i).setMax(ret.epRobotsMapping.getEp(i).getMaxCardinality());
             ArrayList<Integer> suc = sucCol.getRobots(ret.epRobotsMapping.getEp(i));
 
             if (suc != null)
             {
-                ret.dynCardinalities[i].setMin(ret.dynCardinalities[i].getMin() - suc.size());
-                ret.dynCardinalities[i].setMax(ret.dynCardinalities[i].getMax() - suc.size());
-                if (ret.dynCardinalities[i].getMin() < 0)
+                ret.dynCardinalities.get(i).setMin(ret.dynCardinalities.get(i).getMin() - suc.size());
+                ret.dynCardinalities.get(i).setMax(ret.dynCardinalities.get(i).getMax() - suc.size());
+                if (ret.dynCardinalities.get(i).getMin() < 0)
                 {
-                    ret.dynCardinalities[i].setMin(0);
+                    ret.dynCardinalities.get(i).setMin(0);
                 }
-                if (ret.dynCardinalities[i].getMax() < 0)
+                if (ret.dynCardinalities.get(i).getMax() < 0)
                 {
-                    ret.dynCardinalities[i].setMax(0);
+                    ret.dynCardinalities.get(i).setMax(0);
                 }
 
 //#ifdef SUCDEBUG
                 System.out.println("SuccessCollection" );
-                System.out.println( "EntryPoint: " << ret.epRobotsMapping.getEntryPoints().at(i).toString() );
-                System.out.println( "DynMax: " << ret.dynCardinalities[i].getMax() );
-                System.out.println( "DynMin: " << ret.dynCardinalities[i].getMin() );
+//                System.out.println( "EntryPoint: " + ret.epRobotsMapping.getEntryPoints().at(i).toString() );
+                System.out.println( "DynMax: " + ret.dynCardinalities.get(i).getMax() );
+                System.out.println( "DynMin: " + ret.dynCardinalities.get(i).getMin() );
                 System.out.print("SucCol: ");
                 for (int k : (suc))
                 {
@@ -90,4 +105,117 @@ public class PartialAssignment implements IAssignment{
         return ret;
     }
 
+    private void clear() {
+        this.min = 0.0;
+        this.max = 1.0;
+        this.compareVal = PRECISION;
+        this.unassignedRobots.clear();
+        for (int i = 0; i < this.epRobotsMapping.getSize(); i++)
+        {
+            this.epRobotsMapping.getRobots(i).clear();
+        }
+        this.hashCalculated = false;
+    }
+
+    @Override
+    public short getEntryPointCount() {
+        return 0;
+    }
+
+    @Override
+    public ArrayList<Integer> getRobotsWorkingAndFinished(EntryPoint ep) {
+        return null;
+    }
+
+    @Override
+    public ArrayList<Integer> getUniqueRobotsWorkingAndFinished(EntryPoint ep) {
+        return null;
+    }
+
+    @Override
+    public void setMin(double min) {
+
+    }
+
+    @Override
+    public void setMax(double max) {
+
+    }
+
+    @Override
+    public Vector<Integer> getUnassignedRobots() {
+        return null;
+    }
+
+    @Override
+    public AssignmentCollection getEpRobotsMapping() {
+        return null;
+    }
+
+    public boolean addIfAlreadyAssigned(SimplePlanTree spt, int robot) {
+        if (spt.getEntryPoint().getPlan() == this.plan)
+        {
+            EntryPoint curEp;
+            int max = this.epRobotsMapping.getSize();
+            if (AssignmentCollection.allowIdling)
+            {
+                max--;
+            }
+            for (int i = 0; i < max; ++i)
+            {
+                curEp = this.epRobotsMapping.getEp(i);
+                if (spt.getEntryPoint().getId() == curEp.getId())
+                {
+                    if (!this.assignRobot(robot, i))
+                    {
+                        break;
+                    }
+                    //remove robot from "To-Add-List"
+                    Integer iter = CommonUtils.find(this.unassignedRobots, 0, this.unassignedRobots.size() - 1, robot);
+                    if (this.unassignedRobots.remove(this.unassignedRobots.indexOf(iter)) == this.unassignedRobots.lastElement())
+                    {
+                        System.err.println( "PA: Tried to assign robot " + robot + ", but it was NOT UNassigned!");
+                        try {
+                            throw new Exception();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    //return true, because we are ready, when we found the robot here
+                    return true;
+                }
+            }
+            return false;
+        }
+        // If there are children and we didnt find the robot until now, then go on recursive
+		else if (spt.getChildren().size() > 0)
+        {
+            for (SimplePlanTree sptChild : spt.getChildren())
+            {
+                if (this.addIfAlreadyAssigned(sptChild, robot))
+                {
+                    return true;
+                }
+            }
+        }
+        // Did not find the robot in any relevant entry point
+        return false;
+    }
+
+    private boolean assignRobot(int robot, int index) {
+        if (this.dynCardinalities.get(index).getMax() > 0)
+        {
+            this.epRobotsMapping.getRobots(index).add(robot);
+            if (this.dynCardinalities.get(index).getMin() > 0)
+            {
+                this.dynCardinalities.get(index).setMin(this.dynCardinalities.get(index).getMin() - 1);
+            }
+            if (this.dynCardinalities.get(index).getMax() <= Integer.MAX_VALUE)
+            {
+                this.dynCardinalities.get(index).setMax(this.dynCardinalities.get(index).getMax() - 1);
+            }
+            return true;
+        }
+        return false;
+    }
 }

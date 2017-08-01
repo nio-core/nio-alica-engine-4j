@@ -7,4 +7,6 @@ public interface IRoleAssignment {
     public void tick();
 
     Role getOwnRole();
+
+    EntryPoint getRole(int robotID);
 }

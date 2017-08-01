@@ -9,6 +9,7 @@ public class Plan extends AbstractPlan {
     private Plan name;
     private LinkedHashMap<Long, EntryPoint> entryPoints;
     private int minCardinality;
+    private int maxCardinality;
 
     public LinkedHashMap<Long, EntryPoint> getEntryPoints() {
         return entryPoints;
@@ -16,5 +17,9 @@ public class Plan extends AbstractPlan {
 
     public int getMinCardinality() {
         return minCardinality;
+    }
+
+    public int getMaxCardinality() {
+        return maxCardinality;
     }
 }

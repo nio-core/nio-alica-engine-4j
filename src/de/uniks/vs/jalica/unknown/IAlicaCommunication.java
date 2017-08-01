@@ -8,4 +8,6 @@ public interface  IAlicaCommunication {
     public void startCommunication();
 
     void tick();
+
+    void sendAlicaEngineInfo(AlicaEngineInfo statusMessage);
 }

@@ -49,4 +49,19 @@ public class SuccessMarks {
     public void removePlan(AbstractPlan plan) {
         this.getSuccessMarks().remove(plan);
     }
+
+    public ArrayList<EntryPoint> succeededEntryPoints(AbstractPlan plan) {
+
+//        for (map<AbstractPlan*, shared_ptr<list<EntryPoint*> > >::const_iterator iterator =
+//                this->getSuccessMarks().begin(); iterator != this->getSuccessMarks().end(); iterator++)
+
+        for (AbstractPlan iterator : this.getSuccessMarks().keySet()) {
+
+            if (iterator == plan)
+            {
+                return this.getSuccessMarks().get(iterator);
+            }
+        }
+        return null;
+    }
 }

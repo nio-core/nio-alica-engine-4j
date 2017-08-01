@@ -5,7 +5,7 @@ package de.uniks.vs.jalica.unknown;
  */
 public class AlicaElement {
 
-    protected long getId() {
+    public long getId() {
         return id;
     }
 
@@ -15,7 +15,7 @@ public class AlicaElement {
 
     private  long id;
 
-    protected String getName() {
+    public String getName() {
         return name;
     }
 

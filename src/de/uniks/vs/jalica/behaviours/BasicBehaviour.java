@@ -7,7 +7,7 @@ import de.uniks.vs.jalica.unknown.RunningPlan;
 /**
  * Created by alex on 14.07.17.
  */
-public class BasicBehaviour extends IBehaviourCreator{
+public class BasicBehaviour implements IBehaviourCreator {
     private Object parameters;
     private Object variables;
     private Object delayedStart;
@@ -66,5 +66,18 @@ public class BasicBehaviour extends IBehaviourCreator{
             this.running = false;
         }
         return true;
+    }
+
+    public boolean isSuccess() {
+        return success && !this.callInit;
+    }
+
+    @Override
+    public IBehaviourCreator createBehaviour(Long key) {
+        return null;
+    }
+
+    public boolean isFailure() {
+        return failure && !this.callInit;
     }
 }

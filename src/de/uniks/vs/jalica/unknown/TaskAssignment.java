@@ -4,6 +4,7 @@ import de.uniks.vs.jalica.teamobserver.ITeamObserver;
 import de.uniks.vs.jalica.teamobserver.TeamObserver;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Vector;
 
@@ -12,13 +13,14 @@ import java.util.Vector;
  */
 public class TaskAssignment implements ITaskAssignment {
 
+    private final int expansionCount;
     private  Vector<PartialAssignment> fringe;
     private  Vector<Integer> robots;
     private  ITeamObserver to;
     private ArrayList<Plan> planList;
 
     public TaskAssignment(PartialAssignmentPool pap, ITeamObserver to,
-                          ArrayList<Plan> planList, Vector<Integer> paraRobots, boolean preasingOtherRobots) {
+                          ArrayList<Plan> planList, Vector<Integer> paraRobots, boolean preassignOtherRobots) {
 //        #ifdef EXPANSIONEVAL
         this.expansionCount = 0;
 //#endif
@@ -31,7 +33,7 @@ public class TaskAssignment implements ITaskAssignment {
             this.robots.set(k++,i);
         }
         // sort robot ids ascending
-        sort(robots.begin(), robots.end());
+        Collections.sort(robots);
         this.fringe = new Vector<PartialAssignment>();
         LinkedHashMap<Integer, SimplePlanTree> simplePlanTreeMap = to.getTeamPlanTrees();
         PartialAssignment curPa;
@@ -55,6 +57,36 @@ public class TaskAssignment implements ITaskAssignment {
             }
             this.fringe.add(curPa);
         }
+    }
+
+    private boolean addAlreadyAssignedRobots(PartialAssignment pa, LinkedHashMap<Integer, SimplePlanTree> simplePlanTreeMap) {
+        int ownRobotId = to.getOwnId();
+        boolean haveToRevalute = false;
+        SimplePlanTree spt = null;
+        for (int robot : (this.robots))
+        {
+            if (ownRobotId == robot)
+            {
+                continue;
+            }
+            SimplePlanTree iter = simplePlanTreeMap.get(robot);
+
+            // TODO: fix work around
+            SimplePlanTree last = null;
+            for (Integer key : simplePlanTreeMap.keySet()) {
+                last = simplePlanTreeMap.get(key);
+            }
+
+            if (iter != last)
+            {
+                spt = last;
+                if (pa.addIfAlreadyAssigned(spt, robot))
+                {
+                    haveToRevalute = true;
+                }
+            }
+        }
+        return haveToRevalute;
     }
 
     public Assignment getNextBestAssignment(Assignment ass) {

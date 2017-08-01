@@ -59,4 +59,56 @@ public class StateCollection {
         this.robots.clear();
         this.states.clear();
     }
+
+    public State stateOfRobot(int robot) {
+        for (int i = 0; i < this.robots.size(); i++)
+        {
+            if (this.robots.get(i) == robot)
+            {
+                return this.states.get(i);
+            }
+        }
+        return null;
+    }
+
+    public void setStates(Vector<Integer> robots, State state) {
+
+        for(int i = 0; i <  robots.size(); i++)
+        {
+            setState(robots.get(i), state);
+        }
+    }
+
+    public State getState(int r) {
+        for (int i = 0; i < this.robots.size(); i++)
+        {
+            if (this.robots.get(i) == r)
+            {
+                return this.states.get(i);
+            }
+        }
+        return null;
+    }
+
+    public void reconsiderOldAssignment(Assignment oldOne, Assignment newOne) {
+        if(oldOne.getPlan() != newOne.getPlan())
+        {
+            return;
+        }
+        //shared_ptr<vector<EntryPoint*> >eps = oldOne.getEntryPoints();
+        EntryPoint ep;
+        for(short i = 0; i < oldOne.getEntryPointCount(); i++)
+        {
+            ep = oldOne.getEpRobotsMapping().getEp(i);
+            for(int rid : (oldOne.getRobotsWorking(ep)))
+            {
+                Integer iter = CommonUtils.find(newOne.getRobotsWorking(ep), 0, newOne.getRobotsWorking(ep).size() - 1, rid);
+                if(iter != newOne.getRobotsWorking(ep).lastElement())
+                {
+                    this.setState(rid, oldOne.getRobotStateMapping().getState(rid));
+                }
+            }
+        }
+
+    }
 }

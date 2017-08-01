@@ -25,4 +25,8 @@ public class RobotEngineData {
     public SuccessMarks getSuccessMarks() {
         return successMarks;
     }
+
+    public boolean isActive() {
+        return active;
+    }
 }

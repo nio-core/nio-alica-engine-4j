@@ -37,4 +37,8 @@ public class PlanRepository {
     public HashMap<Long, Role> getRoles() {
         return roles;
     }
+
+    public HashMap<Long, EntryPoint> getEntryPoints() {
+        return entryPoints;
+    }
 }

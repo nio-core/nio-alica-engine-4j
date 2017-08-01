@@ -10,7 +10,7 @@ import java.util.LinkedHashMap;
  */
 public interface ITeamObserver {
 
-    public String getOwnId() ;
+    public int getOwnId() ;
 
     void tick(RunningPlan rootNode);
 
@@ -29,4 +29,6 @@ public interface ITeamObserver {
     SuccessCollection getSuccessCollection(Plan plan);
 
     RobotProperties getOwnRobotProperties();
+
+    int teamSize();
 }

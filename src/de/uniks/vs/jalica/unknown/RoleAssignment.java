@@ -9,7 +9,7 @@ import java.util.*;
 /**
  * Created by alex on 13.07.17.
  */
-public class RoleAssignment extends IRoleAssignment{
+public class RoleAssignment implements IRoleAssignment {
 
     private  HashMap<Integer, Role> robotRoleMapping;
     private  Vector<RobotRoleUtility> sortedRobots;
@@ -124,5 +124,20 @@ public class RoleAssignment extends IRoleAssignment{
 
     public void setCommunication(AlicaDummyCommunication communicator) {
 
+    }
+
+    @Override
+    public void tick() {
+
+    }
+
+    @Override
+    public Role getOwnRole() {
+        return null;
+    }
+
+    @Override
+    public EntryPoint getRole(int robotID) {
+        return null;
     }
 }

@@ -6,4 +6,5 @@ package de.uniks.vs.jalica.unknown;
 public interface IBehaviourPool {
     void stopBehaviour(AbstractPlan plan);
 
+    void startBehaviour(RunningPlan runningPlan);
 }
