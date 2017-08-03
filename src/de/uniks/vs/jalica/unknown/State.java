@@ -12,6 +12,8 @@ public class State extends AlicaElement{
     private boolean failureState;
     private ArrayList<Transition> outTransitions;
     private ArrayList<AbstractPlan> plans;
+    private ArrayList<Parametrisation> parametrisation;
+    private Plan inPlan;
 
     public boolean isSuccessState() {
         return successState;
@@ -27,5 +29,13 @@ public class State extends AlicaElement{
 
     public ArrayList<AbstractPlan> getPlans() {
         return plans;
+    }
+
+    public ArrayList<Parametrisation> getParametrisation() {
+        return parametrisation;
+    }
+
+    public void setInPlan(Plan inPlan) {
+        this.inPlan = inPlan;
     }
 }

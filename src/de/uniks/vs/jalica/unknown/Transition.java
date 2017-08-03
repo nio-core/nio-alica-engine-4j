@@ -24,4 +24,8 @@ public class Transition extends AlicaElement {
     public PreCondition getPreCondition() {
         return preCondition;
     }
+
+    public void setPreCondition(PreCondition preCondition) {
+        this.preCondition = preCondition;
+    }
 }

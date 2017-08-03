@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="ASCII"?>
+<uiextensionmodel:PmlUiExtensionMap xmlns:uiextensionmodel="http:///de.uni_kassel.vs.cn/planDesigner/pmlextension/uiextensionmodel">
+  <extensions>
+    <key href="DummyPlan.pml#1482486227470"/>
+    <value collapsed="false"/>
+  </extensions>
+  <extensions>
+    <key href="DummyPlan.pml#1482486227468"/>
+    <value xPos="40" yPos="70" width="205" height="123"/>
+  </extensions>
+  <extensions>
+    <key href="DummyPlan.pml#1482486227473"/>
+    <value/>
+  </extensions>
+  <extensions>
+    <key href="DummyBehaviour.beh#1482486281206"/>
+    <value/>
+  </extensions>
+</uiextensionmodel:PmlUiExtensionMap>

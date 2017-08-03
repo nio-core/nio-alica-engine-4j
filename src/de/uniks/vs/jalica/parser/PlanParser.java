@@ -7,7 +7,16 @@ import de.uniks.vs.jalica.unknown.ModelFactory;
 import de.uniks.vs.jalica.unknown.Plan;
 import de.uniks.vs.jalica.unknown.RoleSet;
 import de.uniks.vs.jalica.teamobserver.PlanRepository;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -88,8 +97,9 @@ public class PlanParser {
     }
 
     public Plan parsePlanTree(String masterplan) {
+
         String masterPlanPath = null;
-        masterplan = FileSystem.findFile(this.basePlanPath, masterplan + ".pml", masterPlanPath);
+        masterPlanPath = FileSystem.findFile(this.basePlanPath, masterplan + ".pml", masterPlanPath);
         boolean found = masterplan != null;
 //#ifdef PP_DEBUG
         System.out.println( "PP: masterPlanPath: " + masterPlanPath );
@@ -111,8 +121,6 @@ public class PlanParser {
         this.mf.computeReachabilities();
         return this.masterPlan;
     }
-
-
 
     public RoleSet parseRoleSet(String roleSetName, String roleSetDir) {
 
@@ -212,9 +220,177 @@ public class PlanParser {
 
     private void parsePlanningProblem(String currentFile){}
 
-    private Plan parsePlanFile(String planFile){ return null;}
+    private Plan parsePlanFile(String planFile){
+        Plan p = null;
+//#ifdef PP_DEBUG
+        System.out.println("PP: parsing Plan file: " + planFile );
+//#endif
 
-    private long fetchId(String idString, long id){return 0;}
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        File file = new File(planFile);
+
+//        XMLDocument doc;
+//        doc.LoadFile(planFile.c_str());
+
+        DocumentBuilder docBuilder = null;
+        try {
+            docBuilder = docFactory.newDocumentBuilder();
+            Document doc = docBuilder.parse(file);
+
+//            if (doc.ErrorID() != tinyxml2::XML_NO_ERROR)
+//            {
+//                try {
+//                    throw new Exception();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+
+             p = this.mf.createPlan(doc);
+
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            System.err.println("PP: doc.ErrorCode: ");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.err.println("PP: doc.ErrorCode: ");
+            e.printStackTrace();
+        }
+
+        return p;
+    }
+
+    private long fetchId(String idString, long id){
+//        int hashPos = idString.indexOf("#");
+//		String temp = null;
+//        String temp2 = null;
+//        String locator = idString.substring(0, hashPos);
+//
+//        if (!locator.isEmpty())
+//        {
+//            if (!FileSystem.endsWith(this.currentDirectory, "/"))
+//            {
+//                this.currentDirectory = this.currentDirectory + "/";
+//            }
+//            String path = this.currentDirectory + locator;
+//            //not working no clue why
+//            //char s[2048];
+//            //char s2[2048];
+//            temp = realpath(path, null);
+//            String pathNew = temp;
+////            free(temp);
+//            //This is not very efficient but necessary to keep the paths as they are
+//            //Here we have to check whether the file has already been parsed / is in the list for toparse files
+//            //problem is the normalization /home/etc/plans != /home/etc/Misc/../plans
+//            //list<string>::iterator findIterParsed = find(filesParsed.begin(), filesParsed.end(), pathNew);
+//            boolean found = false;
+//            for(String it : filesParsed) {
+//            temp2 = realpath(it, null);
+//            String pathNew2 =temp2;
+////            free(temp2);
+//            if(pathNew2 == pathNew) {
+//                found = true;
+//                break;
+//            }
+//        }
+//
+//            //list<string>::iterator findIterToParse = find(filesToParse.begin(), filesToParse.end(), pathNew);
+//            if(!found) {
+//                for(auto& it : filesToParse) {
+//                    temp2 = realpath(it.c_str(), null);
+//                    string pathNew2 =temp2;
+//                    free(temp2);
+//                    if(pathNew2 == pathNew) {
+//                        found = true;
+//                        break;
+//                    }
+//                }
+//            }
+//
+//
+//            if (!found)
+//            {
+//#ifdef PP_DEBUG
+//                cout << "PP: Adding " + path + " to parse queue " << endl;
+//#endif
+//                filesToParse.add(path);
+//            }
+//        }
+//        string tokenId = idString.substr(hashPos + 1, idString.length() - hashPos);
+//        try
+//        {
+//            id = stol(tokenId);
+//        }
+//        catch (exception e)
+//        {
+//            ae.abort("PP: Cannot convert ID to long: " + tokenId + " WHAT?? " + e.what());
+//        }
+        return id;
+    }
 
     private String findDefaultRoleSet(String dir){return null;}
+
+    public long parserId(Node node) {
+        long id = -1;
+        String idString1 = "";
+        Node idItem = node.getAttributes().getNamedItem("id");
+
+        if (idItem != null)
+            idString1 = idItem.getTextContent();
+        if (idString1.length() > 0)
+        {
+            try
+            {
+                id = Long.parseLong(idString1);
+            }
+            catch (Exception e)
+            {
+                ae.abort("PP: Cannot convert ID to long: " + idString1 + " WHAT?? " + e.getMessage());
+            }
+            return id;
+        }
+        else
+        {
+            String idString2 = "";
+			Node idChar = node.getAttributes().getNamedItem("href");
+            if (idChar != null)
+                idString2 = idChar.getTextContent();
+            if (idString2.length() > 0)
+            {
+                id = fetchId(idString2, id);
+                return id;
+            }
+            else
+            {
+                Node currNode = node.getFirstChild();
+                while (currNode != null)
+                {
+                    String textContent = currNode.getTextContent();
+                    if (textContent.length() > 0)
+                    {
+                        id = fetchId(textContent, id);
+                        return id;
+                    }
+
+                    currNode = currNode.getNextSibling();
+                }
+            }
+        }
+
+        System.err.println("Cannot resolve remote reference!\nAttributes of node in question are:" );
+
+        for ( int i = 0; i < node.getAttributes().getLength(); i++) {
+
+            Node curAttribute = node.getAttributes().item(i);
+            System.out.println(curAttribute.getNodeName() + " : " + curAttribute.getNodeName() );
+        }
+
+        ae.abort("PP: Couldn't resolve remote reference: " + (node.getNodeName()));
+        return -1;
+    }
+
+    public String getCurrentFile() {
+        return currentFile;
+    }
 }

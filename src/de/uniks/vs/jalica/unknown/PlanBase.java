@@ -14,7 +14,8 @@ import java.util.PriorityQueue;
 /**
  * Created by alex on 13.07.17.
  */
-public class PlanBase extends Thread{
+public class PlanBase implements Runnable {
+
     private  condition_variable stepModeCV;
     private  AlicaEngine ae;
     private  Plan masterPlan;
@@ -75,7 +76,9 @@ public class PlanBase extends Thread{
         double freq = Double.valueOf(sc.get("Alica").get("Alica.EngineFrequency"));
         double minbcfreq = Double.valueOf(sc.get("Alica").get("Alica.MinBroadcastFrequency"));
         double maxbcfreq = Double.valueOf(sc.get("Alica").get("Alica.MaxBroadcastFrequency"));
+
         this.loopTime = new AlicaTime(Math.max(1000000, Math.round(1.0 / freq * 1000000000)));
+
         if (this.loopTime.time == 1000000)
         {
             System.out.println("PB: ALICA should not be used with more than 1000Hz . 1000Hz assumed");
@@ -159,12 +162,9 @@ public class PlanBase extends Thread{
 
 
             //Send tick to other modules
-
             this.ae.getCommunicator().tick();
 
-
             this.teamObserver.tick(this.rootNode);
-
 
             this.ra.tick();
 
@@ -175,6 +175,7 @@ public class PlanBase extends Thread{
             if (this.rootNode == null) {
                 this.rootNode = ruleBook.initialisationRule(this.masterPlan);
             }
+
             if (this.rootNode.tick(this.ruleBook) == PlanChange.FailChange) {
                 System.out.println("PB: MasterPlan Failed");
             }
@@ -309,10 +310,11 @@ public class PlanBase extends Thread{
     }
 
     public void start() {
+
         if (!this.running)
         {
             this.running = true;
-            this.mainThread = new Thread();
+            this.mainThread = new Thread(this);
             this.mainThread.start();
         }
     }

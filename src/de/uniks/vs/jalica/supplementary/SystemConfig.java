@@ -30,8 +30,8 @@ public class SystemConfig {
         alicaConfig.put("Alica.EngineFrequency", "1.0");
         alicaConfig.put("Alica.MinBroadcastFrequency", "0.5");
         alicaConfig.put("Alica.MaxBroadcastFrequency", "0.7");
-        alicaConfig.put("Alica.PlanDir", ".");
-        alicaConfig.put("Alica.RoleDir", ".");
+        alicaConfig.put("Alica.PlanDir", "plans/");
+        alicaConfig.put("Alica.RoleDir", "roles/");
         alicaConfig.put("Alica.TeamTimeOut", "1000");
         alicaConfig.put("Alica.TeamBlackList.InitiallyFull", "true");
         alicaConfig.put("Alica.MaxRuleApplications", "1");
@@ -41,7 +41,15 @@ public class SystemConfig {
         configs.put("Globals", new Configuration());
 
         //TODO : path
-        configPath = ".";
+        configPath = "config/";
+        rootPath = ".";
+        hostname = "NIO.ZERO";
+        logPath = "log/";
+
+       System.out.println("SC: Root:           \"" + rootPath + "\"" );
+       System.out.println("SC: ConfigRoot:     \"" + configPath + "\"" );
+       System.out.println("SC: Hostname:       \"" + hostname + "\"" );
+       System.out.println("SC: Logging Folder: \"" + logPath + "\"" );
     }
 
     public HashMap<String, String> get(String name) {

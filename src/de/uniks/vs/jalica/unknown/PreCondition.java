@@ -7,4 +7,7 @@ public class PreCondition extends Condition {
 
     boolean enabled;
 
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
 }

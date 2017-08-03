@@ -1,5 +1,7 @@
 package de.uniks.vs.jalica.unknown;
 
+import de.uniks.vs.jalica.common.AssignmentCollection;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
@@ -11,6 +13,17 @@ public class StateCollection {
 
     private Vector<Integer> robots;
     private Vector<State> states;
+
+    public StateCollection(AssignmentCollection ac) {
+        for(int i = 0;i < ac.getSize(); i ++)
+        {
+            State initialState = ac.getEp(i).getState();
+            for(Integer r : ac.getRobots(i))
+            {
+                this.setState(r,initialState);
+            }
+        }
+    }
 
     public Set<Integer> getRobotsInState(State s) {
 

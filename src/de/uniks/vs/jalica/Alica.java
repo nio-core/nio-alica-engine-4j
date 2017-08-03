@@ -32,8 +32,8 @@ public class Alica {
         ae.setCommunicator(new AlicaDummyCommunication(ae));
         ae.addSolver(SolverType.GRADIENTSOLVER, new CGSolver(ae));
         String roleSetName = "master";
-        String masterPlanName = "test";
-        String roleSetDir = ".";
+        String masterPlanName = "DummyPlan";
+        String roleSetDir = "roles/";
         ae.init(bc, cc, uc, crc, roleSetName, masterPlanName, roleSetDir, false);  
     }
 

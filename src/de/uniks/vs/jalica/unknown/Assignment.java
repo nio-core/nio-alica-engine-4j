@@ -13,13 +13,40 @@ import java.util.Vector;
  */
 public class Assignment implements IAssignment{
 
-    private  int max;
-    private  int min;
+    private double max;
+    private double min;
     private StateCollection robotStateMapping;
     private AssignmentCollection epRobotsMapping;
     private Plan plan;
     private SuccessCollection epSucMapping;
     private Vector<Integer> unassignedRobots;
+
+    public Assignment(Plan p) {
+        this.plan = p;
+        this.max = 0.0;
+        this.min = 0.0;
+
+        this.epRobotsMapping = new AssignmentCollection(this.plan.getEntryPoints().size());
+
+        // sort the entrypoints of the given plan
+        ArrayList<EntryPoint> sortedEpList = new ArrayList<>();
+        for (EntryPoint pair : plan.getEntryPoints().values())
+        {
+            sortedEpList.add(pair);
+        }
+        sortedEpList.sort(EntryPoint::compareTo);
+
+        // add the sorted entrypoints into the assignmentcollection
+        short i = 0;
+        for (EntryPoint ep : sortedEpList)
+        {
+            this.epRobotsMapping.setEp(i++, ep);
+        }
+        this.epRobotsMapping.sortEps();
+
+        this.robotStateMapping = new StateCollection(this.epRobotsMapping);
+        this.epSucMapping = new SuccessCollection(p);
+    }
 
     public Assignment(Plan p, AllocationAuthorityInfo aai) {
         this.plan = p;
@@ -30,10 +57,12 @@ public class Assignment implements IAssignment{
 
         Vector<Integer> curRobots;
         short i = 0;
-        for ( Long epPair : p.getEntryPoints().keySet()) {
+        for (EntryPoint epPair : p.getEntryPoints().values())
+        {
             // set the entrypoint
-            if (!this.epRobotsMapping.setEp(i, p.getEntryPoints().get(epPair))) {
-                System.err.println("Ass: AssignmentCollection Index out of entrypoints bounds!");
+            if (!this.epRobotsMapping.setEp(i, epPair))
+            {
+                System.err.println(  "Ass: AssignmentCollection Index out of entrypoints bounds!" );
                 try {
                     throw new Exception();
                 } catch (Exception e) {
@@ -41,18 +70,22 @@ public class Assignment implements IAssignment{
                 }
             }
 
-            curRobots = new Vector<Integer>();
-            for (EntryPointRobots epRobots : aai.entryPointRobots) {
+            curRobots = new  Vector<Integer>();
+            for (EntryPointRobots epRobots : aai.entryPointRobots)
+            {
                 // find the right entrypoint
-                if (epRobots.entrypoint == p.getEntryPoints().get(epPair).getId()) {
+                if (epRobots.entrypoint == epPair.getId())
+                {
                     // copy robots
-                    for (int robot : epRobots.robots) {
+                    for (int robot : epRobots.robots)
+                    {
                         curRobots.add(robot);
                     }
 
                     // set the robots
-                    if (!this.epRobotsMapping.setRobots(i, curRobots)) {
-                        System.err.println("Ass: AssignmentCollection Index out of robots bounds!");
+                    if (!this.epRobotsMapping.setRobots(i, curRobots))
+                    {
+                        System.err.println("Ass: AssignmentCollection Index out of robots bounds!" );
                         try {
                             throw new Exception();
                         } catch (Exception e) {
@@ -63,7 +96,12 @@ public class Assignment implements IAssignment{
                     break;
                 }
             }
+
+            i++;
         }
+
+        this.epSucMapping = new SuccessCollection(p);
+        this.robotStateMapping = new StateCollection(this.epRobotsMapping);
     }
 
     public void moveRobots(State from, State to) {
@@ -224,7 +262,7 @@ public class Assignment implements IAssignment{
     }
 
 
-    public int getMax() {
+    public double getMax() {
         return max;
     }
 

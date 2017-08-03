@@ -53,6 +53,23 @@ public class RunningPlan {
         this.behaviour = false;
     }
 
+    public RunningPlan(AlicaEngine ae, Plan plan) {
+        this.plan = plan;
+        Vector<EntryPoint> epCol = new Vector<>();
+
+//        transform(plan.getEntryPoints().begin(), plan.getEntryPoints().end(), back_inserter(epCol),
+//                [](map<long, EntryPoint>::value_type& val)
+//                            {	return val.second;
+//                            }
+//        );
+        for (EntryPoint e:  plan.getEntryPoints().values()) {
+            epCol.add(e);
+        }
+        Collections.sort(epCol);
+
+        this.behaviour = false;
+    }
+
     public AbstractPlan getPlan() {
         return plan;
     }
@@ -318,7 +335,7 @@ public class RunningPlan {
         }
     }
 
-    private void activate() {
+    protected void activate() {
         this.active = true;
         if (this.isBehaviour())
         {

@@ -16,13 +16,14 @@ import de.uniks.vs.jalica.reasoner.CGSolver;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.unknown.*;
 import de.uniks.vs.jalica.utilfunctions.UtilityFunctionCreator;
+import org.w3c.dom.Node;
 
 /**
  * Created by alex on 13.07.17.
  */
 public class AlicaEngine {
-    private AlicaSystemClock clock;
-    private AlicaDummyCommunication communicator;
+
+    private IAlicaCommunication communicator;
     private SystemConfig sc = SystemConfig.getInstance();
     private Boolean maySendMessages;
     private Boolean useStaticRoles;
@@ -44,15 +45,15 @@ public class AlicaEngine {
     private AuthorityManager auth;
     private Logger log;
     private VariableSyncModule variableSyncModule;
-    private de.uniks.vs.jalica.unknown.IAlicaClock IAlicaClock;
+    private IAlicaClock alicaClock;
     private String robotName;
     private IPlanner planner;
 
-    public void setIAlicaClock(AlicaSystemClock clock) {
-        this.clock = clock;
+    public void setIAlicaClock(IAlicaClock clock) {
+        this.alicaClock = clock;
     }
 
-    public void setCommunicator(AlicaDummyCommunication communicator) {
+    public void setCommunicator(IAlicaCommunication communicator) {
         this.communicator = communicator;
     }
 
@@ -157,7 +158,7 @@ public class AlicaEngine {
     }
 
     public IAlicaCommunication getCommunicator() {
-        return null;
+        return communicator;
     }
 
     public void start() {
@@ -186,7 +187,7 @@ public class AlicaEngine {
     }
 
     public IAlicaClock getIAlicaClock() {
-        return IAlicaClock;
+        return alicaClock;
     }
 
     public boolean getStepEngine() {
@@ -231,5 +232,12 @@ public class AlicaEngine {
 
     public IPlanner getPlanner() {
         return planner;
+    }
+
+    public void abort(String msg, String tail) {
+        this.maySendMessages = false;
+        String ss = "";
+        ss += msg + tail;
+        abort(ss);
     }
 }

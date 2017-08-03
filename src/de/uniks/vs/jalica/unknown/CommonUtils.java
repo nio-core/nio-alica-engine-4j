@@ -36,4 +36,15 @@ public class CommonUtils {
             robots.add(array[i]);
     }
 
+    public static int stoi(String string) {
+        return Integer.parseInt(string);
+    }
+
+    public static double stod(String string) {
+        return Double.parseDouble(string);
+    }
+
+    public static long stol(String string) {
+        return Long.parseLong(string);
+    }
 }

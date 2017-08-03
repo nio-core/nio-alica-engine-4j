@@ -13,6 +13,9 @@ public class Condition extends AlicaElement{
     private Vector<Variable> variables;
     private ArrayList<Quantifier> quantifiers;
     private AlicaElement abstractPlan;
+    private String conditionString;
+    private String plugInName;
+    private ArrayList<Parameter> parameters;
 
     public boolean evaluate(RunningPlan rp) {
         if (basicCondition == null)
@@ -42,5 +45,21 @@ public class Condition extends AlicaElement{
 
     public AlicaElement getAbstractPlan() {
         return abstractPlan;
+    }
+
+    public void setConditionString(String conditionString) {
+        this.conditionString = conditionString;
+    }
+
+    public void setPlugInName(String plugInName) {
+        this.plugInName = plugInName;
+    }
+
+    public ArrayList<Parameter> getParameters() {
+        return parameters;
+    }
+
+    public void setAbstractPlan(AbstractPlan abstractPlan) {
+        this.abstractPlan = abstractPlan;
     }
 }

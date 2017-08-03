@@ -20,6 +20,7 @@ public class RoleAssignment implements IRoleAssignment {
     private AlicaEngine ae;
     private TeamObserver to;
     private HashMap<Long, Role> roles;
+    private IAlicaCommunication communicator;
 
     public RoleAssignment(AlicaEngine ae) {
         this.ae = ae;
@@ -122,8 +123,8 @@ public class RoleAssignment implements IRoleAssignment {
 
     }
 
-    public void setCommunication(AlicaDummyCommunication communicator) {
-
+    public void setCommunication(IAlicaCommunication communicator) {
+        this.communicator = communicator;
     }
 
     @Override

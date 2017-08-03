@@ -11,6 +11,8 @@ public class AbstractPlan extends AlicaElement {
     private RuntimeCondition runtimeCondition;
     private UtilityFunction utilityFunction;
     private double utilityThreshold;
+    private String currentFile;
+    private boolean masterPlan;
 
     public PreCondition getPreCondition() {
         return preCondition;
@@ -26,5 +28,17 @@ public class AbstractPlan extends AlicaElement {
 
     public double getUtilityThreshold() {
         return utilityThreshold;
+    }
+
+    public void setFileName(String currentFile) {
+        this.currentFile = currentFile;
+    }
+
+    public void setMasterPlan(boolean masterPlan) {
+        this.masterPlan = masterPlan;
+    }
+
+    public void setUtilityThreshold(double utilityThreshold) {
+        this.utilityThreshold = utilityThreshold;
     }
 }

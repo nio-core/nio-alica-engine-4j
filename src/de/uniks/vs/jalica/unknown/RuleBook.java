@@ -12,6 +12,7 @@ import java.util.*;
  * Created by alex on 13.07.17.
  */
 public class RuleBook {
+
     private final int maxConsecutiveChanges;
     private Logger log;
     private ITeamObserver to;
@@ -32,7 +33,30 @@ public class RuleBook {
     }
 
     public RunningPlan initialisationRule(Plan masterPlan) {
-        return null;
+//        #ifdef RULE_debug
+        System.out.println("RB: Init-Rule called." );
+//#endif
+        if (masterPlan.getEntryPoints().size() != 1)
+        {
+            ae.abort("RB: Masterplan does not have exactly one task!");
+        }
+
+        RunningPlan main = new RunningPlan(ae, masterPlan);
+        main.setAssignment( new Assignment(masterPlan));
+
+        main.setAllocationNeeded(true);
+        main.setRobotsAvail( CommonUtils.move(to.getAvailableRobotIds()));
+
+        EntryPoint defep = null;
+        ArrayList<EntryPoint> l;
+        defep = (EntryPoint) masterPlan.getEntryPoints().values().toArray()[0];//.begin().second;
+
+        main.getAssignment().setAllToInitialState( CommonUtils.move(to.getAvailableRobotIds()), defep);
+        main.activate();
+        main.setOwnEntryPoint(defep);
+        this.log.eventOccured("Init");
+        return main;
+
     }
 
     public boolean isChangeOccured() {
