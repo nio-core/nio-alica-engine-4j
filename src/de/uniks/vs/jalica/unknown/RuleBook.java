@@ -45,7 +45,7 @@ public class RuleBook {
         main.setAssignment( new Assignment(masterPlan));
 
         main.setAllocationNeeded(true);
-        main.setRobotsAvail( CommonUtils.move(to.getAvailableRobotIds()));
+        main.setRobotsAvail(CommonUtils.move(to.getAvailableRobotIds()));
 
         EntryPoint defep = null;
         ArrayList<EntryPoint> l;

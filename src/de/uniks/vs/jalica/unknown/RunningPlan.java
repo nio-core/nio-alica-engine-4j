@@ -37,7 +37,7 @@ public class RunningPlan {
     private LinkedHashMap<AbstractPlan, Integer> failedSubPlans;
     private boolean failHandlingNeeded;
     private int failCount;
-    private ArrayList<Integer> robotsAvail;
+    private ArrayList<Integer> robotsAvail = new ArrayList<>();
     private CycleManager cycleManagement;
     private long id;
 

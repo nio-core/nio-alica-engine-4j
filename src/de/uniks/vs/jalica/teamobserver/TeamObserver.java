@@ -118,7 +118,16 @@ public class TeamObserver implements ITeamObserver {
 
     @Override
     public ArrayList<Integer> getAvailableRobotIds() {
-        return null;
+        ArrayList<Integer> ret = new ArrayList<>();
+        ret.add(myId);
+        for (RobotEngineData r : this.allOtherRobots)
+        {
+            if (r.isActive())
+            {
+                ret.add(r.getProperties().getId());
+            }
+        }
+        return CommonUtils.move(ret);
     }
 
     @Override

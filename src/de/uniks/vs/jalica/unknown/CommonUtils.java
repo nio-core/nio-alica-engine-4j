@@ -9,6 +9,9 @@ import java.util.Vector;
  */
 public class CommonUtils {
 
+    public static final int EXIT_FAILURE = 1;
+    public static final int EXIT_SUCCESS = 0;
+
     public static <T> T find(ArrayList<T> list, int start, int end, Object obj) {
         int index = list.subList(start, end).indexOf(obj);
 

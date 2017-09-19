@@ -194,8 +194,9 @@ public class AlicaEngine {
         return stepEngine;
     }
 
-    public void abort(String s) {
-
+    public void abort(String msg) {
+        System.err.println( "ABORT: " + msg);
+        System.exit(CommonUtils.EXIT_FAILURE);
     }
 
     public PlanRepository getPlanRepository() {

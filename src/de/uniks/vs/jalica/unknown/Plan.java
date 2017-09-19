@@ -11,7 +11,7 @@ public class Plan extends AbstractPlan {
 
     private Plan name;
     private PostCondition postCondition;
-    private LinkedHashMap<Long, EntryPoint> entryPoints;
+    private LinkedHashMap<Long, EntryPoint> entryPoints = new LinkedHashMap<>();
     private int minCardinality;
     private int maxCardinality;
     private String destinationPath;
@@ -19,6 +19,7 @@ public class Plan extends AbstractPlan {
     private ArrayList<FailureState> failureStates;
     private ArrayList<SuccessState> successStates;
     private ArrayList<Transition> transitions;
+    private ArrayList<SyncTransition> syncTransitions;
 
     public Plan(long id) {
         this.postCondition = null;
@@ -65,5 +66,13 @@ public class Plan extends AbstractPlan {
 
     public ArrayList<Transition> getTransitions() {
         return transitions;
+    }
+
+    public void setPostCondition(PostCondition postCondition) {
+        this.postCondition = postCondition;
+    }
+
+    public ArrayList<SyncTransition> getSyncTransitions() {
+        return syncTransitions;
     }
 }

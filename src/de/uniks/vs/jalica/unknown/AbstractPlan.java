@@ -1,7 +1,10 @@
 package de.uniks.vs.jalica.unknown;
 
 import com.sun.javafx.geom.CubicCurve2D;
+import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
 import de.uniks.vs.jalica.common.UtilityFunction;
+
+import java.util.ArrayList;
 
 /**
  * Created by alex on 17.07.17.
@@ -13,6 +16,7 @@ public class AbstractPlan extends AlicaElement {
     private double utilityThreshold;
     private String currentFile;
     private boolean masterPlan;
+    private ArrayList<Variable> variables;
 
     public PreCondition getPreCondition() {
         return preCondition;
@@ -40,5 +44,17 @@ public class AbstractPlan extends AlicaElement {
 
     public void setUtilityThreshold(double utilityThreshold) {
         this.utilityThreshold = utilityThreshold;
+    }
+
+    public void setRuntimeCondition(RuntimeCondition runtimeCondition) {
+        this.runtimeCondition = runtimeCondition;
+    }
+
+    public void setPreCondition(PreCondition preCondition) {
+        this.preCondition = preCondition;
+    }
+
+    public ArrayList<Variable> getVariables() {
+        return variables;
     }
 }

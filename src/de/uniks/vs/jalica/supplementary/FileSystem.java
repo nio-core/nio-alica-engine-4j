@@ -33,9 +33,26 @@ public class FileSystem {
     }
 
     private static File getParentAsFile(String path) {
-        String workDir = extractWorkDir()+ PATH_SEPARATOR + PACKAGE + PATH_SEPARATOR;
-        File _path = new File(workDir + path);
-        return _path.getParentFile();
+//        String workDir = extractWorkDir()+ PATH_SEPARATOR + PACKAGE + PATH_SEPARATOR;
+//        File _path = new File(workDir);
+//
+//        if (!_path.exists()){
+//            System.err.println(_path + " not exists !!!!!");
+//            System.exit(0);
+//        }
+//        return _path.getParentFile();
+
+        File file = new File(path);
+
+        if (!file.exists()){
+            System.err.println("ABORT: FS: " + file + " not exists !!!!!");
+            try {
+                throw new Exception();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return file.getParentFile();
     }
 
     public static String combinePaths(Object combinePaths) {
@@ -76,7 +93,7 @@ public class FileSystem {
 
         if (!_path.isDirectory() || files.length < 1)
         {
-            System.err.println("FileSystem::findFile");
+            System.err.println("FS:: findFile");
 //            free(namelist);
             return null;
         }
@@ -123,7 +140,7 @@ public class FileSystem {
             }
             else
             {
-                System.out.println("ff: Found a symlink, or something else, which is not a regular file or directory: " + curFullFile);
+                System.out.println("FS: Found a symlink, or something else, which is not a regular file or directory: " + curFullFile);
             }
 
 //            free(namelist[i]);

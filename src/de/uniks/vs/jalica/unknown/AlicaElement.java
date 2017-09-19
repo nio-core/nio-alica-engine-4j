@@ -24,7 +24,7 @@ public class AlicaElement {
         this.name = name;
     }
 
-    private String name;
+    protected String name;
 
     protected String getComment() {
         return comment;

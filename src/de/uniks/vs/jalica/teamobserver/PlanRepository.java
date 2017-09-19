@@ -13,20 +13,20 @@ import java.util.LinkedHashMap;
  **/
 public class PlanRepository {
 
-    LinkedHashMap<Long, Plan> plans;
-    LinkedHashMap<Long, Task> tasks;
-    LinkedHashMap<Long, Behaviour> behaviours;
+    LinkedHashMap<Long, Plan> plans = new LinkedHashMap<>();
+    LinkedHashMap<Long, Task> tasks = new LinkedHashMap<>();
+    LinkedHashMap<Long, Behaviour> behaviours = new LinkedHashMap<>();
     LinkedHashMap<Long, BehaviourConfiguration> behaviourConfigurations = new LinkedHashMap<>();
-    LinkedHashMap<Long, PlanType> planTypes;
+    LinkedHashMap<Long, PlanType> planTypes = new LinkedHashMap<>();
     LinkedHashMap<Long, Role> roles = new LinkedHashMap();
     LinkedHashMap<Long, Characteristic> characteristics;
     LinkedHashMap<Long, Capability> capabilities;
     LinkedHashMap<Long, State> states;
     LinkedHashMap<Long, EntryPoint> entryPoints;
     LinkedHashMap<Long, Transition > transitions;
-    LinkedHashMap<Long, SyncTransition > syncTransitions;
+    LinkedHashMap<Long, SyncTransition > syncTransitions = new LinkedHashMap<>();
     LinkedHashMap<Long, Quantifier > quantifiers;
-    LinkedHashMap<Long, Variable> variables;
+    LinkedHashMap<Long, Variable> variables = new LinkedHashMap<>();
     LinkedHashMap<Long, RoleDefinitionSet > roleDefinitionSets;
     LinkedHashMap<Long, TaskRepository > taskRepositorys;
     LinkedHashMap<Long, PlanningProblem > planningProblems;
@@ -57,5 +57,13 @@ public class PlanRepository {
 
     public LinkedHashMap<Long, Quantifier> getQuantifiers() {
         return quantifiers;
+    }
+
+    public LinkedHashMap<Long,Variable> getVariables() {
+        return variables;
+    }
+
+    public LinkedHashMap<Long,SyncTransition> getSyncTransitions() {
+        return syncTransitions;
     }
 }
