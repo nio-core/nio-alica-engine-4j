@@ -7,6 +7,7 @@ import de.uniks.vs.jalica.unknown.ModelFactory;
 import de.uniks.vs.jalica.unknown.Plan;
 import de.uniks.vs.jalica.unknown.RoleSet;
 import de.uniks.vs.jalica.teamobserver.PlanRepository;
+import de.uniks.vs.jalica.unknown.parser.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -14,7 +15,6 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,11 +39,14 @@ public class PlanParser {
 
     ArrayList<String> filesToParse = new ArrayList<>();
     ArrayList<String> filesParsed = new ArrayList<>();
+    private ArrayList<XMLHandler> xmlTagHandlers;
 
 
     public PlanParser(AlicaEngine ae, PlanRepository planRepository) {
         this.ae = ae;
         this.rep = planRepository;
+
+        initTagHandler();
 
         this.masterPlan = null;
         this.mf = new ModelFactory(ae, this, rep);
@@ -52,6 +55,7 @@ public class PlanParser {
 
         this.planDir = this.sc.get("Alica").get("Alica.PlanDir");
         this.roleDir = this.sc.get("Alica").get("Alica.RoleDir");
+
 
         if (domainConfigFolder.lastIndexOf(FileSystem.PATH_SEPARATOR) != domainConfigFolder.length() - 1)
         {
@@ -94,6 +98,20 @@ public class PlanParser {
             ae.abort("PP: BaseRolePath does not exists " + baseRolePath);
         }
         
+    }
+
+    private void initTagHandler() {
+        xmlTagHandlers = new ArrayList<>();
+
+        xmlTagHandlers.add(new AttributeHandler());
+        xmlTagHandlers.add(new EntryPointHandler());
+        xmlTagHandlers.add(new StatesHandler());
+        xmlTagHandlers.add(new TransitionsHandler());
+        xmlTagHandlers.add(new ConditionsHandler());
+        xmlTagHandlers.add(new VarsHandler());
+        xmlTagHandlers.add(new SynchonisationsHandler());
+        xmlTagHandlers.add(new EOLHandler());
+        xmlTagHandlers.add(new ErrorHandler());
     }
 
     public Plan parsePlanTree(String masterplan) {
@@ -226,25 +244,26 @@ public class PlanParser {
         System.out.println("PP: parsing Plan file: " + planFile );
 //#endif
 
-        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         File file = new File(planFile);
+
+        if (!file.exists()) {
+            ae.abort("PP: " + file +" not exists!!!");
+        }
 
 //        XMLDocument doc;
 //        doc.LoadFile(planFile.c_str());
 
         DocumentBuilder docBuilder = null;
         try {
-            docBuilder = docFactory.newDocumentBuilder();
-            Document doc = docBuilder.parse(file);
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(file);
 
-//            if (doc.ErrorID() != tinyxml2::XML_NO_ERROR)
-//            {
-//                try {
-//                    throw new Exception();
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
+            if (doc == null)
+            {
+                ae.abort("PP: " + "can not parse " + file);
+            }
+            doc.getDocumentElement().normalize();
 
              p = this.mf.createPlan(doc);
 
@@ -392,5 +411,16 @@ public class PlanParser {
 
     public String getCurrentFile() {
         return currentFile;
+    }
+
+    public void handleTag(Node node, Plan plan, ModelFactory modelFactory) {
+
+        for (XMLHandler handler:xmlTagHandlers) {
+
+            if (handler.handle(node, plan, modelFactory))
+                return;
+        }
+
+        ae.abort("PP: Cannot handle XML Tag: " + node.getNodeName());
     }
 }
