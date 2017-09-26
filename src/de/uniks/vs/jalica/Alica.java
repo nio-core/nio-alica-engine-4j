@@ -33,6 +33,7 @@ public class Alica {
         ae.addSolver(SolverType.GRADIENTSOLVER, new CGSolver(ae));
         String roleSetName = "master";
         String masterPlanName = "WM16"; //"DummyPlan";
+//        String masterPlanName =  "DummyPlan";
         String roleSetDir = "roles/";
         ae.init(bc, cc, uc, crc, roleSetName, masterPlanName, roleSetDir, false);  
     }

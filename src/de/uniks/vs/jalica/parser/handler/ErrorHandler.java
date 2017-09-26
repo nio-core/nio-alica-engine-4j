@@ -1,4 +1,4 @@
-package de.uniks.vs.jalica.unknown.parser;
+package de.uniks.vs.jalica.parser.handler;
 
 import de.uniks.vs.jalica.unknown.ModelFactory;
 import de.uniks.vs.jalica.unknown.Plan;
@@ -9,13 +9,11 @@ import org.w3c.dom.Node;
  */
 public class ErrorHandler extends XMLHandler {
 
-    public static final String EOL = "\n";
-
     @Override
     public boolean handleIt(Node node, Plan plan, ModelFactory modelFactory) {
 
         String val = node.getNodeName();
-        modelFactory.getAE().abort("MF: Unhandled Plan Child: ", val);
+        modelFactory.getAE().abort("EH: Unhandled Plan Child: ", val);
         return true;
     }
 }

@@ -15,11 +15,11 @@ public class Plan extends AbstractPlan {
     private int minCardinality;
     private int maxCardinality;
     private String destinationPath;
-    private ArrayList<State> states;
-    private ArrayList<FailureState> failureStates;
-    private ArrayList<SuccessState> successStates;
-    private ArrayList<Transition> transitions;
-    private ArrayList<SyncTransition> syncTransitions;
+    private ArrayList<State> states = new ArrayList<>();
+    private ArrayList<FailureState> failureStates = new ArrayList<>();
+    private ArrayList<SuccessState> successStates = new ArrayList<>();
+    private ArrayList<Transition> transitions = new ArrayList<>();
+    private ArrayList<SyncTransition> syncTransitions = new ArrayList<>();
 
     public Plan(long id) {
         this.postCondition = null;

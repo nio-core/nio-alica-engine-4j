@@ -4,13 +4,15 @@ import com.sun.tools.javac.util.Pair;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.parser.PlanParser;
 import de.uniks.vs.jalica.teamobserver.PlanRepository;
-import de.uniks.vs.jalica.unknown.parser.*;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Vector;
 
 /**
  * Created by alex on 14.07.17.
@@ -47,18 +49,18 @@ public class ModelFactory {
     private String subplan;
     private String postCondition;
 
-    private List<Pair<Long, Long>> epStateReferences;
-    private List<Pair<Long, Long>> epTaskReferences;
-    private List<Pair<Long, Long>> stateInTransitionReferences;
-    private List<Pair<Long, Long>> stateOutTransitionReferences;
-    private List<Pair<Long, Long>> statePlanReferences;
-    private List<Pair<Long, Long>> paramSubPlanReferences;
-    private List<Pair<Long, Long>> paramSubVarReferences;
-    private List<Pair<Long, Long>> paramVarReferences;
-    private List<Pair<Long, Long>> transitionAimReferences;
-    private List<Pair<Long, Long>> conditionVarReferences;
-    private List<Pair<Long, Long>> quantifierScopeReferences;
-    private List<Pair<Long, Long>> transitionSynchReferences;
+    private List<Pair<Long, Long>> epStateReferences  = new ArrayList<>();
+    private List<Pair<Long, Long>> epTaskReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> stateInTransitionReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> stateOutTransitionReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> statePlanReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> paramSubPlanReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> paramSubVarReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> paramVarReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> transitionAimReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> conditionVarReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> quantifierScopeReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> transitionSynchReferences = new ArrayList<>();
 
     public ModelFactory(AlicaEngine ae, PlanParser parser, PlanRepository rep) {
 
@@ -81,175 +83,31 @@ public class ModelFactory {
 
     public Plan createPlan(Document doc) {
         Node element = doc.getDocumentElement();
-
         long id = this.parser.parserId(element);
         Plan plan = new Plan(id);
         plan.setFileName(this.parser.getCurrentFile());
         setAlicaElementAttributes(plan, element);
-
-//        String isMasterPlanAttr = element.getAttributes().getNamedItem("masterPlan").getTextContent();
-//
-//        if (!isMasterPlanAttr.isEmpty())
-//        {
-////            transform(isMasterPlanAttr.begin(), isMasterPlanAttr.end(), isMasterPlanAttr.begin(), ::tolower);
-//
-//            isMasterPlanAttr = isMasterPlanAttr.toLowerCase();
-//
-//            if ("true".equals(isMasterPlanAttr))
-//            {
-//                plan.setMasterPlan(true);
-//            }
-//        }
-//
-//        String attr = element.getAttributes().getNamedItem("minCardinality").getTextContent();
-//
-//        if (!attr.isEmpty())
-//        {
-//            plan.setMinCardinality(CommonUtils.stoi(attr));
-//        }
-//        attr = element.getAttributes().getNamedItem("maxCardinality").getTextContent();
-//
-//        if (!attr.isEmpty())
-//        {
-//            plan.setMaxCardinality(CommonUtils.stoi(attr));
-//        }
-//        attr = element.getAttributes().getNamedItem("utilityThreshold").getTextContent();
-//
-//        if (!attr.isEmpty())
-//        {
-//            plan.setUtilityThreshold(CommonUtils.stod(attr));
-//        }
-//        attr = element.getAttributes().getNamedItem("destinationPath").getTextContent();
-//
-//        if (!attr.isEmpty())
-//        {
-//            plan.setDestinationPath(attr);
-//        }
         // insert into elements ma
         addElement(plan);
         // insert into plan repository map
         this.rep.getPlans().put(plan.getId(), plan);
-
 //        Node curChild = element.getFirstChild();
+
+//        //TODO: move to parser
+//        Vector<Element> nodes = extractToList(element, plans);
+//        nodes.addAll(extractToList(element,inTransitions));
+//        nodes.addAll(extractToList(element,outTransitions));
+//        nodes.addAll(extractToList(element,parametrisation));
 
         Node curChild = element.getFirstChild().getNextSibling();
 
         while (curChild != null)
         {
-             parser.handleTag(curChild, plan, this);
+            System.out.println(curChild.getNodeName());
 
-//            if (isReferenceNode(curChild))
-//            {
-//                ae.abort("MF: Plan child is reference", curChild.toString());
-//            }
-
-//            String val = curChild.getNodeName();
-//
-//            if (entryPoints.equals(val))
-//            {
-//                EntryPoint ep = createEntryPoint(curChild);
-//                plan.getEntryPoints().put(ep.getId(), ep);
-//                ep.setPlan(plan);
-//            }
-
-//            else if (states.equals(val))
-//            {
-//                String name = "";
-////				String typePtr = curChild.getAttributes().getNamedItem("xsi:type").getTextContent();
-//				String typePtr = curChild.getAttributes().getNamedItem("xsi:type").getTextContent(); // into plan search for this item
-//                String typeString = "";
-//                //Normal State
-//                if (typePtr != null)
-//                {
-//                    typeString = typePtr;
-//                }
-//                if (typeString.isEmpty())
-//                {
-//                    State state = createState(curChild);
-//                    plan.getStates().add(state);
-//                    state.setInPlan(plan);
-//
-//                }
-//                else if ("alica:SuccessState".equals(typeString))
-//                {
-//                    SuccessState suc = createSuccessState(curChild);
-//                    suc.setInPlan(plan);
-//                    plan.getSuccessStates().add(suc);
-//                    plan.getStates().add(suc);
-//
-//                }
-//                else if ("alica:FailureState".equals(typeString))
-//                {
-//                    FailureState fail = createFailureState(curChild);
-//                    fail.setInPlan(plan);
-//                    plan.getFailureStates().add(fail);
-//                    plan.getStates().add(fail);
-//                }
-//                else
-//                {
-//                    ae.abort("MF: Unknown State type:", typePtr);
-//                }
-//            }
-//            else if (transitions.equals(val))
-//            {
-//                Transition tran = createTransition(curChild, plan);
-//                plan.getTransitions().add(tran);
-//            }
-//            else if (conditions.equals(val))
-//            {
-//				String typePtr = curChild.getAttributes().getNamedItem("xsi:type").getTextContent();
-//                String typeString = "";
-//                if (typePtr != null)
-//                {
-//                    typeString = typePtr;
-//                }
-//                if (typeString.isEmpty())
-//                {
-//                    ae.abort("MF: Condition without xsi:type in plan", plan.getName());
-//                }
-//                else if ("alica:RuntimeCondition".equals(typeString))
-//                {
-//                    RuntimeCondition rc = createRuntimeCondition(curChild);
-//                    rc.setAbstractPlan(plan);
-//                    plan.setRuntimeCondition(rc);
-//                }
-//                else if ("alica:PreCondition".equals(typeString))
-//                {
-//                    PreCondition p = createPreCondition(curChild);
-//                    p.setAbstractPlan(plan);
-//                    plan.setPreCondition(p);
-//                }
-//                else if ("alica:PostCondition".equals(typeString))
-//                {
-//                    PostCondition p = createPostCondition(curChild);
-//                    plan.setPostCondition(p);
-//                }
-//                else
-//                {
-//                    ae.abort("MF: Unknown Condition type", curChild.toString());
-//                }
-//            }
-//            else if (vars.equals(val))
-//            {
-//                Variable var = createVariable(curChild);
-//                plan.getVariables().add(var);
-//            }
-//            else if (synchronisations.equals(val))
-//            {
-//                SyncTransition st = createSyncTransition(curChild);
-//                st.setPlan(plan);
-//                plan.getSyncTransitions().add(st);
-//
-//            }
-//            else if (val.startsWith("\n"))
-//            {}
-//            else
-//            {
-//                ae.abort("MF: Unhandled Plan Child: ", val);
-//            }
+            parser.handleTag(curChild, plan, this);
             curChild = curChild.getNextSibling();
         }
-
         return plan;
     }
 
@@ -360,10 +218,19 @@ public class ModelFactory {
         setAlicaElementAttributes(tran, element);
         addElement(tran);
         this.rep.getTransitions().put(tran.getId(), tran);
-        Node curChild = element.getFirstChild();
-        while (curChild != null)
+//        Node curChild = element.getFirstChild();
+
+        //        //TODO: move to parser
+        Vector<Element> nodes = extractToList(element, outState);
+        nodes.addAll(extractToList(element, inState));
+        nodes.addAll(extractToList(element, preCondition));
+        nodes.addAll(extractToList(element, synchronisation));
+
+//        while (curChild != null)
+        for (Element curChild : nodes)
         {
-			String val = curChild.getNodeValue();
+//			String val = curChild.getNodeValue();
+			String val = curChild.getTagName();
             long cid = this.parser.parserId(curChild);
             if (inState.equals(val))
             {
@@ -387,7 +254,7 @@ public class ModelFactory {
             {
                 ae.abort("MF: Unhandled Transition Child:", curChild.toString());
             }
-            curChild = curChild.getNextSibling();
+//            curChild = curChild.getNextSibling();
         }
         return tran;
     }
@@ -643,10 +510,17 @@ public class ModelFactory {
         addElement(s);
         this.rep.getStates().put(s.getId(), s);
 
-        Node curChild = element.getFirstChild();
-        while (curChild != null)
+        //TODO: move to parser
+        Vector<Element> nodes = extractToList(element, plans);
+        nodes.addAll(extractToList(element,inTransitions));
+        nodes.addAll(extractToList(element,outTransitions));
+        nodes.addAll(extractToList(element,parametrisation));
+
+//        Node curChild = element.getFirstChild();
+//        while (curChild != null)
+        for (Element curChild : nodes)
         {
-			String val = curChild.getNodeValue();
+			String val = curChild.getTagName();
             long cid = this.parser.parserId(curChild);
 
             if (inTransitions.equals(val))
@@ -671,9 +545,21 @@ public class ModelFactory {
                 ae.abort("MF: Unhandled State Child: ", val);
             }
 
-            curChild = curChild.getNextSibling();
+//            curChild = curChild.getNextSibling();
         }
         return s;
+    }
+
+    //  TODO: move to parser
+    private Vector extractToList(Node element, String tagName) {
+        NodeList nodes = ((Element) element).getElementsByTagName(tagName);
+        Vector newNodes = new Vector();
+
+        for (int i = 0; i < nodes.getLength(); i++ ) {
+            newNodes.add(nodes.item(i));
+        }
+
+        return newNodes;
     }
 
     private Parametrisation createParametrisation(Node element) {
@@ -734,13 +620,18 @@ public class ModelFactory {
 
         addElement(ep);
         this.rep.getEntryPoints().put(ep.getId(), ep);
-        Node curChild = element.getFirstChild();
+//        Node curChild = element.getFirstChild();
         boolean haveState = false;
         long curChildId;
 
-        while (curChild != null)
+        //TODO: move to parser
+        Vector<Element> nodes = extractToList(element, state);
+        nodes.addAll(extractToList(element,task));
+
+//        while (curChild != null)
+        for (Element curChild : nodes)
         {
-			String val = curChild.getNodeValue();
+			String val = curChild.getTagName();
             curChildId = this.parser.parserId(curChild);
 
             if (state.equals(val))
@@ -756,7 +647,7 @@ public class ModelFactory {
             {
                 ae.abort("MF: Unhandled EntryPoint Child: ", val);
             }
-            curChild = curChild.getNextSibling();
+//            curChild = curChild.getNextSibling();
         }
 
         if (!haveState)
@@ -785,7 +676,8 @@ public class ModelFactory {
 
     public void addElement(AlicaElement ael) {
         //TODO: Fix
-        if (this.elements.size()> 0 && this.elements.get(ael.getId()) != this.elements.values().toArray()[this.elements.values().size()-1])
+//        if (this.elements.size()> 0 && this.elements.get(ael.getId()) != this.elements.values().toArray()[this.elements.values().size()-1])
+        if (this.elements.size()> 0 && this.elements.get(ael.getId()) != null && this.elements.get(ael.getId()) != ael)
         {
             System.out.println( "ELEMENT >" + ael.getName() + "< >" + this.elements.get(ael.getId()).getName() + "<"  );
             String ss = "";

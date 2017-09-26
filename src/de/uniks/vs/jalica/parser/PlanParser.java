@@ -1,14 +1,15 @@
 package de.uniks.vs.jalica.parser;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
+import de.uniks.vs.jalica.parser.handler.*;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.supplementary.FileSystem;
 import de.uniks.vs.jalica.unknown.ModelFactory;
 import de.uniks.vs.jalica.unknown.Plan;
 import de.uniks.vs.jalica.unknown.RoleSet;
 import de.uniks.vs.jalica.teamobserver.PlanRepository;
-import de.uniks.vs.jalica.unknown.parser.*;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -281,70 +282,70 @@ public class PlanParser {
     }
 
     private long fetchId(String idString, long id){
-//        int hashPos = idString.indexOf("#");
-//		String temp = null;
-//        String temp2 = null;
-//        String locator = idString.substring(0, hashPos);
-//
-//        if (!locator.isEmpty())
-//        {
-//            if (!FileSystem.endsWith(this.currentDirectory, "/"))
-//            {
-//                this.currentDirectory = this.currentDirectory + "/";
-//            }
-//            String path = this.currentDirectory + locator;
-//            //not working no clue why
-//            //char s[2048];
-//            //char s2[2048];
-//            temp = realpath(path, null);
-//            String pathNew = temp;
-////            free(temp);
-//            //This is not very efficient but necessary to keep the paths as they are
-//            //Here we have to check whether the file has already been parsed / is in the list for toparse files
-//            //problem is the normalization /home/etc/plans != /home/etc/Misc/../plans
-//            //list<string>::iterator findIterParsed = find(filesParsed.begin(), filesParsed.end(), pathNew);
-//            boolean found = false;
-//            for(String it : filesParsed) {
-//            temp2 = realpath(it, null);
-//            String pathNew2 =temp2;
-////            free(temp2);
-//            if(pathNew2 == pathNew) {
-//                found = true;
-//                break;
-//            }
-//        }
-//
-//            //list<string>::iterator findIterToParse = find(filesToParse.begin(), filesToParse.end(), pathNew);
-//            if(!found) {
-//                for(auto& it : filesToParse) {
-//                    temp2 = realpath(it.c_str(), null);
-//                    string pathNew2 =temp2;
+        int hashPos = idString.indexOf("#");
+		String temp = null;
+        String temp2 = null;
+        String locator = idString.substring(0, hashPos);
+
+        if (!locator.isEmpty())
+        {
+            if (!FileSystem.endsWith(this.currentDirectory, "/"))
+            {
+                this.currentDirectory = this.currentDirectory + "/";
+            }
+            String path = this.currentDirectory + locator;
+            //not working no clue why
+            //char s[2048];
+            //char s2[2048];
+            temp = FileSystem.realpath(path, null);
+            String pathNew = temp;
+//            free(temp);
+            //This is not very efficient but necessary to keep the paths as they are
+            //Here we have to check whether the file has already been parsed / is in the list for toparse files
+            //problem is the normalization /home/etc/plans != /home/etc/Misc/../plans
+            //list<string>::iterator findIterParsed = find(filesParsed.begin(), filesParsed.end(), pathNew);
+            boolean found = false;
+            for(String it : filesParsed) {
+                temp2 = FileSystem.realpath(it, null);
+                String pathNew2 = temp2;
+//            free(temp2);
+                if (pathNew2 == pathNew) {
+                    found = true;
+                    break;
+                }
+            }
+
+            //list<string>::iterator findIterToParse = find(filesToParse.begin(), filesToParse.end(), pathNew);
+            if(!found) {
+                for(String filePath : filesToParse) {
+                    temp2 = FileSystem.realpath(filePath, null);
+                    String pathNew2 =temp2;
 //                    free(temp2);
-//                    if(pathNew2 == pathNew) {
-//                        found = true;
-//                        break;
-//                    }
-//                }
-//            }
-//
-//
-//            if (!found)
-//            {
+                    if(pathNew2 == pathNew) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+
+            if (!found)
+            {
 //#ifdef PP_DEBUG
 //                cout << "PP: Adding " + path + " to parse queue " << endl;
 //#endif
-//                filesToParse.add(path);
-//            }
-//        }
-//        string tokenId = idString.substr(hashPos + 1, idString.length() - hashPos);
-//        try
-//        {
-//            id = stol(tokenId);
-//        }
-//        catch (exception e)
-//        {
-//            ae.abort("PP: Cannot convert ID to long: " + tokenId + " WHAT?? " + e.what());
-//        }
+                filesToParse.add(path);
+            }
+        }
+        String tokenId = idString.substring(hashPos + 1, idString.length());
+        try
+        {
+            id = Long.valueOf(tokenId);
+        }
+        catch (Exception e)
+        {
+            ae.abort("PP: Cannot convert ID to long: " + tokenId + " WHAT?? " + e.getMessage());
+        }
         return id;
     }
 
@@ -353,6 +354,7 @@ public class PlanParser {
     public long parserId(Node node) {
         long id = -1;
         String idString1 = "";
+        NamedNodeMap attributes = node.getAttributes();
         Node idItem = node.getAttributes().getNamedItem("id");
 
         if (idItem != null)

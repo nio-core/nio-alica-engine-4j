@@ -1,4 +1,4 @@
-package de.uniks.vs.jalica.unknown.parser;
+package de.uniks.vs.jalica.parser.handler;
 
 import de.uniks.vs.jalica.unknown.EntryPoint;
 import de.uniks.vs.jalica.unknown.ModelFactory;

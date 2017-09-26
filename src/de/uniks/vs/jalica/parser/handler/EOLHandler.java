@@ -1,4 +1,4 @@
-package de.uniks.vs.jalica.unknown.parser;
+package de.uniks.vs.jalica.parser.handler;
 
 import de.uniks.vs.jalica.unknown.ModelFactory;
 import de.uniks.vs.jalica.unknown.Plan;
@@ -14,7 +14,7 @@ public class EOLHandler extends XMLHandler {
     @Override
     public boolean handleIt(Node node, Plan plan, ModelFactory modelFactory) {
 
-        String val = node.getNodeName();
+        String val = node.getNodeValue().replace(" ", "");
 
         if (EOL.equals(val))
         {

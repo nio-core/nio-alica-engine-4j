@@ -158,4 +158,10 @@ public class FileSystem {
 //        masterPlanPath = ".";
 //        return masterPlanPath;
     }
+
+    public static String realpath(String path, String resolved_path) {
+        String absolutePath = path;
+
+        return absolutePath;
+    }
 }

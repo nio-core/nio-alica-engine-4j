@@ -199,6 +199,10 @@ public class AlicaEngine {
         System.exit(CommonUtils.EXIT_FAILURE);
     }
 
+    public void print(String msg) {
+        System.out.println( msg);
+    }
+
     public PlanRepository getPlanRepository() {
         return planRepository;
     }

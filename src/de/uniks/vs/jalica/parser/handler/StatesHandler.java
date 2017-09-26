@@ -1,4 +1,4 @@
-package de.uniks.vs.jalica.unknown.parser;
+package de.uniks.vs.jalica.parser.handler;
 
 import de.uniks.vs.jalica.unknown.*;
 import org.w3c.dom.Node;
@@ -17,12 +17,15 @@ public class StatesHandler extends XMLHandler {
 
         if (STATES.equals(val))
         {
-            node = node.getFirstChild().getNextSibling();
+//            node = node.getFirstChild().getNextSibling();
 
             String name = "";
 //				String typePtr = curChild.getAttributes().getNamedItem("xsi:type").getTextContent();
             Node namedItem = node.getAttributes().getNamedItem("xsi:type");
-            String typePtr = namedItem.getTextContent(); // into plan search for this item
+            String typePtr = "";
+
+            if (namedItem != null)
+                typePtr = namedItem.getTextContent(); // into plan search for this item
             String typeString = "";
             //Normal State
             if (typePtr != null)
@@ -52,7 +55,7 @@ public class StatesHandler extends XMLHandler {
             }
             else
             {
-                modelFactory.getAE().abort("MF: Unknown State type:", typePtr);
+                modelFactory.getAE().abort("SH: Unknown State type:", typePtr);
             }
             return true;
         }

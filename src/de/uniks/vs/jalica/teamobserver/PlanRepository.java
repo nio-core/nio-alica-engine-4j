@@ -21,9 +21,9 @@ public class PlanRepository {
     LinkedHashMap<Long, Role> roles = new LinkedHashMap();
     LinkedHashMap<Long, Characteristic> characteristics;
     LinkedHashMap<Long, Capability> capabilities;
-    LinkedHashMap<Long, State> states;
-    LinkedHashMap<Long, EntryPoint> entryPoints;
-    LinkedHashMap<Long, Transition > transitions;
+    LinkedHashMap<Long, State> states  = new LinkedHashMap<>();
+    LinkedHashMap<Long, EntryPoint> entryPoints  = new LinkedHashMap<>();
+    LinkedHashMap<Long, Transition > transitions  = new LinkedHashMap<>();
     LinkedHashMap<Long, SyncTransition > syncTransitions = new LinkedHashMap<>();
     LinkedHashMap<Long, Quantifier > quantifiers;
     LinkedHashMap<Long, Variable> variables = new LinkedHashMap<>();
