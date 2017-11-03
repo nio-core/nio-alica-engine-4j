@@ -124,31 +124,35 @@ public class PartialAssignment implements IAssignment{
 
     @Override
     public ArrayList<Integer> getRobotsWorkingAndFinished(EntryPoint ep) {
+        CommonUtils.aboutNoImpl();
         return null;
     }
 
     @Override
     public ArrayList<Integer> getUniqueRobotsWorkingAndFinished(EntryPoint ep) {
+        CommonUtils.aboutNoImpl();
         return null;
     }
 
     @Override
     public void setMin(double min) {
-
+        CommonUtils.aboutNoImpl();
     }
 
     @Override
     public void setMax(double max) {
-
+        CommonUtils.aboutNoImpl();
     }
 
     @Override
     public Vector<Integer> getUnassignedRobots() {
+        CommonUtils.aboutNoImpl();
         return null;
     }
 
     @Override
     public AssignmentCollection getEpRobotsMapping() {
+        CommonUtils.aboutNoImpl();
         return null;
     }
 

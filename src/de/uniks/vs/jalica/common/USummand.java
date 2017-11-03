@@ -1,6 +1,7 @@
 package de.uniks.vs.jalica.common;
 
 import de.uniks.vs.jalica.unknown.Assignment;
+import de.uniks.vs.jalica.unknown.CommonUtils;
 import de.uniks.vs.jalica.unknown.IAssignment;
 
 /**
@@ -10,6 +11,7 @@ public class USummand {
     private double weight;
 
     public UtilityInterval eval(IAssignment assignment) {
+        CommonUtils.aboutNoImpl();
         return null;
     }
 

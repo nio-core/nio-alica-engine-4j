@@ -132,11 +132,13 @@ public class TeamObserver implements ITeamObserver {
 
     @Override
     public int successesInPlan(Plan plan) {
+        CommonUtils.aboutNoImpl();
         return 0;
     }
 
     @Override
     public LinkedHashMap<Integer, SimplePlanTree> getTeamPlanTrees() {
+        CommonUtils.aboutNoImpl();
         return null;
     }
 
@@ -179,12 +181,12 @@ public class TeamObserver implements ITeamObserver {
 
     @Override
     public void tick(RunningPlan rootNode) {
-
+        CommonUtils.aboutNoImpl();
     }
 
     @Override
     public void doBroadCast(ArrayList<Long> msg) {
-
+        CommonUtils.aboutNoImpl();
     }
 
     @Override

@@ -90,6 +90,7 @@ public class TaskAssignment implements ITaskAssignment {
     }
 
     public Assignment getNextBestAssignment(Assignment ass) {
+        CommonUtils.aboutNoImpl();
         return null;
     }
 }

@@ -1,9 +1,14 @@
 package de.uniks.vs.jalica.unknown;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by alex on 13.07.17.
  */
-public class SyncTransition extends AlicaElement{
+public class SyncTransition extends AlicaElement {
+
+    private ArrayList<Transition> inSync = new ArrayList<>();
     private long talkTimeOut;
     private long syncTimeOut;
     private Plan plan;
@@ -18,5 +23,9 @@ public class SyncTransition extends AlicaElement{
 
     public void setPlan(Plan plan) {
         this.plan = plan;
+    }
+
+    public ArrayList<Transition> getInSync() {
+        return inSync;
     }
 }

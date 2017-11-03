@@ -1,5 +1,10 @@
 package de.uniks.vs.jalica.unknown;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Vector;
+
 /**
  * Created by alex on 13.07.17.
  */
@@ -10,6 +15,7 @@ public class EntryPoint extends AlicaElement implements Comparable<EntryPoint> {
     private int minCardinality;
     private boolean successRequired;
     private Plan plan;
+    private Set<State> reachableStates = new HashSet<>();
 
     public Task getTask() {
         return task;
@@ -54,5 +60,34 @@ public class EntryPoint extends AlicaElement implements Comparable<EntryPoint> {
 
     public void setSuccessRequired(boolean successRequired) {
         this.successRequired = successRequired;
+    }
+
+    public void setTask(Task task) {
+        this.task = task;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public void computeReachabilitySet() {
+        Vector<State> queue = new Vector<>();
+        queue.add(this.state);
+        State cs = null;
+
+        while (queue.size() > 0)
+        {
+            cs = queue.firstElement();
+            queue.remove(cs);
+            boolean result = this.reachableStates.add(cs);
+            if (result)
+            {
+                for (Transition t : cs.getOutTransitions())
+                {
+                    queue.add(t.getOutState());
+                }
+            }
+
+        }
     }
 }

@@ -4,12 +4,12 @@ import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.parser.handler.*;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.supplementary.FileSystem;
+import de.uniks.vs.jalica.unknown.CommonUtils;
 import de.uniks.vs.jalica.unknown.ModelFactory;
 import de.uniks.vs.jalica.unknown.Plan;
 import de.uniks.vs.jalica.unknown.RoleSet;
 import de.uniks.vs.jalica.teamobserver.PlanRepository;
 import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
@@ -157,6 +157,11 @@ public class PlanParser {
             if (!FileSystem.isPathRooted(roleSetDir))
             {
                 roleSetName = FileSystem.combinePaths(FileSystem.combinePaths(baseRolePath, roleSetDir), roleSetName);
+                if (!FileSystem.endsWith(roleSetName, ".rset"))
+                {
+                    roleSetName = roleSetName + ".rset";
+                }
+                roleSetName = FileSystem.getAbsolutePath(roleSetName);
             }
 			else
             {
@@ -178,66 +183,187 @@ public class PlanParser {
 //#endif
 
         this.currentDirectory = FileSystem.getParent(roleSetName);
+        File file = new File(roleSetName);
 
-//        XMLDocument doc;
-//        doc.LoadFile(roleSetName);
-//        if (doc.ErrorID() != tinyxml2.XML_NO_ERROR)
-//        {
-//            System.out.println( "PP: doc.ErrorCode: " + tinyxml2.XMLErrorStr[doc.ErrorID()] );
-//            throw new exception();
-//        }
-//
-//        RoleSet r = this.mf.createRoleSet(doc, this.masterPlan);
-//
-//        filesParsed.push_back(roleSetName);
-//
-//        while (this.filesToParse.size() > 0)
-//        {
-//            String fileToParse = this.filesToParse.front();
-//            this.filesToParse.pop_front();
-//            this.currentDirectory = FileSystem.getParent(fileToParse);
-//            this.currentFile = fileToParse;
-//
-//            if (!FileSystem.pathExists(fileToParse))
+        if (!file.exists()) {
+            ae.abort("PP: " + file +" not exists!!!");
+        }
+        RoleSet r = null;
+        try {
+//         Document doc;
+//         doc.LoadFile(roleSetName);
+
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(file);
+
+//            if (doc.ErrorID() != tinyxml2.XML_NO_ERROR)
 //            {
-//                ae.abort("PP: Cannot Find referenced file " + fileToParse);
+//                System.out.println( "PP: doc.ErrorCode: " + tinyxml2.XMLErrorStr[doc.ErrorID()] );
+//                throw new exception();
 //            }
-//            if (FileSystem.endsWith(fileToParse, ".rdefset"))
-//            {
-//                parseRoleDefFile(fileToParse);
-//            }
-//			else if (FileSystem.endsWith(fileToParse, ".cdefset"))
-//            {
-//                parseCapabilityDefFile(fileToParse);
-//            }
-//			else
-//            {
-//                ae.abort("PP: Cannot Parse file " + fileToParse);
-//            }
-//            filesParsed.add(fileToParse);
-//
-//        }
+            if (doc == null)
+            {
+                ae.abort("PP: doc.ErrorCode: " + file);
+            }
+            doc.getDocumentElement().normalize();
+
+            r = this.mf.createRoleSet(doc, this.masterPlan);
+
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            System.err.println("PP: doc.ErrorCode: ");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.err.println("PP: doc.ErrorCode: ");
+            e.printStackTrace();
+        }
+
+
+        filesParsed.add(roleSetName);
+
+        while (this.filesToParse.size() > 0)
+        {
+            String fileToParse = this.filesToParse.get(0);
+            this.filesToParse.remove(0);
+            this.currentDirectory = FileSystem.getParent(fileToParse);
+            this.currentFile = fileToParse;
+
+            if (!FileSystem.pathExists(fileToParse))
+            {
+                ae.abort("PP: Cannot Find referenced file " + fileToParse);
+            }
+            if (FileSystem.endsWith(fileToParse, ".rdefset"))
+            {
+                parseRoleDefFile(fileToParse);
+            }
+			else if (FileSystem.endsWith(fileToParse, ".cdefset"))
+            {
+                parseCapabilityDefFile(fileToParse);
+            }
+			else
+            {
+                ae.abort("PP: Cannot Parse file " + fileToParse);
+            }
+            filesParsed.add(fileToParse);
+
+        }
 
         this.mf.attachRoleReferences();
         this.mf.attachCharacteristicReferences();
-//        return r;
-        return new RoleSet();
+        return r;
     }
 
     private void parseFileLoop() {
+        while (this.filesToParse.size() > 0)
+        {
+            String fileToParse = this.filesToParse.get(0);
+            this.filesToParse.remove(0);
+            this.currentDirectory = FileSystem.getParent(fileToParse);
+            this.currentFile = fileToParse;
+
+            if (!FileSystem.pathExists(fileToParse))
+            {
+                ae.abort("PP: Cannot Find referenced file ", fileToParse);
+            }
+            if (FileSystem.endsWith(fileToParse, ".pml"))
+            {
+                parsePlanFile(fileToParse);
+            }
+			else if (FileSystem.endsWith(fileToParse, ".tsk"))
+            {
+                parseTaskFile(fileToParse);
+            }
+			else if (FileSystem.endsWith(fileToParse, ".beh"))
+            {
+                parseBehaviourFile(fileToParse);
+            }
+			else if (FileSystem.endsWith(fileToParse, ".pty"))
+            {
+                parsePlanTypeFile(fileToParse);
+            }
+			else if (FileSystem.endsWith(fileToParse, ".pp"))
+            {
+                parsePlanningProblem(fileToParse);
+            }
+			else
+            {
+                ae.abort("PP: Cannot Parse file", fileToParse);
+            }
+            filesParsed.add(fileToParse);
+        }
+        this.mf.attachPlanReferences();
     }
 
-    private void parseTaskFile(String currentFile) {}
+    private void parseTaskFile(String file) {
+        //  #ifdef PP_DEBUG
+        System.out.println( "PP: parsing Task file: " + currentFile );
+        //#endif
 
-    private void parseRoleDefFile(String currentFile){}
+        try {
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(file);
 
-    private void parseCapabilityDefFile(String currentFile){}
+            if (doc == null)
+            {
+                ae.abort("PP: doc.ErrorCode: " + file);
+            }
+            doc.getDocumentElement().normalize();
+            this.mf.createTasks(doc);
 
-    private void parsePlanTypeFile(String currentFile){}
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            System.err.println("PP: doc.ErrorCode: ");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.err.println("PP: doc.ErrorCode: ");
+            e.printStackTrace();
+        }
+    }
 
-    private void parseBehaviourFile(String currentFile){}
+    private void parseRoleDefFile(String currentFile){CommonUtils.aboutNoImpl();}
 
-    private void parsePlanningProblem(String currentFile){}
+    private void parseCapabilityDefFile(String currentFile){CommonUtils.aboutNoImpl();}
+
+    private void parsePlanTypeFile(String currentFile){CommonUtils.aboutNoImpl();}
+
+    private void parseBehaviourFile(String currentFile){
+//        #ifdef PP_DEBUG
+        System.out.println("PP: parsing Behaviour file: " + currentFile);;
+//        #endif
+        File file = new File(currentFile);
+
+        if (!file.exists()) {
+            ae.abort("PP: " + file +" not exists!!!");
+        }
+
+//        XMLDocument doc;
+//        doc.LoadFile(planFile.c_str());
+        Document doc = null;
+        DocumentBuilder docBuilder = null;
+
+        try {
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            doc = dBuilder.parse(file);
+
+        }  catch (SAXException e) {
+            System.err.println("PP: doc.ErrorCode: ");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.err.println("PP: doc.ErrorCode: ");
+            e.printStackTrace();
+        } catch (ParserConfigurationException e) {
+            System.err.println("PP: doc.ErrorCode: ");
+            e.printStackTrace();
+        }
+        this.mf.createBehaviour(doc);
+    }
+
+    private void parsePlanningProblem(String currentFile){CommonUtils.aboutNoImpl();}
 
     private Plan parsePlanFile(String planFile){
         Plan p = null;
@@ -250,9 +376,6 @@ public class PlanParser {
         if (!file.exists()) {
             ae.abort("PP: " + file +" not exists!!!");
         }
-
-//        XMLDocument doc;
-//        doc.LoadFile(planFile.c_str());
 
         DocumentBuilder docBuilder = null;
         try {
@@ -349,12 +472,14 @@ public class PlanParser {
         return id;
     }
 
-    private String findDefaultRoleSet(String dir){return null;}
+    private String findDefaultRoleSet(String dir){
+        CommonUtils.aboutNoImpl();
+        return null;
+    }
 
     public long parserId(Node node) {
         long id = -1;
         String idString1 = "";
-        NamedNodeMap attributes = node.getAttributes();
         Node idItem = node.getAttributes().getNamedItem("id");
 
         if (idItem != null)

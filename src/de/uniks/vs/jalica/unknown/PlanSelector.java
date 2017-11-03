@@ -30,6 +30,7 @@ public class PlanSelector implements IPlanSelector {
 
     @Override
     public RunningPlan getBestSimilarAssignment(RunningPlan rp, Vector<Integer> robots) {
+        CommonUtils.aboutNoImpl();
         return null;
     }
 

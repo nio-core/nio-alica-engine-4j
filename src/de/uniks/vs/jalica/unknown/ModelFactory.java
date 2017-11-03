@@ -1,6 +1,8 @@
 package de.uniks.vs.jalica.unknown;
 
 import com.sun.tools.javac.util.Pair;
+import de.uniks.vs.jalica.behaviours.Behaviour;
+import de.uniks.vs.jalica.behaviours.BehaviourConfiguration;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.parser.PlanParser;
 import de.uniks.vs.jalica.teamobserver.PlanRepository;
@@ -9,20 +11,24 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Vector;
 
-/**
- * Created by alex on 14.07.17.
+import static de.uniks.vs.jalica.unknown.CommonUtils.stod;
+import static de.uniks.vs.jalica.unknown.CommonUtils.stoi;
+import static de.uniks.vs.jalica.unknown.CommonUtils.stol;
+
+/*
+  Created by alex on 14.07.17.
  */
+
 public class ModelFactory {
 
     private static final String state = "state";
-//    private static final String states = "states";
     private static final String task = "task";
-//    private static final String transitions = "transitions";
     private static final String inTransitions = "inTransitions";
     private static final String outTransitions = "outTransitions";
     private static final String plans = "plans";
@@ -36,19 +42,20 @@ public class ModelFactory {
     private static final String quantifiers = "quantifiers";
     private static final String synchronisation = "synchronisation";
     private static final String parameters = "parameters";
+    private static final String configurations = "configurations";
     private static final String sorts = "sorts";
-//    private static final String entryPoints = "entryPoints";
-//    private static final String conditions = "conditions";
-//    private static final String synchronisations = "synchronisations";
-
+    private static final String mappings = "mappings";
+    private static final String taskPriorities = "taskPriorities";
+    private static final String role = "role";
 
     private AlicaEngine ae;
     private PlanParser parser;
     private PlanRepository rep;
-    private LinkedHashMap<Long, AlicaElement> elements = new LinkedHashMap<>();
     private String subplan;
     private String postCondition;
+    private boolean ignoreMasterPlanId;
 
+    private LinkedHashMap<Long, AlicaElement> elements = new LinkedHashMap<>();
     private List<Pair<Long, Long>> epStateReferences  = new ArrayList<>();
     private List<Pair<Long, Long>> epTaskReferences = new ArrayList<>();
     private List<Pair<Long, Long>> stateInTransitionReferences = new ArrayList<>();
@@ -61,6 +68,13 @@ public class ModelFactory {
     private List<Pair<Long, Long>> conditionVarReferences = new ArrayList<>();
     private List<Pair<Long, Long>> quantifierScopeReferences = new ArrayList<>();
     private List<Pair<Long, Long>> transitionSynchReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> planTypePlanReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> planningProblemPlanReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> planningProblemPlanWaitReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> planningProblemPlanAlternativeReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> rtmRoleReferences = new ArrayList<>();
+
+
 
     public ModelFactory(AlicaEngine ae, PlanParser parser, PlanRepository rep) {
 
@@ -70,15 +84,29 @@ public class ModelFactory {
     }
 
     public void computeReachabilities() {
+//        #ifdef MF_DEBUG
+        System.out.println( "MF: Computing Reachability sets..." );
+//#endif
+
+        for ( Plan plan : this.rep.getPlans().values())
+        {
+            for (EntryPoint entryPoint : plan.getEntryPoints().values())
+            {
+                entryPoint.computeReachabilitySet();
+            }
+        }
+//#ifdef MF_DEBUG
+        System.out.println( "MF: Computing Reachability sets...done!");
+//#endif
 
     }
 
     public void attachRoleReferences() {
-
+        CommonUtils.aboutNoImpl();
     }
 
     public void attachCharacteristicReferences() {
-
+        CommonUtils.aboutNoImpl();
     }
 
     public Plan createPlan(Document doc) {
@@ -118,12 +146,12 @@ public class ModelFactory {
 		String talkTimeoutPtr = element.getAttributes().getNamedItem("talkTimeout").getTextContent();
         if (talkTimeoutPtr != null)
         {
-            s.setTalkTimeOut(CommonUtils.stol(talkTimeoutPtr));
+            s.setTalkTimeOut(stol(talkTimeoutPtr));
         }
         String syncTimeoutPtr = element.getAttributes().getNamedItem("syncTimeout").getTextContent();
         if (syncTimeoutPtr!= null)
         {
-            s.setSyncTimeOut(CommonUtils.stol(syncTimeoutPtr));
+            s.setSyncTimeOut(stol(syncTimeoutPtr));
         }
 
         addElement(s);
@@ -379,7 +407,7 @@ public class ModelFactory {
         long cid;
         if (scopePtr != null)
         {
-            cid = CommonUtils.stol(scopePtr);
+            cid = stol(scopePtr);
             this.quantifierScopeReferences.add(new Pair(q.getId(), cid));
         }
         Node curChild = element.getFirstChild();
@@ -603,12 +631,12 @@ public class ModelFactory {
         String attr = element.getAttributes().getNamedItem("minCardinality").getTextContent();
         if (!attr.isEmpty())
         {
-            ep.setMinCardinality(CommonUtils.stoi(attr));
+            ep.setMinCardinality(stoi(attr));
         }
         attr = element.getAttributes().getNamedItem("maxCardinality").getTextContent();
         if (!attr.isEmpty())
         {
-            ep.setMaxCardinality(CommonUtils.stoi(attr));
+            ep.setMaxCardinality(stoi(attr));
         }
         attr = element.getAttributes().getNamedItem("successRequired").getTextContent();
         if (!attr.isEmpty())
@@ -712,5 +740,468 @@ public class ModelFactory {
 
     public PlanRepository getRep() {
         return rep;
+    }
+
+    public void attachPlanReferences() {
+//        #ifdef MF_DEBUG
+        System.out.println( "MF: Attaching Plan references.." );
+//#endif
+        //epTaskReferences
+        for (Pair<Long, Long> pairs : this.epTaskReferences)
+        {
+            Task t = (Task)this.elements.get(pairs.snd);
+            EntryPoint ep = (EntryPoint)this.elements.get(pairs.fst);
+            ep.setTask(t);
+        }
+        this.epTaskReferences.clear();
+
+        //transitionAimReferences
+        for (Pair<Long, Long> pairs : this.transitionAimReferences)
+        {
+            Transition t = (Transition)this.elements.get(pairs.fst);
+            State st = (State)this.elements.get(pairs.snd);
+            if (st == null)
+            {
+                ae.abort("MF: Cannot resolve transitionAimReferences target: ", ""+pairs.fst);
+            }
+            t.setOutState(st);
+            st.getInTransitions().add(t);
+        }
+        this.transitionAimReferences.clear();
+
+        //epStateReferences
+        for (Pair<Long, Long> pairs : this.epStateReferences)
+        {
+            State st = (State)this.elements.get(pairs.snd);
+            EntryPoint ep = (EntryPoint)this.elements.get(pairs.fst);
+            ep.setState(st);
+            st.setEntryPoint(ep);
+        }
+        this.epStateReferences.clear();
+
+        //stateInTransitionReferences
+        for (Pair<Long, Long> pairs : this.stateInTransitionReferences)
+        {
+            Transition t = (Transition)this.elements.get(pairs.snd);
+            State st = (State)this.elements.get(pairs.fst);
+            if (st != t.getOutState())
+            {
+                ae.abort("MF: Unexpected reference in a transition! ", ""+pairs.fst);
+            }
+        }
+        this.stateInTransitionReferences.clear();
+
+        //stateOutTransitionReferences
+        for (Pair<Long, Long> pairs : this.stateOutTransitionReferences)
+        {
+            State st = (State)this.elements.get(pairs.fst);
+            Transition t = (Transition)this.elements.get(pairs.snd);
+            st.getOutTransitions().add(t);
+            t.setInState(st);
+        }
+        this.stateOutTransitionReferences.clear();
+
+        //statePlanReferences
+        for (Pair<Long, Long> pairs : this.statePlanReferences)
+        {
+            State st = (State)this.elements.get(pairs.fst);
+            AbstractPlan p = (AbstractPlan)this.elements.get(pairs.snd);
+            st.getPlans().add(p);
+        }
+        this.statePlanReferences.clear();
+
+        //planTypePlanReferences
+        for (Pair<Long, Long> pairs : this.planTypePlanReferences)
+        {
+            PlanType pt = (PlanType)this.elements.get(pairs.fst);
+            Plan p = (Plan)this.elements.get(pairs.snd);
+            pt.getPlans().add(p);
+        }
+        this.planTypePlanReferences.clear();
+
+        //conditionVarReferences
+        for (Pair<Long, Long> pairs : this.conditionVarReferences)
+        {
+            Condition c = (Condition)this.elements.get(pairs.fst);
+            Variable v = (Variable)this.elements.get(pairs.snd);
+            c.getVariables().add(v);
+        }
+        this.conditionVarReferences.clear();
+
+        //paramSubPlanReferences
+        for (Pair<Long, Long> pairs : this.paramSubPlanReferences)
+        {
+            Parametrisation p = (Parametrisation)this.elements.get(pairs.fst);
+            AbstractPlan ap = (AbstractPlan)this.elements.get(pairs.snd);
+            p.setSubPlan(ap);
+        }
+        this.paramSubPlanReferences.clear();
+
+        //paramSubVarReferences
+        for (Pair<Long, Long> pairs : this.paramSubVarReferences)
+        {
+            Parametrisation p = (Parametrisation)this.elements.get(pairs.fst);
+            Variable ap = (Variable)this.elements.get(pairs.snd);
+            p.setSubVar(ap);
+        }
+        this.paramSubVarReferences.clear();
+
+        //paramVarReferences
+        for (Pair<Long, Long> pairs : this.paramVarReferences)
+        {
+            Parametrisation p = (Parametrisation)this.elements.get(pairs.fst);
+            Variable v = (Variable)this.elements.get(pairs.snd);
+            p.setVar(v);
+        }
+        this.paramVarReferences.clear();
+
+        //transitionSynchReferences
+        for (Pair<Long, Long> pairs : this.transitionSynchReferences)
+        {
+            Transition t = (Transition)this.elements.get(pairs.fst);
+            SyncTransition sync = (SyncTransition)this.elements.get(pairs.snd);
+            t.setSyncTransition(sync);
+            sync.getInSync().add(t);
+        }
+        this.transitionSynchReferences.clear();
+
+        //planningProblemPlanReferences
+        for (Pair<Long, Long> pairs : this.planningProblemPlanReferences)
+        {
+            PlanningProblem s = (PlanningProblem)this.elements.get(pairs.fst);
+            AbstractPlan p = (AbstractPlan)this.elements.get(pairs.snd);
+            s.getPlans().add(p);
+        }
+        this.planningProblemPlanReferences.clear();
+
+        //planningProblemPlanWaitReferences
+        for (Pair<Long, Long> pairs : this.planningProblemPlanWaitReferences)
+        {
+            PlanningProblem s = (PlanningProblem)this.elements.get(pairs.fst);
+            Plan p = (Plan)this.elements.get(pairs.snd);
+            s.setWaitPlan(p);
+        }
+        this.planningProblemPlanWaitReferences.clear();
+
+        //planningProblemPlanAlternativeReferences
+        for (Pair<Long, Long> pairs : this.planningProblemPlanAlternativeReferences)
+        {
+            PlanningProblem s = (PlanningProblem)this.elements.get(pairs.fst);
+            Plan p = (Plan)this.elements.get(pairs.snd);
+            s.setAlternativePlan(p);
+        }
+        this.planningProblemPlanAlternativeReferences.clear();
+
+        //quantifierScopeReferences
+        for (Pair<Long, Long> pairs : this.quantifierScopeReferences)
+        {
+            AlicaElement ae = (AlicaElement)this.elements.get(pairs.snd);
+            Quantifier q = (Quantifier)this.elements.get(pairs.fst);
+            q.setScope(this.ae, ae);
+        }
+        this.quantifierScopeReferences.clear();
+
+        removeRedundancy();
+//#ifdef MF_DEBUG
+        System.out.println( "MF: DONE!");
+//#endif
+
+    }
+
+    private void removeRedundancy() {
+        for ( Plan plan : this.rep.getPlans().values())
+        {
+            ArrayList<Transition> transToRemove = new ArrayList<>();
+            for (Transition tran : plan.getTransitions())
+            {
+                if (tran.getInState() == null)
+                {
+                    transToRemove.add(tran);
+                }
+            }
+
+            for (Transition tran : transToRemove)
+            {
+                plan.getTransitions().remove(tran);
+            }
+        }
+    }
+
+
+    public void createBehaviour(Document node) {
+        Element element = node.getDocumentElement();
+        long id = this.parser.parserId(element);
+        Behaviour beh = new Behaviour();
+        beh.setId(id);
+
+        setAlicaElementAttributes(beh, element);
+        addElement(beh);
+        this.rep.getBehaviours().put(beh.getId(), beh);
+        Node curChild = element.getFirstChild().getNextSibling();
+        while (curChild != null)
+        {
+			String val = curChild.getNodeName();
+            long cid = this.parser.parserId(curChild);
+
+            if (configurations.equals(val))
+            {
+                BehaviourConfiguration bc = createBehaviourConfiguration(curChild);
+                this.rep.getBehaviourConfigurations().put(bc.getId(), bc);
+                bc.setBehaviour(beh);
+                beh.getConfigurations().add(bc);
+            }
+            else
+            {
+                ae.abort("MF: Unhandled Behaviour Child:", curChild.getNodeValue());
+            }
+            curChild = curChild.getNextSibling();
+
+            if("#text".equals(curChild.getNodeName())) {
+                curChild = curChild.getNextSibling();
+            }
+        }
+    }
+
+    private BehaviourConfiguration createBehaviourConfiguration(Node element) {
+        BehaviourConfiguration b = new BehaviourConfiguration();
+        b.setId(this.parser.parserId(element));
+        b.setFileName(this.parser.getCurrentFile());
+
+		String attr = element.getAttributes().getNamedItem("masterPlan").getTextContent();
+        String attrString = "";
+        if (!attr.isEmpty())
+        {
+            attrString = attr;
+            if (attrString.equals("true"))
+            {
+                b.setMasterPlan(true);
+            }
+        }
+
+        Node receiveRemoteCommand = element.getAttributes().getNamedItem("receiveRemoteCommand");
+        if (receiveRemoteCommand != null && !receiveRemoteCommand.getTextContent().isEmpty())
+        {
+            attr = receiveRemoteCommand.getTextContent();
+            attrString = attr;
+            if (attrString.equals("true"))
+            {
+                b.setEventDriven(true);
+            }
+        }
+        Node visionTriggered = element.getAttributes().getNamedItem("visionTriggered");
+
+        if (visionTriggered != null && !visionTriggered.getTextContent().isEmpty())
+        {
+            attr = visionTriggered.getTextContent();
+            attrString = attr;
+            if (attrString.equals("true"))
+            {
+                b.setEventDriven(true);
+            }
+        }
+        Node eventDriven = element.getAttributes().getNamedItem("eventDriven");
+
+        if (eventDriven != null && !eventDriven.getTextContent().isEmpty())
+        {
+            attr = eventDriven.getTextContent();
+            attrString = attr;
+            if (attrString.equals("true"))
+            {
+                b.setEventDriven(true);
+            }
+        }
+        Node deferring = element.getAttributes().getNamedItem("deferring");
+
+        if (deferring != null && !deferring.getTextContent().isEmpty())
+        {
+            attr = deferring.getTextContent();
+            b.setDeferring(stoi(attr));
+        }
+        Node frequency = element.getAttributes().getNamedItem("frequency");
+
+        if (frequency != null && !frequency.getTextContent().isEmpty())
+        {
+            attr = frequency.getTextContent();
+            b.setFrequency(stoi(attr));
+        }
+        setAlicaElementAttributes(b, element);
+        this.elements.put(b.getId(), b);
+        Node elementFirstChild = element.getFirstChild();
+
+        if (elementFirstChild == null)
+            return b;
+
+        Node curChild = elementFirstChild.getNextSibling();
+
+        while (curChild != null)
+        {
+			String val = curChild.getNodeValue();
+            long cid = this.parser.parserId(curChild);
+            if (vars.endsWith(val))
+            {
+                Variable v = createVariable(curChild);
+                b.getVariables().add(v);
+            }
+            else if (parameters.equals(val))
+            {
+				String key = curChild.getAttributes().getNamedItem("key").getTextContent();
+                String value = curChild.getAttributes().getNamedItem("value").getTextContent();
+
+                if (key != null && value != null)
+                {
+                    b.getParameters().put(key, value);
+                }
+            }
+            else
+            {
+                ae.abort("MF: Unhandled BehaviourConfiguration Child: " + curChild);
+            }
+            curChild = curChild.getNextSibling();
+        }
+
+        return b;
+    }
+
+    public RoleSet createRoleSet(Document doc, Plan masterPlan) {
+        Element element = doc.getDocumentElement();
+
+		String def = element.getAttribute("default");
+        boolean isDefault = false;
+        if (def != null)
+        {
+            String d = def;
+            if (d.equals("true"))
+            {
+                isDefault = true;
+            }
+        }
+
+		String pidPtr = element.getAttribute("usableWithPlanID");
+        long pid = 0;
+
+        if (pidPtr != null)
+        {
+            pid = stol(pidPtr);
+        }
+
+        boolean isUseable = false;
+        if (ignoreMasterPlanId)
+        {
+            isUseable = true;
+        }
+        else
+        {
+            isUseable = pidPtr != null && (pid == masterPlan.getId());
+        }
+
+        if (!isDefault && !isUseable)
+        {
+            ae.abort("MF:Selected RoleSet is not default, nor useable with current masterplan");
+        }
+
+        RoleSet rs = new RoleSet();
+        rs.setId(this.parser.parserId(element));
+        setAlicaElementAttributes(rs, element);
+        rs.setIsDefault(isDefault);
+        rs.setUsableWithPlanId(pid);
+        addElement(rs);
+
+       Node curChild = element.getFirstChild();
+        while (curChild != null)
+        {
+			String val = curChild.getNodeValue();
+            if (mappings.equals(val))
+            {
+                RoleTaskMapping rtm = createRoleTaskMapping(curChild);
+                rs.getRoleTaskMappings().add(rtm);
+            }
+            else
+            {
+                ae.abort("MF: Unhandled RoleSet Child:", curChild.getNodeValue());
+            }
+            curChild = curChild.getNextSibling();
+        }
+
+        return rs;
+    }
+
+    private RoleTaskMapping createRoleTaskMapping(Node element) {
+        RoleTaskMapping rtm = new RoleTaskMapping();
+        rtm.setId(this.parser.parserId(element));
+        setAlicaElementAttributes(rtm, element);
+        addElement(rtm);
+
+        Node curChild = element.getFirstChild();
+        while (curChild != null)
+        {
+			String val = curChild.getNodeValue();
+
+            if (taskPriorities.equals(val))
+            {
+                String keyPtr = curChild.getAttributes().getNamedItem("key").getTextContent();
+                String valuePtr = curChild.getAttributes().getNamedItem("value").getTextContent();
+                if (keyPtr != null && valuePtr != null)
+                {
+                    rtm.getTaskPriorities().put(stol(keyPtr), stod(valuePtr));
+                }
+            }
+            else if (role.equals(val))
+            {
+                long cid = this.parser.parserId(curChild);
+                this.rtmRoleReferences.add(new Pair<>(rtm.getId(), cid));
+            }
+            else
+            {
+                ae.abort("MF: Unhandled RoleTaskMapping Child ", curChild.getNodeValue());
+            }
+            curChild = curChild.getNextSibling();
+        }
+
+        return rtm;
+    }
+
+    public void createTasks(Document doc) {
+        Element element = doc.getDocumentElement();
+        TaskRepository tr = new TaskRepository();
+        tr.setId(this.parser.parserId(element));
+        tr.setFileName(this.parser.getCurrentFile());
+        addElement(tr);
+        setAlicaElementAttributes(tr, element);
+        this.rep.getTaskRepositorys().put(tr.getId(), tr);
+        long id = 0;
+        String defaultTaskPtr = element.getAttribute("defaultTask");
+        if (defaultTaskPtr != null)
+        {
+            id = stol(defaultTaskPtr);
+            tr.setDefaultTask(id);
+        }
+
+        Node curChild = element.getFirstChild();
+
+        if (curChild.getNodeValue().startsWith("\n"))
+            curChild = curChild.getNextSibling();
+
+        while (curChild != null)
+        {
+            long cid = this.parser.parserId(curChild);
+
+            Task task = new Task(cid == id);
+            task.setId(cid);
+            setAlicaElementAttributes(task, curChild);
+            String descriptionkPtr = curChild.getAttributes().getNamedItem("description").getTextContent();
+
+            if (descriptionkPtr != null)
+            {
+                task.setDescription(descriptionkPtr);
+            }
+            addElement(task);
+            this.rep.getTasks().put(task.getId(), task);
+            task.setTaskRepository(tr);
+            tr.getTasks().add(task);
+
+            curChild = curChild.getNextSibling();
+            if (curChild.getNodeValue().startsWith("\n"))
+                curChild = curChild.getNextSibling();
+        }
     }
 }

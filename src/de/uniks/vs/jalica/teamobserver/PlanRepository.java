@@ -19,17 +19,17 @@ public class PlanRepository {
     LinkedHashMap<Long, BehaviourConfiguration> behaviourConfigurations = new LinkedHashMap<>();
     LinkedHashMap<Long, PlanType> planTypes = new LinkedHashMap<>();
     LinkedHashMap<Long, Role> roles = new LinkedHashMap();
-    LinkedHashMap<Long, Characteristic> characteristics;
-    LinkedHashMap<Long, Capability> capabilities;
+    LinkedHashMap<Long, Characteristic> characteristics = new LinkedHashMap<>();
+    LinkedHashMap<Long, Capability> capabilities = new LinkedHashMap<>();
     LinkedHashMap<Long, State> states  = new LinkedHashMap<>();
     LinkedHashMap<Long, EntryPoint> entryPoints  = new LinkedHashMap<>();
     LinkedHashMap<Long, Transition > transitions  = new LinkedHashMap<>();
     LinkedHashMap<Long, SyncTransition > syncTransitions = new LinkedHashMap<>();
-    LinkedHashMap<Long, Quantifier > quantifiers;
+    LinkedHashMap<Long, Quantifier > quantifiers = new LinkedHashMap<>();
     LinkedHashMap<Long, Variable> variables = new LinkedHashMap<>();
-    LinkedHashMap<Long, RoleDefinitionSet > roleDefinitionSets;
-    LinkedHashMap<Long, TaskRepository > taskRepositorys;
-    LinkedHashMap<Long, PlanningProblem > planningProblems;
+    LinkedHashMap<Long, RoleDefinitionSet > roleDefinitionSets = new LinkedHashMap<>();
+    LinkedHashMap<Long, TaskRepository > taskRepositorys = new LinkedHashMap<>();
+    LinkedHashMap<Long, PlanningProblem > planningProblems = new LinkedHashMap<>();
 
     public HashMap<Long, BehaviourConfiguration> getBehaviourConfigurations() {
         return behaviourConfigurations;
@@ -65,5 +65,17 @@ public class PlanRepository {
 
     public LinkedHashMap<Long,SyncTransition> getSyncTransitions() {
         return syncTransitions;
+    }
+
+    public LinkedHashMap<Long, Behaviour> getBehaviours() {
+        return behaviours;
+    }
+
+    public LinkedHashMap<Long, TaskRepository> getTaskRepositorys() {
+        return taskRepositorys;
+    }
+
+    public LinkedHashMap<Long, Task> getTasks() {
+        return tasks;
     }
 }

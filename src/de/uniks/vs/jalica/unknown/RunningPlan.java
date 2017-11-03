@@ -106,10 +106,11 @@ public class RunningPlan {
     }
 
     public void printRecursive() {
-
+        CommonUtils.aboutNoImpl();
     }
 
     public PlanChange tick(RuleBook rules) {
+        CommonUtils.aboutNoImpl();
         return null;
     }
 

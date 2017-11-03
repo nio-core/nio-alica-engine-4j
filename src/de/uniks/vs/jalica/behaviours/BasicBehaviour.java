@@ -2,6 +2,7 @@ package de.uniks.vs.jalica.behaviours;
 
 import de.uniks.vs.jalica.supplementary.ITrigger;
 import de.uniks.vs.jalica.supplementary.Timer;
+import de.uniks.vs.jalica.unknown.CommonUtils;
 import de.uniks.vs.jalica.unknown.RunningPlan;
 
 /**
@@ -74,6 +75,7 @@ public class BasicBehaviour implements IBehaviourCreator {
 
     @Override
     public IBehaviourCreator createBehaviour(Long key) {
+        CommonUtils.aboutNoImpl();
         return null;
     }
 

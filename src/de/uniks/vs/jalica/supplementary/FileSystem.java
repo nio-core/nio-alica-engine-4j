@@ -1,5 +1,7 @@
 package de.uniks.vs.jalica.supplementary;
 
+import de.uniks.vs.jalica.unknown.CommonUtils;
+
 import java.io.File;
 import java.nio.file.Paths;
 
@@ -14,25 +16,52 @@ public class FileSystem {
     public static final String PACKAGE = "src/de/uniks/vs/jalica";
 
     public static boolean pathExists(String basePlanPath) {
-        String workDir = extractWorkDir()+ PATH_SEPARATOR + PACKAGE + PATH_SEPARATOR;
-        File path = new File(workDir + basePlanPath);
-//        System.out.println(path.exists() +" " +path.getAbsolutePath());
-        return path.exists();
+        return (getAbsolutePath(basePlanPath)!= null);
     }
 
-    private static String extractWorkDir() {
+    public static String getAbsolutePath(String basePlanPath) {
+        String workDir = extractWorkDir()+ PATH_SEPARATOR + PACKAGE + PATH_SEPARATOR;
+
+        if (!basePlanPath.startsWith(workDir)) {
+            workDir = workDir + basePlanPath;
+        }
+        File path = new File(workDir);
+
+        System.out.println("FS: " +path.exists() +" " +path.getAbsolutePath());
+
+        if (path.exists())
+            return path.getAbsolutePath();
+
+        path = new File(basePlanPath);
+        return path.exists() ? path.getAbsolutePath(): null;
+    }
+
+    public static String extractWorkDir() {
         return Paths.get(".").toAbsolutePath().normalize().toString();
     }
 
-    public static boolean isPathRooted(String roleDir) {
-        return false;
+    public static boolean isPathRooted(String path) {
+        if (!path.isEmpty() && path.indexOf(PATH_SEPARATOR) == 0)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public static String getParent(String path) {
         return getParentAsFile(path).getAbsolutePath().toString();
     }
 
-    private static File getParentAsFile(String path) {
+    public static File getParentAsFile(String pathString) {
+        String workDir = extractWorkDir()+ PATH_SEPARATOR + PACKAGE + PATH_SEPARATOR;
+
+        if (!pathString.startsWith(workDir)) {
+            pathString = workDir + pathString;
+        }
+        File path = new File(pathString);
 //        String workDir = extractWorkDir()+ PATH_SEPARATOR + PACKAGE + PATH_SEPARATOR;
 //        File _path = new File(workDir);
 //
@@ -42,29 +71,45 @@ public class FileSystem {
 //        }
 //        return _path.getParentFile();
 
-        File file = new File(path);
+//        File file = new File(path);
 
-        if (!file.exists()){
-            System.err.println("ABORT: FS: " + file + " not exists !!!!!");
+        if (!path.exists()){
+            System.err.println("ABORT: FS: " + path + " not exists !!!!!");
             try {
                 throw new Exception();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        return file.getParentFile();
+        return path.getParentFile();
     }
 
     public static String combinePaths(Object combinePaths) {
+        CommonUtils.aboutNoImpl();
         return null;
     }
 
-    public static String combinePaths(String baseRolePath, String roleSetDir) {
-        return null;
+    public static String combinePaths(String path1, String path2) {
+        if (path1.length() == 0)
+        {
+            return path2;
+        }
+        else if (path1.endsWith(path2) || path2.length() == 0)
+        {
+            return path1;
+        }
+        else if (path1.endsWith(path2)){
+
+        }
+        if (path1.lastIndexOf(PATH_SEPARATOR) != path1.length() - 1)
+        {
+            return path1 + PATH_SEPARATOR + path2;
+        }
+        return path1 + path2;
     }
 
-    public static boolean endsWith(String roleSetName, String s) {
-        return false;
+    public static boolean endsWith(String string, String prefix) {
+        return string.endsWith(prefix);
     }
 
     public static String findFile(String path, String file, String path_found) {
@@ -161,7 +206,7 @@ public class FileSystem {
 
     public static String realpath(String path, String resolved_path) {
         String absolutePath = path;
-
+        CommonUtils.aboutImplIncomplete();
         return absolutePath;
     }
 }

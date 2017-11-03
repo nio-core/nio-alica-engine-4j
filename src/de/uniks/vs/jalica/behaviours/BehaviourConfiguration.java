@@ -31,4 +31,24 @@ public class BehaviourConfiguration extends AbstractPlan {
     public LinkedHashMap<String, String> getParameters() {
         return parameters;
     }
+
+    public void setBehaviour(Behaviour behaviour) {
+        this.behaviour = behaviour;
+    }
+
+    public boolean isEventDriven() {
+        return eventDriven;
+    }
+
+    public void setEventDriven(boolean eventDriven) {
+        this.eventDriven = eventDriven;
+    }
+
+    public void setDeferring(int deferring) {
+        this.deferring = deferring;
+    }
+
+    public void setFrequency(int frequency) {
+        this.frequency = frequency;
+    }
 }

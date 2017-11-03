@@ -8,6 +8,7 @@ public class Transition extends AlicaElement {
     private SyncTransition syncTransition;
     private PreCondition preCondition;
     private State outState;
+    private State inState;
 
     public SyncTransition getSyncTransition() {
         return syncTransition;
@@ -27,5 +28,21 @@ public class Transition extends AlicaElement {
 
     public void setPreCondition(PreCondition preCondition) {
         this.preCondition = preCondition;
+    }
+
+    public void setOutState(State outState) {
+        this.outState = outState;
+    }
+
+    public void setInState(State inState) {
+        this.inState = inState;
+    }
+
+    public void setSyncTransition(SyncTransition syncTransition) {
+        this.syncTransition = syncTransition;
+    }
+
+    public State getInState() {
+        return inState;
     }
 }

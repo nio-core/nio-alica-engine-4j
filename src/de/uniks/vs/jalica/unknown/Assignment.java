@@ -285,11 +285,13 @@ public class Assignment implements IAssignment{
 
     @Override
     public short getEntryPointCount() {
+        CommonUtils.aboutNoImpl();
         return 0;
     }
 
     @Override
     public ArrayList<Integer> getRobotsWorkingAndFinished(EntryPoint ep) {
+        CommonUtils.aboutNoImpl();
         return null;
     }
 
@@ -317,11 +319,11 @@ public class Assignment implements IAssignment{
 
     @Override
     public void setMin(double min) {
-
+        CommonUtils.aboutNoImpl();
     }
 
     @Override
     public void setMax(double max) {
-
+        CommonUtils.aboutNoImpl();
     }
 }

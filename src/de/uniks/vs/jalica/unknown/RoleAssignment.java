@@ -129,16 +129,18 @@ public class RoleAssignment implements IRoleAssignment {
 
     @Override
     public void tick() {
-
+        CommonUtils.aboutNoImpl();
     }
 
     @Override
     public Role getOwnRole() {
+        CommonUtils.aboutNoImpl();
         return null;
     }
 
     @Override
     public EntryPoint getRole(int robotID) {
+        CommonUtils.aboutNoImpl();
         return null;
     }
 }

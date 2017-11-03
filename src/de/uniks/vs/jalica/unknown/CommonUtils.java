@@ -50,4 +50,37 @@ public class CommonUtils {
     public static long stol(String string) {
         return Long.parseLong(string);
     }
+
+    public static void aboutNoImpl() {
+            try {
+                throw new Exception();
+            } catch (Exception e) {
+                System.out.flush();
+                StackTraceElement[] stackTrace = e.getStackTrace();
+                System.err.println(stackTrace[1] + " ->  Implementation is missing!");
+                System.err.flush();
+            }
+    }
+
+    public static void aboutError(String msg) {
+        try {
+            throw new Exception();
+        } catch (Exception e) {
+            System.out.flush();
+            StackTraceElement[] stackTrace = e.getStackTrace();
+            System.err.println(msg + "   (" + stackTrace[2]+")");
+            System.err.flush();
+        }
+    }
+
+    public static void aboutImplIncomplete() {
+        try {
+            throw new Exception();
+        } catch (Exception e) {
+            System.out.flush();
+            StackTraceElement[] stackTrace = e.getStackTrace();
+            System.err.println(stackTrace[1] + " ->  Implementation incomplete!");
+            System.err.flush();
+        }
+    }
 }

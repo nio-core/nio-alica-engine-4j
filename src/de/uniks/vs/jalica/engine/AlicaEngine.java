@@ -195,7 +195,7 @@ public class AlicaEngine {
     }
 
     public void abort(String msg) {
-        System.err.println( "ABORT: " + msg);
+        CommonUtils.aboutError("ABORT: " + msg);
         System.exit(CommonUtils.EXIT_FAILURE);
     }
 
@@ -243,6 +243,7 @@ public class AlicaEngine {
         this.maySendMessages = false;
         String ss = "";
         ss += msg + tail;
-        abort(ss);
+        CommonUtils.aboutError("ABORT: " + msg);
+        System.exit(CommonUtils.EXIT_FAILURE);
     }
 }
