@@ -47,6 +47,12 @@ public class ModelFactory {
     private static final String mappings = "mappings";
     private static final String taskPriorities = "taskPriorities";
     private static final String role = "role";
+    private static final String roles = "roles";
+    private static final String characteristics = "characteristics";
+    private static final String capability = "capability";
+    private static final String value = "value";
+    private static final String capabilities = "capabilities";
+    private static final String capValues = "capValues";
 
     private AlicaEngine ae;
     private PlanParser parser;
@@ -56,7 +62,7 @@ public class ModelFactory {
     private boolean ignoreMasterPlanId;
 
     private LinkedHashMap<Long, AlicaElement> elements = new LinkedHashMap<>();
-    private List<Pair<Long, Long>> epStateReferences  = new ArrayList<>();
+    private List<Pair<Long, Long>> epStateReferences = new ArrayList<>();
     private List<Pair<Long, Long>> epTaskReferences = new ArrayList<>();
     private List<Pair<Long, Long>> stateInTransitionReferences = new ArrayList<>();
     private List<Pair<Long, Long>> stateOutTransitionReferences = new ArrayList<>();
@@ -73,7 +79,8 @@ public class ModelFactory {
     private List<Pair<Long, Long>> planningProblemPlanWaitReferences = new ArrayList<>();
     private List<Pair<Long, Long>> planningProblemPlanAlternativeReferences = new ArrayList<>();
     private List<Pair<Long, Long>> rtmRoleReferences = new ArrayList<>();
-
+    private List<Pair<Long, Long>> charCapReferences = new ArrayList<>();
+    private List<Pair<Long, Long>> charCapValReferences = new ArrayList<>();
 
 
     public ModelFactory(AlicaEngine ae, PlanParser parser, PlanRepository rep) {
@@ -85,28 +92,191 @@ public class ModelFactory {
 
     public void computeReachabilities() {
 //        #ifdef MF_DEBUG
-        System.out.println( "MF: Computing Reachability sets..." );
+        System.out.println("MF: Computing Reachability sets...");
 //#endif
 
-        for ( Plan plan : this.rep.getPlans().values())
-        {
-            for (EntryPoint entryPoint : plan.getEntryPoints().values())
-            {
+        for (Plan plan : this.rep.getPlans().values()) {
+            for (EntryPoint entryPoint : plan.getEntryPoints().values()) {
                 entryPoint.computeReachabilitySet();
             }
         }
 //#ifdef MF_DEBUG
-        System.out.println( "MF: Computing Reachability sets...done!");
+        System.out.println("MF: Computing Reachability sets...done!");
 //#endif
 
     }
 
     public void attachRoleReferences() {
-        CommonUtils.aboutNoImpl();
+//        #ifdef MF_DEBUG
+        System.out.println("MF: Attaching Plan references..");
+//#endif
+        //epTaskReferences
+        for (Pair<Long, Long> pairs : this.epTaskReferences) {
+            Task t = (Task) this.elements.get(pairs.snd);
+            EntryPoint ep = (EntryPoint) this.elements.get(pairs.fst);
+            ep.setTask(t);
+        }
+        this.epTaskReferences.clear();
+
+        //transitionAimReferences
+        for (Pair<Long, Long> pairs : this.transitionAimReferences) {
+            Transition t = (Transition) this.elements.get(pairs.fst);
+            State st = (State) this.elements.get(pairs.snd);
+            if (st == null) {
+                ae.abort("MF: Cannot resolve transitionAimReferences target: ", "" + pairs.fst);
+            }
+            t.setOutState(st);
+            st.getInTransitions().add(t);
+        }
+        this.transitionAimReferences.clear();
+
+        //epStateReferences
+        for (Pair<Long, Long> pairs : this.epStateReferences) {
+            State st = (State) this.elements.get(pairs.snd);
+            EntryPoint ep = (EntryPoint) this.elements.get(pairs.fst);
+            ep.setState(st);
+            st.setEntryPoint(ep);
+        }
+        this.epStateReferences.clear();
+
+        //stateInTransitionReferences
+        for (Pair<Long, Long> pairs : this.stateInTransitionReferences) {
+            Transition t = (Transition) this.elements.get(pairs.snd);
+            State st = (State) this.elements.get(pairs.fst);
+            if (st != t.getOutState()) {
+                ae.abort("MF: Unexpected reference in a transition! ", "" + pairs.fst);
+            }
+        }
+        this.stateInTransitionReferences.clear();
+
+        //stateOutTransitionReferences
+        for (Pair<Long, Long> pairs : this.stateOutTransitionReferences) {
+            State st = (State) this.elements.get(pairs.fst);
+            Transition t = (Transition) this.elements.get(pairs.snd);
+            st.getOutTransitions().add(t);
+            t.setInState(st);
+        }
+        this.stateOutTransitionReferences.clear();
+
+        //statePlanReferences
+        for (Pair<Long, Long> pairs : this.statePlanReferences) {
+            State st = (State) this.elements.get(pairs.fst);
+            AbstractPlan p = (AbstractPlan) this.elements.get(pairs.snd);
+            st.getPlans().add(p);
+        }
+        this.statePlanReferences.clear();
+
+        //planTypePlanReferences
+        for (Pair<Long, Long> pairs : this.planTypePlanReferences) {
+            PlanType pt = (PlanType) this.elements.get(pairs.fst);
+            Plan p = (Plan) this.elements.get(pairs.snd);
+            pt.getPlans().add(p);
+        }
+        this.planTypePlanReferences.clear();
+
+        //conditionVarReferences
+        for (Pair<Long, Long> pairs : this.conditionVarReferences) {
+            Condition c = (Condition) this.elements.get(pairs.fst);
+            Variable v = (Variable) this.elements.get(pairs.snd);
+            c.getVariables().add(v);
+        }
+        this.conditionVarReferences.clear();
+
+        //paramSubPlanReferences
+        for (Pair<Long, Long> pairs : this.paramSubPlanReferences) {
+            Parametrisation p = (Parametrisation) this.elements.get(pairs.fst);
+            AbstractPlan ap = (AbstractPlan) this.elements.get(pairs.snd);
+            p.setSubPlan(ap);
+        }
+        this.paramSubPlanReferences.clear();
+
+        //paramSubVarReferences
+        for (Pair<Long, Long> pairs : this.paramSubVarReferences) {
+            Parametrisation p = (Parametrisation) this.elements.get(pairs.fst);
+            Variable ap = (Variable) this.elements.get(pairs.snd);
+            p.setSubVar(ap);
+        }
+        this.paramSubVarReferences.clear();
+
+        //paramVarReferences
+        for (Pair<Long, Long> pairs : this.paramVarReferences) {
+            Parametrisation p = (Parametrisation) this.elements.get(pairs.fst);
+            Variable v = (Variable) this.elements.get(pairs.snd);
+            p.setVar(v);
+        }
+        this.paramVarReferences.clear();
+
+        //transitionSynchReferences
+        for (Pair<Long, Long> pairs : this.transitionSynchReferences) {
+            Transition t = (Transition) this.elements.get(pairs.fst);
+            SyncTransition sync = (SyncTransition) this.elements.get(pairs.snd);
+            t.setSyncTransition(sync);
+            sync.getInSync().add(t);
+        }
+        this.transitionSynchReferences.clear();
+
+        //planningProblemPlanReferences
+        for (Pair<Long, Long> pairs : this.planningProblemPlanReferences) {
+            PlanningProblem s = (PlanningProblem) this.elements.get(pairs.fst);
+            AbstractPlan p = (AbstractPlan) this.elements.get(pairs.snd);
+            s.getPlans().add(p);
+        }
+        this.planningProblemPlanReferences.clear();
+
+        //planningProblemPlanWaitReferences
+        for (Pair<Long, Long> pairs : this.planningProblemPlanWaitReferences) {
+            PlanningProblem s = (PlanningProblem) this.elements.get(pairs.fst);
+            Plan p = (Plan) this.elements.get(pairs.snd);
+            s.setWaitPlan(p);
+        }
+        this.planningProblemPlanWaitReferences.clear();
+
+        //planningProblemPlanAlternativeReferences
+        for (Pair<Long, Long> pairs : this.planningProblemPlanAlternativeReferences) {
+            PlanningProblem s = (PlanningProblem) this.elements.get(pairs.fst);
+            Plan p = (Plan) this.elements.get(pairs.snd);
+            s.setAlternativePlan(p);
+        }
+        this.planningProblemPlanAlternativeReferences.clear();
+
+        //quantifierScopeReferences
+        for (Pair<Long, Long> pairs : this.quantifierScopeReferences) {
+            AlicaElement ae = (AlicaElement) this.elements.get(pairs.snd);
+            Quantifier q = (Quantifier) this.elements.get(pairs.fst);
+            q.setScope(this.ae, ae);
+        }
+        this.quantifierScopeReferences.clear();
+
+        removeRedundancy();
+//#ifdef MF_DEBUG
+        System.out.println("DONE!");
+//#endif
+
     }
 
+
     public void attachCharacteristicReferences() {
-        CommonUtils.aboutNoImpl();
+        {
+//#ifdef MF_DEBUG
+            System.out.println("MF: Attaching Characteristics references...");
+//#endif
+            for (Pair<Long, Long> pairs : this.charCapReferences) {
+                Characteristic cha = this.rep.getCharacteristics().get(pairs.fst);
+                Capability cap = (Capability) this.elements.get(pairs.snd);
+                cha.setCapability(cap);
+            }
+            this.charCapReferences.clear();
+
+            for (Pair<Long, Long> pairs : this.charCapValReferences) {
+                Characteristic cha = this.rep.getCharacteristics().get(pairs.fst);
+                CapValue capVal = (CapValue) this.elements.get(pairs.snd);
+                cha.setCapValue(capVal);
+            }
+            this.charCapValReferences.clear();
+//#ifdef MF_DEBUG
+            System.out.println("MF: Attaching Characteristics references... done!");
+//#endif
+        }
     }
 
     public Plan createPlan(Document doc) {
@@ -129,8 +299,7 @@ public class ModelFactory {
 
         Node curChild = element.getFirstChild().getNextSibling();
 
-        while (curChild != null)
-        {
+        while (curChild != null) {
             System.out.println(curChild.getNodeName());
 
             parser.handleTag(curChild, plan, this);
@@ -143,21 +312,18 @@ public class ModelFactory {
         SyncTransition s = new SyncTransition();
         s.setId(this.parser.parserId(element));
         setAlicaElementAttributes(s, element);
-		String talkTimeoutPtr = element.getAttributes().getNamedItem("talkTimeout").getTextContent();
-        if (talkTimeoutPtr != null)
-        {
+        String talkTimeoutPtr = element.getAttributes().getNamedItem("talkTimeout").getTextContent();
+        if (talkTimeoutPtr != null) {
             s.setTalkTimeOut(stol(talkTimeoutPtr));
         }
         String syncTimeoutPtr = element.getAttributes().getNamedItem("syncTimeout").getTextContent();
-        if (syncTimeoutPtr!= null)
-        {
+        if (syncTimeoutPtr != null) {
             s.setSyncTimeOut(stol(syncTimeoutPtr));
         }
 
         addElement(s);
         this.rep.getSyncTransitions().put(s.getId(), s);
-        if (element.getFirstChild() != null)
-        {
+        if (element.getFirstChild() != null) {
             ae.abort("MF: Unhandled Synchtransition Child:", element.getFirstChild().toString());
         }
         return s;
@@ -166,14 +332,12 @@ public class ModelFactory {
     public Variable createVariable(Node element) {
         String type = "";
         String conditionPtr = element.getAttributes().getNamedItem("Type").getTextContent();
-        if (conditionPtr != null)
-        {
+        if (conditionPtr != null) {
             type = conditionPtr;
         }
         String name = "";
         String namePtr = element.getAttributes().getNamedItem("name").getTextContent();
-        if (namePtr!= null)
-        {
+        if (namePtr != null) {
             name = namePtr;
         }
         Variable v = new Variable(this.parser.parserId(element), name, type);
@@ -191,48 +355,35 @@ public class ModelFactory {
 
         String conditionString = "";
         String conditionPtr = element.getAttributes().getNamedItem("conditionString").getTextContent();
-        if (conditionPtr != null)
-        {
+        if (conditionPtr != null) {
             conditionString = conditionPtr;
             r.setConditionString(conditionString);
         }
 
-        if (!conditionString.isEmpty())
-        {
+        if (!conditionString.isEmpty()) {
             //TODO: ANTLRBUILDER
-        }
-        else
-        {
+        } else {
             //TODO: aus c#
             //pos.ConditionFOL = null;
         }
 
-		String pluginNamePtr = element.getAttributes().getNamedItem("pluginName").getTextContent();
-        if (pluginNamePtr != null)
-        {
+        String pluginNamePtr = element.getAttributes().getNamedItem("pluginName").getTextContent();
+        if (pluginNamePtr != null) {
             r.setPlugInName(pluginNamePtr);
         }
         Node curChild = element.getFirstChild();
-        while (curChild != null)
-        {
+        while (curChild != null) {
             String val = curChild.getNodeValue();
             long cid = this.parser.parserId(curChild);
-            if (vars.equals(val))
-            {
+            if (vars.equals(val)) {
                 this.conditionVarReferences.add(new Pair(r.getId(), cid));
-            }
-            else if (quantifiers.equals(val) )
-            {
+            } else if (quantifiers.equals(val)) {
                 Quantifier q = createQuantifier(curChild);
                 r.getQuantifiers().add(q);
-            }
-            else if (parameters.equals(val))
-            {
+            } else if (parameters.equals(val)) {
                 Parameter p = createParameter(curChild);
                 r.getParameters().add(p);
-            }
-            else
-            {
+            } else {
                 ae.abort("MF: Unhandled RuntimeCondition Child", curChild.toString());
             }
             curChild = curChild.getNextSibling();
@@ -255,31 +406,21 @@ public class ModelFactory {
         nodes.addAll(extractToList(element, synchronisation));
 
 //        while (curChild != null)
-        for (Element curChild : nodes)
-        {
+        for (Element curChild : nodes) {
 //			String val = curChild.getNodeValue();
-			String val = curChild.getTagName();
+            String val = curChild.getTagName();
             long cid = this.parser.parserId(curChild);
-            if (inState.equals(val))
-            {
+            if (inState.equals(val)) {
                 //silently ignore
-            }
-            else if (outState.equals(val))
-            {
+            } else if (outState.equals(val)) {
                 this.transitionAimReferences.add(new Pair(tran.getId(), cid));
-            }
-            else if (preCondition.equals(val))
-            {
+            } else if (preCondition.equals(val)) {
                 PreCondition pre = createPreCondition(curChild);
                 tran.setPreCondition(pre);
                 pre.setAbstractPlan(plan);
-            }
-            else if (synchronisation.equals(val))
-            {
+            } else if (synchronisation.equals(val)) {
                 this.transitionSynchReferences.add(new Pair(tran.getId(), cid));
-            }
-            else
-            {
+            } else {
                 ae.abort("MF: Unhandled Transition Child:", curChild.toString());
             }
 //            curChild = curChild.getNextSibling();
@@ -293,68 +434,49 @@ public class ModelFactory {
         setAlicaElementAttributes(pre, element);
         addElement(pre);
         String conditionString = "";
-		String conditionPtr = element.getAttributes().getNamedItem("conditionString").getTextContent();
-        if (conditionPtr != null)
-        {
+        String conditionPtr = element.getAttributes().getNamedItem("conditionString").getTextContent();
+        if (conditionPtr != null) {
             conditionString = conditionPtr;
             pre.setConditionString(conditionString);
         }
 
-        if (!conditionString.isEmpty())
-        {
+        if (!conditionString.isEmpty()) {
             //TODO: ANTLRBUILDER
-        }
-        else
-        {
+        } else {
             //TODO: aus c#
             //pos.ConditionFOL = null;
         }
 
         String pluginNamePtr = element.getAttributes().getNamedItem("pluginName").getTextContent();
-        if (pluginNamePtr != null)
-        {
+        if (pluginNamePtr != null) {
             pre.setPlugInName(pluginNamePtr);
         }
 
         String enabled = "";
         String enabledPtr = element.getAttributes().getNamedItem("enabled").getTextContent();
-        if (enabledPtr != null)
-        {
+        if (enabledPtr != null) {
             enabled = enabledPtr;
-            if ("true".equals(enabled))
-            {
+            if ("true".equals(enabled)) {
                 pre.setEnabled(true);
-            }
-            else
-            {
+            } else {
                 pre.setEnabled(false);
             }
-        }
-        else
-        {
+        } else {
             pre.setEnabled(true);
         }
         Node curChild = element.getFirstChild();
-        while (curChild != null)
-        {
+        while (curChild != null) {
             String val = curChild.getNodeValue();
             long cid = this.parser.parserId(curChild);
-            if (vars.equals(val))
-            {
+            if (vars.equals(val)) {
                 this.conditionVarReferences.add(new Pair(pre.getId(), cid));
-            }
-            else if (quantifiers.equals(val))
-            {
+            } else if (quantifiers.equals(val)) {
                 Quantifier q = createQuantifier(curChild);
                 pre.getQuantifiers().add(q);
-            }
-            else if (parameters.equals(val))
-            {
+            } else if (parameters.equals(val)) {
                 Parameter p = createParameter(curChild);
                 pre.getParameters().add(p);
-            }
-            else
-            {
+            } else {
                 ae.abort("MF: Unhandled PreCondition Child:", curChild.getNodeValue());
             }
             curChild = curChild.getNextSibling();
@@ -381,21 +503,15 @@ public class ModelFactory {
 
         String typeString = "";
         String typePtr = element.getAttributes().getNamedItem("xsi:type").getTextContent();
-        if (typePtr != null)
-        {
+        if (typePtr != null) {
             typeString = typePtr;
-            if ("alica:ForallAgents".equals(typeString))
-            {
+            if ("alica:ForallAgents".equals(typeString)) {
                 q = new ForallAgents(this.ae);
                 q.setId(id);
-            }
-            else
-            {
+            } else {
                 ae.abort("MF: Unsupported quantifier type! !", typeString);
             }
-        }
-        else
-        {
+        } else {
             ae.abort("MF: Quantifier without type!", String.valueOf(id));
         }
 
@@ -405,21 +521,16 @@ public class ModelFactory {
 
         String scopePtr = element.getAttributes().getNamedItem("scope").getTextContent();
         long cid;
-        if (scopePtr != null)
-        {
+        if (scopePtr != null) {
             cid = stol(scopePtr);
             this.quantifierScopeReferences.add(new Pair(q.getId(), cid));
         }
         Node curChild = element.getFirstChild();
-        while (curChild != null)
-        {
+        while (curChild != null) {
             String val = curChild.getNodeValue();
-            if (sorts.equals(val))
-            {
+            if (sorts.equals(val)) {
                 q.getDomainIdentifiers().add(curChild.getTextContent());
-            }
-            else
-            {
+            } else {
                 ae.abort("MF: Unhandled Quantifier Child:", curChild.toString());
             }
 
@@ -438,21 +549,15 @@ public class ModelFactory {
         this.rep.getStates().put(fail.getId(), fail);
 
         Node curChild = element.getFirstChild();
-        while (curChild != null)
-        {
-			String val = curChild.getNodeValue();
+        while (curChild != null) {
+            String val = curChild.getNodeValue();
             long cid = this.parser.parserId(curChild);
-            if (inTransitions.equals(val))
-            {
+            if (inTransitions.equals(val)) {
                 this.stateInTransitionReferences.add(new Pair(fail.getId(), cid));
-            }
-            else if (postCondition.equals(val))
-            {
+            } else if (postCondition.equals(val)) {
                 PostCondition postCon = createPostCondition(curChild);
                 fail.setPostCondition(postCon);
-            }
-            else
-            {
+            } else {
                 ae.abort("MF: Unhandled FaulireState Child: ", curChild.getNodeValue());
             }
 
@@ -470,21 +575,15 @@ public class ModelFactory {
         this.rep.getStates().put(suc.getId(), suc);
 
         Node curChild = element.getFirstChild();
-        while (curChild != null)
-        {
-			 String val = curChild.getNodeValue();
+        while (curChild != null) {
+            String val = curChild.getNodeValue();
             long cid = this.parser.parserId(curChild);
-            if (inTransitions.equals(val))
-            {
+            if (inTransitions.equals(val)) {
                 this.stateInTransitionReferences.add(new Pair(suc.getId(), cid));
-            }
-            else if (postCondition.equals(val))
-            {
+            } else if (postCondition.equals(val)) {
                 PostCondition postCon = createPostCondition(curChild);
                 suc.setPostCondition(postCon);
-            }
-            else
-            {
+            } else {
                 ae.abort("MF: Unhandled SuccesState Child:", curChild.getNodeValue());
             }
 
@@ -501,29 +600,23 @@ public class ModelFactory {
 
         String conditionString = "";
         String conditionPtr = element.getAttributes().getNamedItem("conditionString").getTextContent();
-        if (conditionPtr != null)
-        {
+        if (conditionPtr != null) {
             conditionString = conditionPtr;
             pos.setConditionString(conditionString);
         }
-        if (!conditionString.isEmpty())
-        {
+        if (!conditionString.isEmpty()) {
             //TODO: ANTLRBUILDER
-        }
-        else
-        {
+        } else {
             //TODO: aus c#
             //pos.ConditionFOL = null;
         }
 
         String pluginNamePtr = element.getAttributes().getNamedItem("pluginName").getTextContent();
-        if (pluginNamePtr != null)
-        {
+        if (pluginNamePtr != null) {
             pos.setPlugInName(pluginNamePtr);
         }
 
-        if (element.getFirstChild() != null)
-        {
+        if (element.getFirstChild() != null) {
             ae.abort("MF: Unhandled Result child", element.getFirstChild().toString());
         }
 
@@ -540,36 +633,26 @@ public class ModelFactory {
 
         //TODO: move to parser
         Vector<Element> nodes = extractToList(element, plans);
-        nodes.addAll(extractToList(element,inTransitions));
-        nodes.addAll(extractToList(element,outTransitions));
-        nodes.addAll(extractToList(element,parametrisation));
+        nodes.addAll(extractToList(element, inTransitions));
+        nodes.addAll(extractToList(element, outTransitions));
+        nodes.addAll(extractToList(element, parametrisation));
 
 //        Node curChild = element.getFirstChild();
 //        while (curChild != null)
-        for (Element curChild : nodes)
-        {
-			String val = curChild.getTagName();
+        for (Element curChild : nodes) {
+            String val = curChild.getTagName();
             long cid = this.parser.parserId(curChild);
 
-            if (inTransitions.equals(val))
-            {
-                this.stateInTransitionReferences.add( new Pair(s.getId(), cid));
-            }
-            else if (outTransitions.equals(val))
-            {
+            if (inTransitions.equals(val)) {
+                this.stateInTransitionReferences.add(new Pair(s.getId(), cid));
+            } else if (outTransitions.equals(val)) {
                 this.stateOutTransitionReferences.add(new Pair(s.getId(), cid));
-            }
-            else if (plans.equals(val))
-            {
+            } else if (plans.equals(val)) {
                 this.statePlanReferences.add(new Pair(s.getId(), cid));
-            }
-            else if (parametrisation.equals(val))
-            {
+            } else if (parametrisation.equals(val)) {
                 Parametrisation para = createParametrisation(curChild);
                 s.getParametrisation().add(para);
-            }
-            else
-            {
+            } else {
                 ae.abort("MF: Unhandled State Child: ", val);
             }
 
@@ -583,7 +666,7 @@ public class ModelFactory {
         NodeList nodes = ((Element) element).getElementsByTagName(tagName);
         Vector newNodes = new Vector();
 
-        for (int i = 0; i < nodes.getLength(); i++ ) {
+        for (int i = 0; i < nodes.getLength(); i++) {
             newNodes.add(nodes.item(i));
         }
 
@@ -597,25 +680,17 @@ public class ModelFactory {
 
         addElement(para);
         Node curChild = element.getFirstChild();
-        while (curChild != null)
-        {
-			String val = curChild.getNodeValue();
+        while (curChild != null) {
+            String val = curChild.getNodeValue();
             long cid = this.parser.parserId(curChild);
 
-            if (subplan.equals(val))
-            {
+            if (subplan.equals(val)) {
                 this.paramSubPlanReferences.add(new Pair(para.getId(), cid));
-            }
-            else if (subvar.equals(val))
-            {
+            } else if (subvar.equals(val)) {
                 this.paramSubVarReferences.add(new Pair(para.getId(), cid));
-            }
-            else if (var.equals(val))
-            {
+            } else if (var.equals(val)) {
                 this.paramVarReferences.add(new Pair(para.getId(), cid));
-            }
-            else
-            {
+            } else {
                 ae.abort("MF: Unhandled Parametrisation Child:", curChild.toString());
             }
 
@@ -629,18 +704,15 @@ public class ModelFactory {
         ep.setId(this.parser.parserId(element));
         setAlicaElementAttributes(ep, element);
         String attr = element.getAttributes().getNamedItem("minCardinality").getTextContent();
-        if (!attr.isEmpty())
-        {
+        if (!attr.isEmpty()) {
             ep.setMinCardinality(stoi(attr));
         }
         attr = element.getAttributes().getNamedItem("maxCardinality").getTextContent();
-        if (!attr.isEmpty())
-        {
+        if (!attr.isEmpty()) {
             ep.setMaxCardinality(stoi(attr));
         }
         attr = element.getAttributes().getNamedItem("successRequired").getTextContent();
-        if (!attr.isEmpty())
-        {
+        if (!attr.isEmpty()) {
 //            transform(attr.begin(), attr.end(), attr.begin(), ::tolower);
             attr = attr.toLowerCase();
             ep.setSuccessRequired("true".equals(attr));
@@ -654,33 +726,26 @@ public class ModelFactory {
 
         //TODO: move to parser
         Vector<Element> nodes = extractToList(element, state);
-        nodes.addAll(extractToList(element,task));
+        nodes.addAll(extractToList(element, task));
 
 //        while (curChild != null)
-        for (Element curChild : nodes)
-        {
-			String val = curChild.getTagName();
+        for (Element curChild : nodes) {
+            String val = curChild.getTagName();
             curChildId = this.parser.parserId(curChild);
 
-            if (state.equals(val))
-            {
+            if (state.equals(val)) {
                 this.epStateReferences.add(new Pair(ep.getId(), curChildId));
                 haveState = true;
-            }
-            else if (task.equals(val))
-            {
+            } else if (task.equals(val)) {
                 this.epTaskReferences.add(new Pair(ep.getId(), curChildId));
-            }
-            else
-            {
+            } else {
                 ae.abort("MF: Unhandled EntryPoint Child: ", val);
             }
 //            curChild = curChild.getNextSibling();
         }
 
-        if (!haveState)
-        {
-            ae.abort("MF: No initial state identified for EntryPoint: ", String .valueOf(ep.getId()));
+        if (!haveState) {
+            ae.abort("MF: No initial state identified for EntryPoint: ", String.valueOf(ep.getId()));
         }
 
         return ep;
@@ -689,11 +754,9 @@ public class ModelFactory {
     private boolean isReferenceNode(Node node) {
 //        Node curChild = node.getFirstChild();
         Node curChild = node.getNextSibling();
-        while (curChild != null)
-        {
+        while (curChild != null) {
             String textNode = curChild.getTextContent();
-            if (textNode != null)
-            {
+            if (textNode != null) {
                 return true;
             }
             curChild = curChild.getNextSibling();
@@ -704,14 +767,14 @@ public class ModelFactory {
 
     public void addElement(AlicaElement ael) {
         //TODO: Fix
+        System.out.println("MF: " + ael.getId() + "  " + ael.getName());
 //        if (this.elements.size()> 0 && this.elements.get(ael.getId()) != this.elements.values().toArray()[this.elements.values().size()-1])
-        if (this.elements.size()> 0 && this.elements.get(ael.getId()) != null && this.elements.get(ael.getId()) != ael)
-        {
-            System.out.println( "ELEMENT >" + ael.getName() + "< >" + this.elements.get(ael.getId()).getName() + "<"  );
-            String ss = "";
-            ss += "MF: ERROR Double IDs: " + ael.getId();
+        if (this.elements.size() > 0 && this.elements.get(ael.getId()) != null && this.elements.get(ael.getId()) != ael) {
+            System.out.println("ELEMENT >" + ael.getName() + "< >" + this.elements.get(ael.getId()).getName() + "<");
+            System.out.println("ELEMENT >" + ael.getId() + "< >" + this.elements.get(ael.getId()).getId() + "<");
+            System.out.println("ELEMENT >" + ael.hashCode() + "< >" + this.elements.get(ael.getId()).hashCode() + "<");
 //			cout << segfaultdebug::get_stacktrace() << endl;
-            ae.abort(ss);
+            ae.abort("MF: ERROR Double IDs: " + ael.getId());
         }
         elements.put(ael.getId(), ael);
     }
@@ -720,17 +783,13 @@ public class ModelFactory {
         String name = ele.getAttributes().getNamedItem("name").getTextContent();
         String comment = ele.getAttributes().getNamedItem("comment").getTextContent();
 
-        if (!name.isEmpty())
-        {
+        if (!name.isEmpty()) {
             ae.setName(name);
-        }
-        else
+        } else
             ae.setName("MISSING_NAME");
-        if (!comment.isEmpty())
-        {
+        if (!comment.isEmpty()) {
             ae.setComment(comment);
-        }
-        else
+        } else
             ae.setComment("");
     }
 
@@ -744,25 +803,22 @@ public class ModelFactory {
 
     public void attachPlanReferences() {
 //        #ifdef MF_DEBUG
-        System.out.println( "MF: Attaching Plan references.." );
+        System.out.println("MF: Attaching Plan references..");
 //#endif
         //epTaskReferences
-        for (Pair<Long, Long> pairs : this.epTaskReferences)
-        {
-            Task t = (Task)this.elements.get(pairs.snd);
-            EntryPoint ep = (EntryPoint)this.elements.get(pairs.fst);
+        for (Pair<Long, Long> pairs : this.epTaskReferences) {
+            Task t = (Task) this.elements.get(pairs.snd);
+            EntryPoint ep = (EntryPoint) this.elements.get(pairs.fst);
             ep.setTask(t);
         }
         this.epTaskReferences.clear();
 
         //transitionAimReferences
-        for (Pair<Long, Long> pairs : this.transitionAimReferences)
-        {
-            Transition t = (Transition)this.elements.get(pairs.fst);
-            State st = (State)this.elements.get(pairs.snd);
-            if (st == null)
-            {
-                ae.abort("MF: Cannot resolve transitionAimReferences target: ", ""+pairs.fst);
+        for (Pair<Long, Long> pairs : this.transitionAimReferences) {
+            Transition t = (Transition) this.elements.get(pairs.fst);
+            State st = (State) this.elements.get(pairs.snd);
+            if (st == null) {
+                ae.abort("MF: Cannot resolve transitionAimReferences target: ", "" + pairs.fst);
             }
             t.setOutState(st);
             st.getInTransitions().add(t);
@@ -770,158 +826,139 @@ public class ModelFactory {
         this.transitionAimReferences.clear();
 
         //epStateReferences
-        for (Pair<Long, Long> pairs : this.epStateReferences)
-        {
-            State st = (State)this.elements.get(pairs.snd);
-            EntryPoint ep = (EntryPoint)this.elements.get(pairs.fst);
+        for (Pair<Long, Long> pairs : this.epStateReferences) {
+            State st = (State) this.elements.get(pairs.snd);
+            EntryPoint ep = (EntryPoint) this.elements.get(pairs.fst);
             ep.setState(st);
             st.setEntryPoint(ep);
         }
         this.epStateReferences.clear();
 
         //stateInTransitionReferences
-        for (Pair<Long, Long> pairs : this.stateInTransitionReferences)
-        {
-            Transition t = (Transition)this.elements.get(pairs.snd);
-            State st = (State)this.elements.get(pairs.fst);
-            if (st != t.getOutState())
-            {
-                ae.abort("MF: Unexpected reference in a transition! ", ""+pairs.fst);
+        for (Pair<Long, Long> pairs : this.stateInTransitionReferences) {
+            Transition t = (Transition) this.elements.get(pairs.snd);
+            State st = (State) this.elements.get(pairs.fst);
+            if (st != t.getOutState()) {
+                ae.abort("MF: Unexpected reference in a transition! ", "" + pairs.fst);
             }
         }
         this.stateInTransitionReferences.clear();
 
         //stateOutTransitionReferences
-        for (Pair<Long, Long> pairs : this.stateOutTransitionReferences)
-        {
-            State st = (State)this.elements.get(pairs.fst);
-            Transition t = (Transition)this.elements.get(pairs.snd);
+        for (Pair<Long, Long> pairs : this.stateOutTransitionReferences) {
+            State st = (State) this.elements.get(pairs.fst);
+            Transition t = (Transition) this.elements.get(pairs.snd);
             st.getOutTransitions().add(t);
             t.setInState(st);
         }
         this.stateOutTransitionReferences.clear();
 
         //statePlanReferences
-        for (Pair<Long, Long> pairs : this.statePlanReferences)
-        {
-            State st = (State)this.elements.get(pairs.fst);
-            AbstractPlan p = (AbstractPlan)this.elements.get(pairs.snd);
+        for (Pair<Long, Long> pairs : this.statePlanReferences) {
+            State st = (State) this.elements.get(pairs.fst);
+            AbstractPlan p = (AbstractPlan) this.elements.get(pairs.snd);
             st.getPlans().add(p);
         }
         this.statePlanReferences.clear();
 
         //planTypePlanReferences
-        for (Pair<Long, Long> pairs : this.planTypePlanReferences)
-        {
-            PlanType pt = (PlanType)this.elements.get(pairs.fst);
-            Plan p = (Plan)this.elements.get(pairs.snd);
+        for (Pair<Long, Long> pairs : this.planTypePlanReferences) {
+            PlanType pt = (PlanType) this.elements.get(pairs.fst);
+            Plan p = (Plan) this.elements.get(pairs.snd);
             pt.getPlans().add(p);
         }
         this.planTypePlanReferences.clear();
 
         //conditionVarReferences
-        for (Pair<Long, Long> pairs : this.conditionVarReferences)
-        {
-            Condition c = (Condition)this.elements.get(pairs.fst);
-            Variable v = (Variable)this.elements.get(pairs.snd);
+        for (Pair<Long, Long> pairs : this.conditionVarReferences) {
+            Condition c = (Condition) this.elements.get(pairs.fst);
+            Variable v = (Variable) this.elements.get(pairs.snd);
             c.getVariables().add(v);
         }
         this.conditionVarReferences.clear();
 
         //paramSubPlanReferences
-        for (Pair<Long, Long> pairs : this.paramSubPlanReferences)
-        {
-            Parametrisation p = (Parametrisation)this.elements.get(pairs.fst);
-            AbstractPlan ap = (AbstractPlan)this.elements.get(pairs.snd);
+        for (Pair<Long, Long> pairs : this.paramSubPlanReferences) {
+            Parametrisation p = (Parametrisation) this.elements.get(pairs.fst);
+            AbstractPlan ap = (AbstractPlan) this.elements.get(pairs.snd);
             p.setSubPlan(ap);
         }
         this.paramSubPlanReferences.clear();
 
         //paramSubVarReferences
-        for (Pair<Long, Long> pairs : this.paramSubVarReferences)
-        {
-            Parametrisation p = (Parametrisation)this.elements.get(pairs.fst);
-            Variable ap = (Variable)this.elements.get(pairs.snd);
+        for (Pair<Long, Long> pairs : this.paramSubVarReferences) {
+            Parametrisation p = (Parametrisation) this.elements.get(pairs.fst);
+            Variable ap = (Variable) this.elements.get(pairs.snd);
             p.setSubVar(ap);
         }
         this.paramSubVarReferences.clear();
 
         //paramVarReferences
-        for (Pair<Long, Long> pairs : this.paramVarReferences)
-        {
-            Parametrisation p = (Parametrisation)this.elements.get(pairs.fst);
-            Variable v = (Variable)this.elements.get(pairs.snd);
+        for (Pair<Long, Long> pairs : this.paramVarReferences) {
+            Parametrisation p = (Parametrisation) this.elements.get(pairs.fst);
+            Variable v = (Variable) this.elements.get(pairs.snd);
             p.setVar(v);
         }
         this.paramVarReferences.clear();
 
         //transitionSynchReferences
-        for (Pair<Long, Long> pairs : this.transitionSynchReferences)
-        {
-            Transition t = (Transition)this.elements.get(pairs.fst);
-            SyncTransition sync = (SyncTransition)this.elements.get(pairs.snd);
+        for (Pair<Long, Long> pairs : this.transitionSynchReferences) {
+            Transition t = (Transition) this.elements.get(pairs.fst);
+            SyncTransition sync = (SyncTransition) this.elements.get(pairs.snd);
             t.setSyncTransition(sync);
             sync.getInSync().add(t);
         }
         this.transitionSynchReferences.clear();
 
         //planningProblemPlanReferences
-        for (Pair<Long, Long> pairs : this.planningProblemPlanReferences)
-        {
-            PlanningProblem s = (PlanningProblem)this.elements.get(pairs.fst);
-            AbstractPlan p = (AbstractPlan)this.elements.get(pairs.snd);
+        for (Pair<Long, Long> pairs : this.planningProblemPlanReferences) {
+            PlanningProblem s = (PlanningProblem) this.elements.get(pairs.fst);
+            AbstractPlan p = (AbstractPlan) this.elements.get(pairs.snd);
             s.getPlans().add(p);
         }
         this.planningProblemPlanReferences.clear();
 
         //planningProblemPlanWaitReferences
-        for (Pair<Long, Long> pairs : this.planningProblemPlanWaitReferences)
-        {
-            PlanningProblem s = (PlanningProblem)this.elements.get(pairs.fst);
-            Plan p = (Plan)this.elements.get(pairs.snd);
+        for (Pair<Long, Long> pairs : this.planningProblemPlanWaitReferences) {
+            PlanningProblem s = (PlanningProblem) this.elements.get(pairs.fst);
+            Plan p = (Plan) this.elements.get(pairs.snd);
             s.setWaitPlan(p);
         }
         this.planningProblemPlanWaitReferences.clear();
 
         //planningProblemPlanAlternativeReferences
-        for (Pair<Long, Long> pairs : this.planningProblemPlanAlternativeReferences)
-        {
-            PlanningProblem s = (PlanningProblem)this.elements.get(pairs.fst);
-            Plan p = (Plan)this.elements.get(pairs.snd);
+        for (Pair<Long, Long> pairs : this.planningProblemPlanAlternativeReferences) {
+            PlanningProblem s = (PlanningProblem) this.elements.get(pairs.fst);
+            Plan p = (Plan) this.elements.get(pairs.snd);
             s.setAlternativePlan(p);
         }
         this.planningProblemPlanAlternativeReferences.clear();
 
         //quantifierScopeReferences
-        for (Pair<Long, Long> pairs : this.quantifierScopeReferences)
-        {
-            AlicaElement ae = (AlicaElement)this.elements.get(pairs.snd);
-            Quantifier q = (Quantifier)this.elements.get(pairs.fst);
+        for (Pair<Long, Long> pairs : this.quantifierScopeReferences) {
+            AlicaElement ae = (AlicaElement) this.elements.get(pairs.snd);
+            Quantifier q = (Quantifier) this.elements.get(pairs.fst);
             q.setScope(this.ae, ae);
         }
         this.quantifierScopeReferences.clear();
 
         removeRedundancy();
 //#ifdef MF_DEBUG
-        System.out.println( "MF: DONE!");
+        System.out.println("MF: DONE!");
 //#endif
 
     }
 
     private void removeRedundancy() {
-        for ( Plan plan : this.rep.getPlans().values())
-        {
+        for (Plan plan : this.rep.getPlans().values()) {
             ArrayList<Transition> transToRemove = new ArrayList<>();
-            for (Transition tran : plan.getTransitions())
-            {
-                if (tran.getInState() == null)
-                {
+            for (Transition tran : plan.getTransitions()) {
+                if (tran.getInState() == null) {
                     transToRemove.add(tran);
                 }
             }
 
-            for (Transition tran : transToRemove)
-            {
+            for (Transition tran : transToRemove) {
                 plan.getTransitions().remove(tran);
             }
         }
@@ -938,25 +975,21 @@ public class ModelFactory {
         addElement(beh);
         this.rep.getBehaviours().put(beh.getId(), beh);
         Node curChild = element.getFirstChild().getNextSibling();
-        while (curChild != null)
-        {
-			String val = curChild.getNodeName();
+        while (curChild != null) {
+            String val = curChild.getNodeName();
             long cid = this.parser.parserId(curChild);
 
-            if (configurations.equals(val))
-            {
+            if (configurations.equals(val)) {
                 BehaviourConfiguration bc = createBehaviourConfiguration(curChild);
                 this.rep.getBehaviourConfigurations().put(bc.getId(), bc);
                 bc.setBehaviour(beh);
                 beh.getConfigurations().add(bc);
-            }
-            else
-            {
+            } else {
                 ae.abort("MF: Unhandled Behaviour Child:", curChild.getNodeValue());
             }
             curChild = curChild.getNextSibling();
 
-            if("#text".equals(curChild.getNodeName())) {
+            if ("#text".equals(curChild.getNodeName())) {
                 curChild = curChild.getNextSibling();
             }
         }
@@ -967,60 +1000,50 @@ public class ModelFactory {
         b.setId(this.parser.parserId(element));
         b.setFileName(this.parser.getCurrentFile());
 
-		String attr = element.getAttributes().getNamedItem("masterPlan").getTextContent();
+        String attr = element.getAttributes().getNamedItem("masterPlan").getTextContent();
         String attrString = "";
-        if (!attr.isEmpty())
-        {
+        if (!attr.isEmpty()) {
             attrString = attr;
-            if (attrString.equals("true"))
-            {
+            if (attrString.equals("true")) {
                 b.setMasterPlan(true);
             }
         }
 
         Node receiveRemoteCommand = element.getAttributes().getNamedItem("receiveRemoteCommand");
-        if (receiveRemoteCommand != null && !receiveRemoteCommand.getTextContent().isEmpty())
-        {
+        if (receiveRemoteCommand != null && !receiveRemoteCommand.getTextContent().isEmpty()) {
             attr = receiveRemoteCommand.getTextContent();
             attrString = attr;
-            if (attrString.equals("true"))
-            {
+            if (attrString.equals("true")) {
                 b.setEventDriven(true);
             }
         }
         Node visionTriggered = element.getAttributes().getNamedItem("visionTriggered");
 
-        if (visionTriggered != null && !visionTriggered.getTextContent().isEmpty())
-        {
+        if (visionTriggered != null && !visionTriggered.getTextContent().isEmpty()) {
             attr = visionTriggered.getTextContent();
             attrString = attr;
-            if (attrString.equals("true"))
-            {
+            if (attrString.equals("true")) {
                 b.setEventDriven(true);
             }
         }
         Node eventDriven = element.getAttributes().getNamedItem("eventDriven");
 
-        if (eventDriven != null && !eventDriven.getTextContent().isEmpty())
-        {
+        if (eventDriven != null && !eventDriven.getTextContent().isEmpty()) {
             attr = eventDriven.getTextContent();
             attrString = attr;
-            if (attrString.equals("true"))
-            {
+            if (attrString.equals("true")) {
                 b.setEventDriven(true);
             }
         }
         Node deferring = element.getAttributes().getNamedItem("deferring");
 
-        if (deferring != null && !deferring.getTextContent().isEmpty())
-        {
+        if (deferring != null && !deferring.getTextContent().isEmpty()) {
             attr = deferring.getTextContent();
             b.setDeferring(stoi(attr));
         }
         Node frequency = element.getAttributes().getNamedItem("frequency");
 
-        if (frequency != null && !frequency.getTextContent().isEmpty())
-        {
+        if (frequency != null && !frequency.getTextContent().isEmpty()) {
             attr = frequency.getTextContent();
             b.setFrequency(stoi(attr));
         }
@@ -1033,27 +1056,20 @@ public class ModelFactory {
 
         Node curChild = elementFirstChild.getNextSibling();
 
-        while (curChild != null)
-        {
-			String val = curChild.getNodeValue();
+        while (curChild != null) {
+            String val = curChild.getNodeValue();
             long cid = this.parser.parserId(curChild);
-            if (vars.endsWith(val))
-            {
+            if (vars.endsWith(val)) {
                 Variable v = createVariable(curChild);
                 b.getVariables().add(v);
-            }
-            else if (parameters.equals(val))
-            {
-				String key = curChild.getAttributes().getNamedItem("key").getTextContent();
+            } else if (parameters.equals(val)) {
+                String key = curChild.getAttributes().getNamedItem("key").getTextContent();
                 String value = curChild.getAttributes().getNamedItem("value").getTextContent();
 
-                if (key != null && value != null)
-                {
+                if (key != null && value != null) {
                     b.getParameters().put(key, value);
                 }
-            }
-            else
-            {
+            } else {
                 ae.abort("MF: Unhandled BehaviourConfiguration Child: " + curChild);
             }
             curChild = curChild.getNextSibling();
@@ -1065,37 +1081,30 @@ public class ModelFactory {
     public RoleSet createRoleSet(Document doc, Plan masterPlan) {
         Element element = doc.getDocumentElement();
 
-		String def = element.getAttribute("default");
+        String def = element.getAttribute("default");
         boolean isDefault = false;
-        if (def != null)
-        {
+        if (def != null) {
             String d = def;
-            if (d.equals("true"))
-            {
+            if (d.equals("true")) {
                 isDefault = true;
             }
         }
 
-		String pidPtr = element.getAttribute("usableWithPlanID");
+        String pidPtr = element.getAttribute("usableWithPlanID");
         long pid = 0;
 
-        if (pidPtr != null)
-        {
+        if (pidPtr != null) {
             pid = stol(pidPtr);
         }
 
         boolean isUseable = false;
-        if (ignoreMasterPlanId)
-        {
+        if (ignoreMasterPlanId) {
             isUseable = true;
-        }
-        else
-        {
+        } else {
             isUseable = pidPtr != null && (pid == masterPlan.getId());
         }
 
-        if (!isDefault && !isUseable)
-        {
+        if (!isDefault && !isUseable) {
             ae.abort("MF:Selected RoleSet is not default, nor useable with current masterplan");
         }
 
@@ -1106,23 +1115,31 @@ public class ModelFactory {
         rs.setUsableWithPlanId(pid);
         addElement(rs);
 
-       Node curChild = element.getFirstChild();
-        while (curChild != null)
-        {
-			String val = curChild.getNodeValue();
-            if (mappings.equals(val))
-            {
+        Node curChild = getNodeChild(element);
+
+        while (curChild != null) {
+            String val = curChild.getNodeName();
+
+            if (mappings.equals(val)) {
                 RoleTaskMapping rtm = createRoleTaskMapping(curChild);
                 rs.getRoleTaskMappings().add(rtm);
-            }
-            else
-            {
+            } else {
                 ae.abort("MF: Unhandled RoleSet Child:", curChild.getNodeValue());
             }
-            curChild = curChild.getNextSibling();
+            curChild = getNextSilbing(curChild);
         }
 
         return rs;
+    }
+
+    private Node getNodeChild(Node element) {
+
+        Node curChild = element.getFirstChild();
+
+        if ("#text".equals(curChild.getNodeName())) {
+            curChild = curChild.getNextSibling();
+        }
+        return curChild;
     }
 
     private RoleTaskMapping createRoleTaskMapping(Node element) {
@@ -1131,33 +1148,35 @@ public class ModelFactory {
         setAlicaElementAttributes(rtm, element);
         addElement(rtm);
 
-        Node curChild = element.getFirstChild();
-        while (curChild != null)
-        {
-			String val = curChild.getNodeValue();
+        Node curChild = getNodeChild(element);
+        while (curChild != null) {
+            String val = curChild.getNodeName();
 
-            if (taskPriorities.equals(val))
-            {
+            if (taskPriorities.equals(val)) {
                 String keyPtr = curChild.getAttributes().getNamedItem("key").getTextContent();
                 String valuePtr = curChild.getAttributes().getNamedItem("value").getTextContent();
-                if (keyPtr != null && valuePtr != null)
-                {
+                if (keyPtr != null && valuePtr != null) {
                     rtm.getTaskPriorities().put(stol(keyPtr), stod(valuePtr));
                 }
-            }
-            else if (role.equals(val))
-            {
+            } else if (role.equals(val)) {
                 long cid = this.parser.parserId(curChild);
                 this.rtmRoleReferences.add(new Pair<>(rtm.getId(), cid));
-            }
-            else
-            {
+            } else {
                 ae.abort("MF: Unhandled RoleTaskMapping Child ", curChild.getNodeValue());
             }
-            curChild = curChild.getNextSibling();
+            curChild = getNextSilbing(curChild);
         }
 
         return rtm;
+    }
+
+    private Node getNextSilbing(Node curChild) {
+        curChild = curChild.getNextSibling();
+
+        if ("#text".equals(curChild.getNodeName())) {
+            curChild = curChild.getNextSibling();
+        }
+        return curChild;
     }
 
     public void createTasks(Document doc) {
@@ -1170,8 +1189,7 @@ public class ModelFactory {
         this.rep.getTaskRepositorys().put(tr.getId(), tr);
         long id = 0;
         String defaultTaskPtr = element.getAttribute("defaultTask");
-        if (defaultTaskPtr != null)
-        {
+        if (defaultTaskPtr != null) {
             id = stol(defaultTaskPtr);
             tr.setDefaultTask(id);
         }
@@ -1181,8 +1199,7 @@ public class ModelFactory {
         if (curChild.getNodeValue().startsWith("\n"))
             curChild = curChild.getNextSibling();
 
-        while (curChild != null)
-        {
+        while (curChild != null) {
             long cid = this.parser.parserId(curChild);
 
             Task task = new Task(cid == id);
@@ -1190,8 +1207,7 @@ public class ModelFactory {
             setAlicaElementAttributes(task, curChild);
             String descriptionkPtr = curChild.getAttributes().getNamedItem("description").getTextContent();
 
-            if (descriptionkPtr != null)
-            {
+            if (descriptionkPtr != null) {
                 task.setDescription(descriptionkPtr);
             }
             addElement(task);
@@ -1204,4 +1220,147 @@ public class ModelFactory {
                 curChild = curChild.getNextSibling();
         }
     }
+
+    public void createRoleDefinitionSet(Document node) {
+        Element element = node.getDocumentElement();
+        RoleDefinitionSet r = new RoleDefinitionSet();
+        r.setId(this.parser.parserId(element));
+        r.setFileName(this.parser.getCurrentFile());
+        setAlicaElementAttributes(r, element);
+        addElement(r);
+        this.rep.getRoleDefinitionSets().put(r.getId(), r);
+
+        Node curChild = getNodeChild(element);
+
+        while (curChild != null) {
+            String val = curChild.getNodeName();
+
+            if (roles.equals(val)) {
+                Role role = createRole(curChild);
+                r.getRoles().add(role);
+                role.setRoleDefinitionSet(r);
+            } else {
+                ae.abort("MF: Unhandled RoleDefinitionSet Child:", curChild.getNodeValue());
+            }
+            curChild = getNextSilbing(curChild);
+        }
+    }
+
+    private Role createRole(Node element) {
+        Role r = new Role();
+        r.setId(this.parser . parserId(element));
+        setAlicaElementAttributes(r, element);
+        addElement(r);
+        this.rep.getRoles().put(r.getId(), r);
+        Node curChild = getNodeChild(element);
+
+        while (curChild != null) {
+			String val = curChild.getNodeName();
+
+            if (characteristics.equals(val)) {
+                Characteristic  cha = createCharacteristic(curChild);
+                r.getCharacteristics().put(cha.getName(), cha);
+            } else {
+                ae.abort("MF: Unhandled Role Child:", curChild.getNodeValue());
+            }
+            curChild = getNextSilbing(curChild);
+        }
+        return r;
+    }
+
+    private Characteristic createCharacteristic(Node element) {
+        Characteristic cha = new Characteristic();
+        cha.setId(this.parser.parserId(element));
+        setAlicaElementAttributes(cha, element);
+		String attr = element.getAttributes().getNamedItem("weight").getTextContent();
+        if (attr != null)
+        {
+            cha.setWeight(stod(attr));
+        }
+
+        addElement(cha);
+        this.rep.getCharacteristics().put(cha.getId(), cha);
+        Node curChild = getNodeChild(element);
+
+        while (curChild != null)
+        {
+			String val = curChild.getNodeName();
+
+            if (capability.equals(val))
+            {
+                long capid = this.parser.parserId(curChild);
+                this.charCapReferences.add(new Pair<Long, Long>(cha.getId(), capid));
+            }
+            else if (value.equals(val))
+            {
+                long capValid = this.parser.parserId(curChild);
+                this.charCapValReferences.add(new Pair<Long, Long>(cha.getId(), capValid));
+            }
+            else
+            {
+                ae.abort("MF: Unhandled Characteristic Child:", curChild.getNodeValue());
+            }
+            curChild = getNextSilbing(curChild);
+        }
+        return cha;
+    }
+
+    public void createCapabilityDefinitionSet(Document node) {
+        Element element = node.getDocumentElement();
+        CapabilityDefinitionSet capSet = new CapabilityDefinitionSet();
+        capSet.setId(this.parser.parserId(element));
+        setAlicaElementAttributes(capSet, element);
+        addElement(capSet);
+
+        Node curChild = getNodeChild(element);
+        while (curChild != null)
+        {
+			String val = curChild.getNodeName();
+
+            if (capabilities.equals(val))
+            {
+                Capability cap = createCapability(curChild);
+                capSet.getCapabilities().add(cap);
+            }
+            else
+            {
+                ae.abort("MF: Unhandled Behaviour Child:", curChild.getNodeValue());
+            }
+            curChild = getNextSilbing(curChild);
+        }
+    }
+
+    private Capability createCapability(Node element) {
+        Capability cap = new Capability();
+        cap.setId(this.parser.parserId(element));
+        setAlicaElementAttributes(cap, element);
+        addElement(cap);
+        this.rep.getCapabilities().put(cap.getId(), cap);
+
+        Node curChild = getNodeChild(element);
+
+        while (curChild != null)
+        {
+			String val = curChild.getNodeName();
+            if (capValues.equals(val))
+            {
+                CapValue cval = new CapValue();
+                cval.setId(this.parser.parserId(curChild));
+                setAlicaElementAttributes(cval, curChild);
+                addElement(cval);
+                cap.getCapValues().add(cval);
+            }
+            else
+            {
+                ae.abort("MF: Unhandled Capability Child:", curChild.getNodeValue());
+            }
+            curChild = getNextSilbing(curChild);
+        }
+        return cap;
+    }
+
+    public LinkedHashMap<Long, AlicaElement> getElements() {
+        return elements;
+    }
 }
+

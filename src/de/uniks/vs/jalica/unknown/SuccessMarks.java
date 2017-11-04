@@ -1,5 +1,7 @@
 package de.uniks.vs.jalica.unknown;
 
+import de.uniks.vs.jalica.engine.AlicaEngine;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -11,6 +13,11 @@ import java.util.regex.Matcher;
 public class SuccessMarks {
 
     private LinkedHashMap<AbstractPlan, ArrayList<EntryPoint>> successMarks;
+    private AlicaEngine ae;
+
+    public SuccessMarks(AlicaEngine ae) {
+        this.ae = ae;
+    }
 
     public void markSuccessfull(AbstractPlan p, EntryPoint e) {
         ArrayList<EntryPoint> iter = this.getSuccessMarks().get(p);//find(p);

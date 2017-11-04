@@ -8,6 +8,7 @@ import java.util.Vector;
 public class Configuration {
     public Vector<String> getSections(String s) {
         Vector<String> vector = new Vector<>();
+        vector.add("NIO.ZERO");
         return vector;
     }
 }

@@ -46,7 +46,7 @@ public class AlicaEngine {
     private Logger log;
     private VariableSyncModule variableSyncModule;
     private IAlicaClock alicaClock;
-    private String robotName;
+//    private String robotName;
     private IPlanner planner;
 
     public void setIAlicaClock(IAlicaClock clock) {
@@ -208,7 +208,7 @@ public class AlicaEngine {
     }
 
     public String getRobotName() {
-        return robotName;
+        return sc.getHostname();
     }
 
     public RoleSet getRoleSet() {
@@ -224,7 +224,7 @@ public class AlicaEngine {
     }
 
     public void iterationComplete() {
-
+        CommonUtils.aboutNoImpl();
     }
 
     public PlanSelector getPlanSelector() {
@@ -245,5 +245,9 @@ public class AlicaEngine {
         ss += msg + tail;
         CommonUtils.aboutError("ABORT: " + msg);
         System.exit(CommonUtils.EXIT_FAILURE);
+    }
+
+    public PlanParser getPlanParser() {
+        return planParser;
     }
 }

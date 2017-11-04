@@ -35,6 +35,7 @@ public class SystemConfig {
         alicaConfig.put("Alica.TeamTimeOut", "1000");
         alicaConfig.put("Alica.TeamBlackList.InitiallyFull", "true");
         alicaConfig.put("Alica.MaxRuleApplications", "1");
+        alicaConfig.put("Alica.Team", "1");
 
         map.put("Alica", alicaConfig);
 
@@ -70,5 +71,9 @@ public class SystemConfig {
 
     public Configuration getG(String key) {
         return configs.get(key);
+    }
+
+    public String getHostname() {
+        return hostname;
     }
 }

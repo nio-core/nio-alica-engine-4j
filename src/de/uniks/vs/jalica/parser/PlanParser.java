@@ -4,10 +4,7 @@ import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.parser.handler.*;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.supplementary.FileSystem;
-import de.uniks.vs.jalica.unknown.CommonUtils;
-import de.uniks.vs.jalica.unknown.ModelFactory;
-import de.uniks.vs.jalica.unknown.Plan;
-import de.uniks.vs.jalica.unknown.RoleSet;
+import de.uniks.vs.jalica.unknown.*;
 import de.uniks.vs.jalica.teamobserver.PlanRepository;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -19,6 +16,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 /**
  * Created by alex on 13.07.17.
@@ -324,9 +322,59 @@ public class PlanParser {
         }
     }
 
-    private void parseRoleDefFile(String currentFile){CommonUtils.aboutNoImpl();}
+    private void parseRoleDefFile(String currentFile) {
+//#ifdef PP_DEBUG
+        System.out.println("PP: parsing RoleDef file: " + currentFile);
+//#endif
+        try {
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(currentFile);
 
-    private void parseCapabilityDefFile(String currentFile){CommonUtils.aboutNoImpl();}
+            if (doc == null)
+            {
+                ae.abort("PP: doc.ErrorCode: " + currentFile);
+            }
+            doc.getDocumentElement().normalize();
+            this.mf.createRoleDefinitionSet(doc);
+
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            System.err.println("PP: doc.ErrorCode: ");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.err.println("PP: doc.ErrorCode: ");
+            e.printStackTrace();
+        }
+    }
+
+    private void parseCapabilityDefFile(String currentFile){
+//        #ifdef PP_DEBUG
+        System.out.println("PP: parsing RoleDef file: " + currentFile);
+//#endif
+        try {
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(currentFile);
+
+            if (doc == null)
+            {
+                ae.abort("PP: doc.ErrorCode: " + currentFile);
+            }
+            doc.getDocumentElement().normalize();
+            this.mf.createCapabilityDefinitionSet(doc);
+
+        } catch (ParserConfigurationException e) {
+            e.printStackTrace();
+        } catch (SAXException e) {
+            System.err.println("PP: doc.ErrorCode: ");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.err.println("PP: doc.ErrorCode: ");
+            e.printStackTrace();
+        }
+    }
 
     private void parsePlanTypeFile(String currentFile){CommonUtils.aboutNoImpl();}
 
@@ -432,7 +480,7 @@ public class PlanParser {
                 temp2 = FileSystem.realpath(it, null);
                 String pathNew2 = temp2;
 //            free(temp2);
-                if (pathNew2 == pathNew) {
+                if (pathNew2.equals(pathNew)) {
                     found = true;
                     break;
                 }
@@ -444,7 +492,7 @@ public class PlanParser {
                     temp2 = FileSystem.realpath(filePath, null);
                     String pathNew2 =temp2;
 //                    free(temp2);
-                    if(pathNew2 == pathNew) {
+                    if(pathNew2.equals(pathNew)) {
                         found = true;
                         break;
                     }
@@ -549,5 +597,9 @@ public class PlanParser {
         }
 
         ae.abort("PP: Cannot handle XML Tag: " + node.getNodeName());
+    }
+
+    public LinkedHashMap<Long, AlicaElement> getParsedElements() {
+        return mf.getElements();
     }
 }

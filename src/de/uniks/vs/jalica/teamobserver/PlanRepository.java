@@ -78,4 +78,16 @@ public class PlanRepository {
     public LinkedHashMap<Long, Task> getTasks() {
         return tasks;
     }
+
+    public LinkedHashMap<Long, Characteristic> getCharacteristics() {
+        return characteristics;
+    }
+
+    public LinkedHashMap<Long, RoleDefinitionSet> getRoleDefinitionSets() {
+        return roleDefinitionSets;
+    }
+
+    public LinkedHashMap<Long, Capability> getCapabilities() {
+        return capabilities;
+    }
 }

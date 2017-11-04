@@ -3,7 +3,7 @@ package de.uniks.vs.jalica.unknown;
 /**
  * Created by alex on 13.07.17.
  */
-public class Characteristic {
+public class Characteristic extends AlicaElement {
     private String name;
     private CapValue capValue;
     private Capability capability;
@@ -23,5 +23,18 @@ public class Characteristic {
 
     public double getWeight() {
         return weight;
+    }
+
+    public void setCapability(Capability capability) {
+        this.capability = capability;
+    }
+
+    public void setCapValue(CapValue capValue) {
+        this.capValue = capValue;
+    }
+
+    public void setWeight(double weight) {
+
+        this.weight = weight;
     }
 }

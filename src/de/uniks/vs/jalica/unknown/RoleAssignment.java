@@ -57,8 +57,9 @@ public class RoleAssignment implements IRoleAssignment {
 
         System.out.println("RA: Available robots: " + this.availableRobots.size() );
         System.out.println("RA: Robot Ids: ");
-        for (RobotProperties aRobot : (this.availableRobots)) {
-            System.out.println(aRobot.getId() + " ");
+
+        for (RobotProperties aRobot : this.availableRobots) {
+            System.out.println("RA: Robot "+aRobot.getId() + " " +aRobot.getName());
         }
         System.out.println();
         double dutility = 0;
@@ -67,7 +68,7 @@ public class RoleAssignment implements IRoleAssignment {
 
         for ( long key : this.roles.keySet()) {
 
-            for (RobotProperties robProperties : (this.availableRobots)) {
+            for (RobotProperties robProperties : this.availableRobots) {
                 int y = 0;
                 dutility = 0;
                 HashMap<String, Characteristic> characteristics = this.roles.get(key).getCharacteristics();

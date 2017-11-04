@@ -48,7 +48,7 @@ public class TeamObserver implements ITeamObserver {
         for (int i = 0; i < playerNames.size(); i++)
         {
             RobotProperties rp = new RobotProperties(ae, playerNames.get(i));
-            if (!foundSelf && !playerNames.get(i).equals(ownPlayerName))
+            if (!foundSelf && playerNames.get(i).equals(ownPlayerName))
             {
                 foundSelf = true;
                 this.me = new RobotEngineData(ae, rp);
@@ -99,7 +99,17 @@ public class TeamObserver implements ITeamObserver {
     }
 
     public ArrayList<RobotProperties> getAvailableRobotProperties() {
-        return availableRobotProperties;
+        ArrayList<RobotProperties> ret = new ArrayList<>();
+        ret.add(me.getProperties());
+
+        for (RobotEngineData r : this.allOtherRobots)
+        {
+            if (r.isActive())
+            {
+                ret.add(r.getProperties());
+            }
+        }
+        return ret;
     }
 
     public void notifyRobotLeftPlan(AbstractPlan plan) {

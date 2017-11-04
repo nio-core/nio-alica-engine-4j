@@ -7,7 +7,7 @@ import java.util.ArrayList;
  */
 public class RoleSet extends AlicaElement{
 
-    ArrayList<RoleTaskMapping> roleTaskMappings;
+    ArrayList<RoleTaskMapping> roleTaskMappings = new ArrayList<>();
     boolean isDefault;
     /**
      * the plan ID this roleset is defined for
