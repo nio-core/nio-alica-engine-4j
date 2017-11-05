@@ -13,7 +13,7 @@ public class SystemConfig {
     static String DOMAIN_FOLDER = "DOMAIN_FOLDER";
     static String DOMAIN_CONFIG_FOLDER = "DOMAIN_CONFIG_FOLDER";
     protected char NODE_NAME_SEPERATOR = '_';
-    protected  LinkedHashMap<String, Configuration> configs = new LinkedHashMap<>();
+    protected  LinkedHashMap<String, GlobalConfiguration> configs = new LinkedHashMap<>();
 
     HashMap<String, HashMap<String,String>> map = new HashMap<>();
     protected String rootPath;
@@ -38,8 +38,7 @@ public class SystemConfig {
         alicaConfig.put("Alica.Team", "1");
 
         map.put("Alica", alicaConfig);
-
-        configs.put("Globals", new Configuration());
+        configs.put("Globals", new GlobalConfiguration());
 
         //TODO : path
         configPath = "config/";
@@ -69,7 +68,7 @@ public class SystemConfig {
         return configPath;
     }
 
-    public Configuration getG(String key) {
+    public GlobalConfiguration getG(String key) {
         return configs.get(key);
     }
 

@@ -59,7 +59,7 @@ public class RoleAssignment implements IRoleAssignment {
         System.out.println("RA: Robot Ids: ");
 
         for (RobotProperties aRobot : this.availableRobots) {
-            System.out.println("RA: Robot "+aRobot.getId() + " " +aRobot.getName());
+            System.out.println("           " + aRobot.getId() + " " +aRobot.getName());
         }
         System.out.println();
         double dutility = 0;

@@ -42,7 +42,7 @@ public class TeamObserver implements ITeamObserver {
         String ownPlayerName = ae.getRobotName();
         System.out.println( "TO: Initing Robot " + ownPlayerName );
         this.teamTimeOut = Long.valueOf(sc.get("Alica").get("Alica.TeamTimeOut")) * 1000000;
-        Vector<String> playerNames = sc.getG("Globals").getSections("Globals.Team");
+        Vector<String> playerNames = new Vector<>(sc.getG("Globals").getSections("Team").keySet());
         boolean foundSelf = false;
 
         for (int i = 0; i < playerNames.size(); i++)
