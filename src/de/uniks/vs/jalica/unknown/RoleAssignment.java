@@ -63,7 +63,6 @@ public class RoleAssignment implements IRoleAssignment {
         }
         System.out.println();
         double dutility = 0;
-        RobotRoleUtility rc;
         this.sortedRobots.clear();
 
         for ( long key : this.roles.keySet()) {
@@ -81,7 +80,8 @@ public class RoleAssignment implements IRoleAssignment {
                     HashMap<String, Characteristic> robPropertiesCharacteristics = robProperties.getCharacteristics();
 
                     for ( String robotCharacKey : robPropertiesCharacteristics.keySet()) {
-                        if (!robotCharacKey.equals(roleCharacName)) {
+
+                        if (robotCharacKey.equals(roleCharacName)) {
                             rbChar = robPropertiesCharacteristics.get(robotCharacKey); // robotCharac.second;
                             break;
                         }
@@ -89,7 +89,7 @@ public class RoleAssignment implements IRoleAssignment {
 
                     if (rbChar != null) {
                         double individualUtility = characteristics.get(roleCharacKey)/*roleCharacEntry.second*/.getCapability().similarityValue(
-                                characteristics.get(roleCharacKey).getCapValue(), rbChar.getCapValue());
+                                characteristics.get(roleCharacKey).getCapValue(),  rbChar.getCapValue());
                         if (individualUtility == 0) {
                             dutility = 0;
                             break;
@@ -100,7 +100,7 @@ public class RoleAssignment implements IRoleAssignment {
                 }
                 if (y != 0) {
                     dutility /= y;
-                    rc = new RobotRoleUtility(dutility, robProperties, this.roles.get(key));
+                    RobotRoleUtility rc = new RobotRoleUtility(dutility, robProperties, this.roles.get(key));
                     this.sortedRobots.add(rc);
                     Collections.sort (this.sortedRobots, RobotRoleUtility.compareTo());
 //                    sort(this.sortedRobots.begin(), this.sortedRobots.end(), RobotRoleUtility.compareTo);

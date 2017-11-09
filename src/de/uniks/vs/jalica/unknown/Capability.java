@@ -13,7 +13,7 @@ public class Capability extends AlicaElement {
     }
 
     public double similarityValue(CapValue roleVal, CapValue robotVal) {
-         int nCount = capValues.size();
+        int nCount = capValues.size();
 
         int rlIndex = -1;
         int rbIndex = -1;
