@@ -58,7 +58,7 @@ public class AlicaEngine {
     }
 
     public void addSolver(String gradientsolver, CGSolver cgSolver) {
-
+        CommonUtils.aboutNoImpl();
     }
 
     public boolean init(BehaviourCreator bc, ConditionCreator cc, UtilityFunctionCreator uc, ConstraintCreator crc,
