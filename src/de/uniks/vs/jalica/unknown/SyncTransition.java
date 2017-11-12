@@ -12,6 +12,7 @@ public class SyncTransition extends AlicaElement {
     private long talkTimeOut;
     private long syncTimeOut;
     private Plan plan;
+    private boolean failOnSyncTimeOut;
 
     public void setTalkTimeOut(long talkTimeOut) {
         this.talkTimeOut = talkTimeOut;
@@ -28,4 +29,10 @@ public class SyncTransition extends AlicaElement {
     public ArrayList<Transition> getInSync() {
         return inSync;
     }
+
+    public long getTalkTimeOut() {return talkTimeOut;}
+
+    public boolean isFailOnSyncTimeOut() {return failOnSyncTimeOut;}
+
+    public long getSyncTimeOut() {return syncTimeOut;}
 }

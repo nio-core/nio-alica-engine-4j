@@ -11,8 +11,8 @@ import java.util.Vector;
  */
 public class StateCollection {
 
-    private Vector<Integer> robots;
-    private Vector<State> states;
+    private Vector<Integer> robots = new Vector<>();
+    private Vector<State> states = new Vector<>();
 
     public StateCollection(AssignmentCollection ac) {
         for(int i = 0;i < ac.getSize(); i ++)

@@ -33,7 +33,7 @@ public class PartialAssignment implements IAssignment{
     public static PartialAssignment getNew(PartialAssignmentPool pap, Vector<Integer> robots, Plan plan, SuccessCollection sucCol) {
         if (pap.curIndex >= pap.maxCount)
         {
-            System.out.println( "max PA count reached!" );
+            System.out.println( "PA: max PA count reached!" );
         }
         PartialAssignment ret = pap.daPAs.get(pap.curIndex++);
         ret.clear();
@@ -83,16 +83,16 @@ public class PartialAssignment implements IAssignment{
                 }
 
 //#ifdef SUCDEBUG
-                System.out.println("SuccessCollection" );
-//                System.out.println( "EntryPoint: " + ret.epRobotsMapping.getEntryPoints().at(i).toString() );
-                System.out.println( "DynMax: " + ret.dynCardinalities.get(i).getMax() );
-                System.out.println( "DynMin: " + ret.dynCardinalities.get(i).getMin() );
-                System.out.print("SucCol: ");
+                if (CommonUtils.SUCDEBUG_debug)  System.out.println("PA: SuccessCollection" );
+                if (CommonUtils.SUCDEBUG_debug)System.out.println( "PA: EntryPoint: " + ret.epRobotsMapping.getEntryPoints().get(i).toString() );
+                if (CommonUtils.SUCDEBUG_debug)System.out.println( "PA: DynMax: " + ret.dynCardinalities.get(i).getMax() );
+                if (CommonUtils.SUCDEBUG_debug)System.out.println( "PA: DynMin: " + ret.dynCardinalities.get(i).getMin() );
+                if (CommonUtils.SUCDEBUG_debug)System.out.print("PA: SucCol: ");
                 for (int k : (suc))
                 {
-                    System.out.print( k + ", ");
+                    if (CommonUtils.SUCDEBUG_debug)System.out.print( k + ", ");
                 }
-                System.out.println( "-----------" );
+                if (CommonUtils.SUCDEBUG_debug)System.out.println( "-----------" );
 //#endif
             }
         }
@@ -118,7 +118,7 @@ public class PartialAssignment implements IAssignment{
     }
 
     @Override
-    public short getEntryPointCount() {
+    public int getEntryPointCount() {
         return 0;
     }
 

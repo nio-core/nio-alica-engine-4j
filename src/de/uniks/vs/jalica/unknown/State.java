@@ -51,4 +51,6 @@ public class State extends AlicaElement{
     public EntryPoint getEntryPoint() {
         return entryPoint;
     }
+
+    public AbstractPlan getInPlan() {return inPlan;}
 }

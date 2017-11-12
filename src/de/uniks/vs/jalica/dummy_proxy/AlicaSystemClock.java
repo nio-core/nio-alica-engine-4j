@@ -20,7 +20,7 @@ public class AlicaSystemClock implements IAlicaClock {
         long sec = us/1000000;
         long nsec = (us%1000000)*1000;
         try {
-            wait(sec*1000);
+            Thread.sleep(sec*1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

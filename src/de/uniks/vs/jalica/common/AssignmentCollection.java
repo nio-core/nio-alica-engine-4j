@@ -1,9 +1,7 @@
 package de.uniks.vs.jalica.common;
 
-import de.uniks.vs.jalica.unknown.CommonUtils;
 import de.uniks.vs.jalica.unknown.EntryPoint;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Vector;
@@ -27,7 +25,7 @@ public class AssignmentCollection {
         this.robots = new Vector<>();
         for (short i = 0; i < size; i++)
         {
-            this.robots.set(i, new Vector<Integer>());
+            this.robots.add(i, new Vector<Integer>());
         }
     }
 
@@ -89,7 +87,7 @@ public class AssignmentCollection {
     public boolean setEp(int index, EntryPoint ep) {
         if (index < this.numEps)
         {
-            this.entryPoints.set(index, ep);
+            this.entryPoints.add(index, ep);
             return true;
         }
 		else
@@ -134,5 +132,9 @@ public class AssignmentCollection {
 //		{
 //			cout << i << ": " << entryPoints[i].getTask().getId() << endl;
 //		}
+    }
+
+    public ArrayList<EntryPoint> getEntryPoints() {
+        return entryPoints;
     }
 }

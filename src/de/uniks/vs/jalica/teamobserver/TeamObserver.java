@@ -5,9 +5,9 @@ import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.unknown.*;
 
+import java.lang.reflect.Array;
+import java.net.CookieHandler;
 import java.util.*;
-
-import static com.oracle.jrockit.jfr.FlightRecorder.isActive;
 
 /**
  * Created by alex on 13.07.17.
@@ -90,12 +90,46 @@ public class TeamObserver implements ITeamObserver {
     }
 
     public RobotProperties getOwnRobotProperties() {
-        return ownRobotProperties;
+        return this.me.getProperties();
     }
 
     @Override
     public int teamSize() {
-        return 0;
+        CommonUtils.aboutNoImpl(); return 0;
+    }
+
+    @Override
+    public void handlePlanTreeInfo(PlanTreeInfo pti) {
+        CommonUtils.aboutNoImpl();
+    }
+
+    @Override
+    public void updateSuccessCollection(Plan p, SuccessCollection sc) {
+        sc.clear();
+        ArrayList<EntryPoint > suc = new ArrayList<>();
+
+        for (RobotEngineData r : this.allOtherRobots) {
+
+            if (r.isActive()) {
+//                    lock_guard<mutex> lock(this.successMark);
+                suc = r.getSuccessMarks().succeededEntryPoints(p);
+
+                if (suc != null) {
+
+                    for (EntryPoint ep : suc) {
+                        sc.setSuccess(r.getProperties().getId(), ep);
+                    }
+                }
+            }
+        }
+        suc = me.getSuccessMarks().succeededEntryPoints(p);
+
+        if (suc != null)
+        {
+            for (EntryPoint ep : suc){
+                sc.setSuccess(myId, ep);
+            }
+        }
     }
 
     public ArrayList<RobotProperties> getAvailableRobotProperties() {
@@ -190,18 +224,166 @@ public class TeamObserver implements ITeamObserver {
     }
 
     @Override
-    public void tick(RunningPlan rootNode) {
-        CommonUtils.aboutNoImpl();
+    public void tick(RunningPlan root) {
+        boolean changed = false;
+        AlicaTime time = ae.getIAlicaClock().now();
+        Vector<Integer> robotsAvail = new Vector<>();
+        robotsAvail.add(this.myId);
+
+        for (RobotEngineData r : this.allOtherRobots) {
+
+            if ((r.getLastMessageTime() + teamTimeOut) < time.time) {
+                changed |= r.isActive();
+                r.setActive(false);
+                r.getSuccessMarks().clear();
+//                lock_guard<mutex> lock(this.simplePlanTreeMutex);
+                this.simplePlanTrees.remove(r.getProperties().getId());
+            }
+            else if (!r.isActive()) {
+                r.setActive(true);
+                changed = true;
+            }
+
+            if (r.isActive()) {
+                robotsAvail.add(r.getProperties().getId());
+            }
+        }
+
+        // notifications for teamchanges, you can add some code below if you want to be notified when the team changed
+        if (changed) {
+            ae.getRoleAssignment().update();
+            this.log.eventOccured("TeamChanged");
+        }
+        cleanOwnSuccessMarks(root);
+
+        if (root != null) {
+            ArrayList<SimplePlanTree>  updatespts = new ArrayList<>();
+            ArrayList<Integer> noUpdates = new ArrayList<>();
+//            lock_guard<mutex> lock(this.simplePlanTreeMutex);
+//            for (auto iterator = this.simplePlanTrees.begin(); iterator != this.simplePlanTrees.end(); iterator++) {
+            for (int key : this.simplePlanTrees.keySet()) {
+                SimplePlanTree second = this.simplePlanTrees.get(key);
+
+                if (robotsAvail.contains(second.getRobotId())) {
+
+                    if (second.isNewSimplePlanTree())
+                    {
+                        updatespts.add(second);
+//#ifdef TO_DEBUG
+                        System.out.println( "TO: added to update");
+//#endif
+                        second.setNewSimplePlanTree(false);
+                    }
+                    else
+                    {
+//#ifdef TO_DEBUG
+                        System.out.println("TO: added to noupdate" );
+//#endif
+                        noUpdates.add(second.getRobotId());
+                    }
+                }
+            }
+//#ifdef TO_DEBUG
+            System.out.println("TO: spts size " + updatespts.size());
+//#endif
+
+            if (root.recursiveUpdateAssignment(updatespts, robotsAvail, noUpdates, time))
+            {
+                this.log.eventOccured("MsgUpdate");
+            }
+        }
     }
 
+    /**
+     * Broadcasts a PlanTreeInfo Message
+     * @param msg A list of long, a serialized version of the current planning tree
+     * as constructed by RunningPlan.ToMessage.
+     */
     @Override
     public void doBroadCast(ArrayList<Long> msg) {
-        CommonUtils.aboutNoImpl();
+        if (!ae.isMaySendMessages()) {
+            return;
+        }
+        PlanTreeInfo pti = new PlanTreeInfo();
+        pti.senderID = this.myId;
+        pti.stateIDs = msg;
+        pti.succeededEPs = this.getOwnEngineData().getSuccessMarks().toList();
+        ae.getCommunicator().sendPlanTreeInfo(pti);
+//#ifdef TO_DEBUG
+        String ss = "TO: Sending Plan Message: " +"\n";
+
+        for (long i: msg) {
+            ss+= "TO:      " +i + "\t";
+        }
+
+        ss+="\n";
+        System.out.println(ss);
+//#endif
     }
 
     @Override
     public RobotEngineData getOwnEngineData() {
         return this.me;
     }
+
+    public RobotEngineData getRobotById(int id) {
+
+        if (id == myId) {
+            return this.me;
+        }
+
+        for (RobotEngineData r : this.allOtherRobots) {
+
+            if (r.getProperties().getId() == id) {
+                return r;
+            }
+        }
+        return null;
+    }
+
+    private void cleanOwnSuccessMarks(RunningPlan root) {
+        HashSet<AbstractPlan> presentPlans  = new HashSet<AbstractPlan>();
+        if (root != null) {
+            ArrayList<RunningPlan> q = new ArrayList<RunningPlan>();
+            q.add(0,root);
+
+            while (q.size() > 0) {
+                RunningPlan p = q.get(0);
+                q.remove(0);
+
+                if (!p.isBehaviour()) {
+                    presentPlans.add(p.getPlan());
+
+                    for (RunningPlan c : p.getChildren()) {
+                        q.add(c);
+                    }
+                }
+            }
+        }
+        ArrayList<SimplePlanTree > queue = new ArrayList<>();
+//        lock_guard<mutex> lock(this.simplePlanTreeMutex);
+        for (int key : this.simplePlanTrees.keySet())
+        {
+
+//          TODO:  if (pair.second.operator bool())
+            CommonUtils.aboutImplIncomplete();
+            if (this.simplePlanTrees.get(key) == null) {
+                queue.add(this.simplePlanTrees.get(key));
+            }
+        }
+        while (queue.size() > 0)
+        {
+            SimplePlanTree spt = queue.get(0);
+            queue.remove(0);
+            presentPlans.add(spt.getState().getInPlan());
+            for (SimplePlanTree c : spt.getChildren())
+            {
+                queue.add(c);
+            }
+        }
+//        this.getOwnEngineData().getSuccessMarks().limitToPlans(move(presentPlans));
+        this.getOwnEngineData().getSuccessMarks().limitToPlans(presentPlans);
+    }
+
 }
 

@@ -30,8 +30,8 @@ public class SuccessCollection {
         eps.sort(EntryPoint::compareTo);
         for (EntryPoint ep : eps)
         {
-            this.entryPoints.set(i, ep);
-            this.robots.set(i, new ArrayList<Integer>());
+            this.entryPoints.add(i, ep);
+            this.robots.add(i, new ArrayList<Integer>());
             i++;
         }
     }

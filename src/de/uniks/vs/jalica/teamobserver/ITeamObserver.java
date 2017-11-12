@@ -31,4 +31,8 @@ public interface ITeamObserver {
     RobotProperties getOwnRobotProperties();
 
     int teamSize();
+
+    void handlePlanTreeInfo(PlanTreeInfo pti);
+
+    void updateSuccessCollection(Plan plan, SuccessCollection epSuccessMapping);
 }

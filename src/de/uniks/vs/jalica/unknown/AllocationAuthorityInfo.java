@@ -9,4 +9,7 @@ public class AllocationAuthorityInfo {
     public Vector<EntryPointRobots> entryPointRobots;
     public long planId;
     public long planType;
+    public int senderID;
+    public long parentState;
+    public int authority;
 }

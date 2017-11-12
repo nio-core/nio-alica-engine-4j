@@ -110,4 +110,14 @@ public class RobotEngineData {
 //        }
         return ret;
     }
+
+    public Role getLastRole() {
+        return lastRole;
+    }
+
+    public void setLastRole(Role lastRole) {
+        this.lastRole = lastRole;
+    }
+
+    public long getLastMessageTime() { return lastMessageTime; }
 }

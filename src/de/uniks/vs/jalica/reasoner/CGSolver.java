@@ -1,14 +1,40 @@
 package de.uniks.vs.jalica.reasoner;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
+import de.uniks.vs.jalica.unknown.CommonUtils;
+import de.uniks.vs.jalica.unknown.SolverVariable;
+import de.uniks.vs.jalica.unknown.Variable;
+
+import java.util.Vector;
 
 /**
  * Created by alex on 13.07.17.
  */
-public class CGSolver {
-    private AlicaEngine ae;
+public class CGSolver extends Solver {
+
+    GSolver gs;
+    GSolver sgs;
+
+    double lastUtil;
+    double lastRuns;
+    double lastFEvals;
 
     public CGSolver(AlicaEngine ae) {
-        this.ae = ae;
+        super(ae);
+    }
+
+    boolean existsSolution(Vector<Variable> vars, Vector<ProblemDescriptor> calls) {
+        CommonUtils.aboutNoImpl();
+        return false;
+    }
+
+    boolean getSolution(Vector<Variable> vars, Vector<ProblemDescriptor> calls, Vector results) {
+        CommonUtils.aboutNoImpl();
+        return false;
+    }
+
+    SolverVariable createVariable(long id) {
+        CommonUtils.aboutNoImpl();
+        return null;
     }
 }

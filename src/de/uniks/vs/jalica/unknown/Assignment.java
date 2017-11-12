@@ -109,7 +109,7 @@ public class Assignment implements IAssignment{
         Set<Integer> movingRobots = this.robotStateMapping.getRobotsInState(from);
         if (to == null)
         {
-            System.out.println("Ass: MoveRobots is given a State which is NULL!");
+            System.out.println("A: MoveRobots is given a State which is NULL!");
         }
         for (int r : movingRobots)
         {
@@ -128,14 +128,36 @@ public class Assignment implements IAssignment{
         for (int i = 0; i < this.epRobotsMapping.getSize(); i++)
         {
             curRobots = this.epRobotsMapping.getRobots(i);
-            Integer iter = CommonUtils.find(curRobots, 0, curRobots.size() - 1, robotId);
-            if (iter != curRobots.size()-1)
+
+            //TODO: why is curRobots size zero?
+            if(curRobots.isEmpty())
+                return false;
+
+            int robotid = CommonUtils.find(curRobots, 0, curRobots.size() - 1, robotId);
+
+            if (robotid != curRobots.size()-1)
             {
-                curRobots.remove(iter);
+                curRobots.remove(robotid);
                 return true;
             }
         }
         return false;
+    }
+
+    public boolean removeRobot(int robot, EntryPoint ep) {
+
+        if (ep == null) {
+            return false;
+        }
+        this.robotStateMapping.removeRobot(robot);
+
+        if (this.epRobotsMapping.getRobotsByEp(ep).contains(robot)) {
+            this.epRobotsMapping.getRobotsByEp(ep).remove(robot);
+            return true;
+        }
+		else {
+            return false;
+        }
     }
 
     public void addRobot(int id, EntryPoint e, State s) {
@@ -284,9 +306,8 @@ public class Assignment implements IAssignment{
     }
 
     @Override
-    public short getEntryPointCount() {
-        CommonUtils.aboutNoImpl();
-        return 0;
+    public int getEntryPointCount() {
+        return this.epRobotsMapping.getSize();
     }
 
     @Override
@@ -298,19 +319,47 @@ public class Assignment implements IAssignment{
     @Override
     public ArrayList<Integer> getUniqueRobotsWorkingAndFinished(EntryPoint ep) {
         ArrayList<Integer>  ret = new ArrayList<>();
-        //if (this.plan.getEntryPoints().find(ep.getId()) != this.plan.getEntryPoints().end())
+
+        if (this.plan.getEntryPoints().containsKey(ep.getId()))
         {
             Vector<Integer> robots = this.epRobotsMapping.getRobotsByEp(ep);
 
-            for (int i = 0; i < robots.size(); i++)
-            {
+            for (int i = 0; i < robots.size(); i++) {
                 ret.add(robots.get(i));
             }
-            for (Integer r : this.epSucMapping.getRobots(ep))
-            {
-                if (CommonUtils.find(ret, 0, ret.size()-1, r) == ret.get(ret.size()-1))
-                {
+
+            for (Integer r : this.epSucMapping.getRobots(ep)) {
+
+                if (CommonUtils.find(ret, 0, ret.size()-1, r) == ret.get(ret.size()-1)) {
                     ret.add(r);
+                }
+            }
+        }
+        return ret;
+    }
+
+    public boolean updateRobot(int robot, EntryPoint ep, State s) {
+        this.robotStateMapping.setState(robot, s);
+        boolean ret = false;
+
+        for (int i = 0; i < this.epRobotsMapping.getSize(); i++) {
+
+            if (this.epRobotsMapping.getEp(i) == ep) {
+
+                if (this.epRobotsMapping.getRobots(i).contains(robot)) {
+                    return false;
+                }
+                else {
+                    this.epRobotsMapping.getRobots(i).add(robot);
+                    ret = true;
+                }
+            }
+            else
+            {
+                if ( this.epRobotsMapping.getRobots(i).contains(robot))
+                {
+                    this.epRobotsMapping.getRobots(i).remove(robot);
+                    ret = true;
                 }
             }
         }
@@ -326,4 +375,5 @@ public class Assignment implements IAssignment{
     public void setMax(double max) {
         CommonUtils.aboutNoImpl();
     }
+
 }

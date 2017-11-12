@@ -4,6 +4,7 @@ import de.uniks.vs.jalica.engine.AlicaEngine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.regex.Matcher;
 
@@ -12,8 +13,8 @@ import java.util.regex.Matcher;
  */
 public class SuccessMarks {
 
-    private LinkedHashMap<AbstractPlan, ArrayList<EntryPoint>> successMarks;
     private AlicaEngine ae;
+    private LinkedHashMap<AbstractPlan, ArrayList<EntryPoint>> successMarks = new LinkedHashMap<>();
 
     public SuccessMarks(AlicaEngine ae) {
         this.ae = ae;
@@ -70,5 +71,39 @@ public class SuccessMarks {
             }
         }
         return null;
+    }
+
+    public void clear() {
+        successMarks.clear();
+    }
+
+    public void limitToPlans(HashSet<AbstractPlan> active) {
+        ArrayList<AbstractPlan> tr = new ArrayList<>();
+
+        for (AbstractPlan itePlan : this.getSuccessMarks().keySet()) {
+
+            if (!active.contains(itePlan)) {
+                tr.add(itePlan);
+            }
+        }
+
+        for (AbstractPlan p : tr) {
+            this.getSuccessMarks().remove(p);
+        }
+        
+    }
+
+
+    // <AbstractPlan,ArrayList<EntryPoint>>
+    public ArrayList<Long> toList() {
+        ArrayList<Long> ret = new ArrayList<Long>();
+
+        for (ArrayList<EntryPoint> entryPoints : this.getSuccessMarks().values()){
+
+            for (EntryPoint entryPoint : entryPoints) {
+                ret.add(entryPoint.getId());
+            }
+        }
+        return ret;
     }
 }

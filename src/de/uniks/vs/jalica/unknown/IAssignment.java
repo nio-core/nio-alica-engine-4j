@@ -10,7 +10,7 @@ import java.util.Vector;
  */
 public interface IAssignment {
 
-    short getEntryPointCount();
+    int getEntryPointCount();
 
     ArrayList<Integer> getRobotsWorkingAndFinished(EntryPoint ep);
 

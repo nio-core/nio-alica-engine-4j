@@ -25,30 +25,25 @@ public class GlobalConfiguration {
         nio.put("CanPass","True");
         nio.put("LocalizationSuccess","-1");
         nio.put("HasActiveBallHandler","True");
-
         HashMap<String, HashMap<String, String>> team = new HashMap<>();
         team.put("NIO.ZERO", nio);
-
-
         this.configValues.put("Team", team);
+
+        HashMap<String, String> priorities = new HashMap<>();
+        priorities.put("Attacker","1");
+        priorities.put("Keeper","2");
+        priorities.put("Defender","3");
+        priorities.put("Supporter","4");
+        priorities.put("AttackSupporter","5");
+
+        HashMap<String, HashMap<String, String>> rolePriorities = new HashMap<>();
+        rolePriorities.put("RolePriority", priorities);
+        this.configValues.put("RolePriority",rolePriorities);
     }
 
     public HashMap<String, HashMap<String, String>> getSections(String section) {
         return this.configValues.get(section);
     }
 
-//    public class ConfVector<T> extends Vector {
-//
-//        public T get(T id) {
-//
-//            for (Object i: elementData) {
-//
-//                if (id.equals(i))
-//                    return (T)i;
-//            }
-//
-//            return null;
-//        }
-//    }
 }
 

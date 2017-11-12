@@ -28,7 +28,7 @@ public class PlanBase implements Runnable {
     IRoleAssignment ra;
     ISyncModul syncModel;
     AuthorityManager authModul;
-    IAlicaCommunication statusPublisher;
+    AlicaCommunication statusPublisher;
     IAlicaClock alicaClock;
 
     AlicaTime loopTime;
@@ -113,7 +113,7 @@ public class PlanBase implements Runnable {
         }
 
 //#ifdef PB_DEBUG
-        System.out.println("PB: Engine loop time is " +(loopTime.time / 1000000)+ "ms, broadcast interval is "+(this.minSendInterval.time / 1000000)
+        if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: Engine loop time is " +(loopTime.time / 1000000)+ "ms, broadcast interval is "+(this.minSendInterval.time / 1000000)
                 + "ms - " + (this.maxSendInterval.time / 1000000) + "ms" );
 //#endif
         if (halfLoopTime.time < this.minSendInterval.time)
@@ -125,7 +125,7 @@ public class PlanBase implements Runnable {
 
     public void run() {
 //#ifdef PB_DEBUG
-        System.out.println("PB: Run-Method of PlanBase started. " );
+        if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: Run-Method of PlanBase started. " );
 //#endif
         while (this.running) {
             AlicaTime beginTime = alicaClock.now();
@@ -133,15 +133,15 @@ public class PlanBase implements Runnable {
 
             if (ae.getStepEngine()) {
 //#ifdef PB_DEBUG
-                System.out.println("PB: ===CUR TREE===");
+                if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: ===CUR TREE===");
 
                 if (this.rootNode == null) {
-                    System.out.println( "PB: NULL" );
+                    if (CommonUtils.PB_DEBUG_debug) System.out.println( "PB: NULL" );
                 }
 				else {
-                    rootNode.printRecursive();
+                    if (CommonUtils.PB_DEBUG_debug) rootNode.printRecursive();
                 }
-                System.out.println( "PB: ===END CUR TREE===" );
+                if (CommonUtils.PB_DEBUG_debug) System.out.println( "PB: ===END CUR TREE===" );
 //#endif
                 {
                     // TODO fix implementation
@@ -197,7 +197,7 @@ public class PlanBase implements Runnable {
             if ((this.ruleBook.isChangeOccured() && (this.lastSendTime.time + this.minSendInterval.time) < now.time)
 					|| (this.lastSendTime.time + this.maxSendInterval.time) < now.time)
             {
-                ArrayList<Long> msg = null;
+                ArrayList<Long> msg = new ArrayList<>();
                 this.deepestNode = this.rootNode;
                 this.treeDepth = 0;
                 this.rootNode.toMessage(msg, this.deepestNode, this.treeDepth, 0);
@@ -274,9 +274,9 @@ public class PlanBase implements Runnable {
                             boolean first = true;
                             while (rp != null)
                             {
-                                System.out.println( "TICK FPEVENT " );
+                                System.out.println( "PB: TICK FPEVENT " );
                                 PlanChange change = this.ruleBook.visit(rp);
-                                System.out.println("AFTER TICK FPEVENT " );
+                                System.out.println("PB: AFTER TICK FPEVENT " );
                                 if (!first && change == PlanChange.NoChange)
                                 {
                                     break;
@@ -300,7 +300,7 @@ public class PlanBase implements Runnable {
             }
 
 //#ifdef PB_DEBUG
-            System.out.println("PB: availTime " + availTime );
+            if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: availTime " + availTime );
 //#endif
             if (availTime > 1 && !ae.getStepEngine())
             {
@@ -317,5 +317,13 @@ public class PlanBase implements Runnable {
             this.mainThread = new Thread(this);
             this.mainThread.start();
         }
+    }
+
+    public condition_variable getStepModeCV() {
+        return stepModeCV;
+    }
+
+    public void addFastPathEvent(RunningPlan runningPlan) {
+        fpEvents.add(runningPlan);
     }
 }

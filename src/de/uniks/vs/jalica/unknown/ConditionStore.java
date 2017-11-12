@@ -8,8 +8,8 @@ import java.util.*;
 public class ConditionStore {
 
 
-    private LinkedHashMap<Variable, Vector<Condition>> activeVar2CondMap;
-    private ArrayList<Condition> activeConditions;
+    private LinkedHashMap<Variable, Vector<Condition>> activeVar2CondMap = new LinkedHashMap<>();
+    private ArrayList<Condition> activeConditions = new ArrayList<>();
 
     void addCondition(Condition con)
     {
@@ -47,11 +47,15 @@ public class ConditionStore {
             }
         }
 //#ifdef CS_DEBUG
-        System.out.println("CS: Added condition in " + con.getAbstractPlan().getName() + " with " + con.getVariables().size() + " vars" );
+        if (CommonUtils.CS_DEBUG_debug) System.out.println("CS: Added condition in " + con.getAbstractPlan().getName() + " with " + con.getVariables().size() + " vars" );
 //#endif
     }
 
     public void clear() {
+        CommonUtils.aboutNoImpl();
+    }
 
+    void acceptQuery(Query query, RunningPlan rp) {
+        CommonUtils.aboutNoImpl();
     }
 }

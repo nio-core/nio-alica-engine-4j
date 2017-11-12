@@ -1,6 +1,9 @@
 package de.uniks.vs.jalica.behaviours;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
+import de.uniks.vs.jalica.unknown.AbstractPlan;
+import de.uniks.vs.jalica.unknown.CommonUtils;
+import de.uniks.vs.jalica.unknown.IBehaviourPool;
 import de.uniks.vs.jalica.unknown.RunningPlan;
 
 import java.util.HashMap;
@@ -8,7 +11,7 @@ import java.util.HashMap;
 /**
  * Created by alex on 13.07.17.
  */
-public class BehaviourPool {
+public class BehaviourPool implements IBehaviourPool {
 
     private  HashMap<BehaviourConfiguration, BasicBehaviour> availableBehaviours;
     private  IBehaviourCreator behaviourCreator;
@@ -46,7 +49,12 @@ public class BehaviourPool {
         return true;
     }
 
-    void startBehaviour(RunningPlan rp) {
+    @Override
+    public void stopBehaviour(AbstractPlan plan) {
+        CommonUtils.aboutNoImpl();
+    }
+
+    public void startBehaviour(RunningPlan rp) {
 
         BehaviourConfiguration bc = (BehaviourConfiguration)(rp.getPlan());
 
@@ -54,7 +62,7 @@ public class BehaviourPool {
         {
             BasicBehaviour bb = this.availableBehaviours.get(bc);
             if (bb != null) {
-                // set both directions rp <-> bb
+                // set both directions rp <. bb
                 rp.setBasicBehaviour(bb);
                 bb.setRunningPlan(rp);
 
@@ -65,6 +73,34 @@ public class BehaviourPool {
         {
             System.err.println("BP::startBehaviour(): Cannot start Behaviour of given RunningPlan! Plan Name: " + rp.getPlan().getName() + " Plan Id: " + rp.getPlan().getId() );
         }
+    }
+
+    @Override
+    public boolean init(IBehaviourCreator bc) {
+
+        this.behaviourCreator = bc;
+
+        HashMap<Long, BehaviourConfiguration> behaviourConfs = ae.getPlanRepository().getBehaviourConfigurations();
+        for (long key : behaviourConfs.keySet())
+        {
+            BasicBehaviour basicBeh = this.behaviourCreator.createBehaviour(key);
+            if (basicBeh != null)
+            {
+                BehaviourConfiguration configuration = behaviourConfs.get(key);
+                // set stuff from behaviour configuration in basic behaviour object
+                basicBeh.setParameters(configuration.getParameters());
+                basicBeh.setVariables(configuration.getVariables());
+                basicBeh.setDelayedStart(configuration.getDeferring());
+                basicBeh.setInterval(1000 / configuration.getFrequency());
+
+                this.availableBehaviours.put(configuration, basicBeh);
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     void stopBehaviour(RunningPlan rp) {
@@ -83,7 +119,7 @@ public class BehaviourPool {
         }
     }
 
-    void stopAll() {
+    public void stopAll() {
         HashMap<Long, BehaviourConfiguration> behaviourConfs = ae.getPlanRepository().getBehaviourConfigurations();
         for ( BehaviourConfiguration configuration : behaviourConfs.values())
         {
@@ -96,5 +132,11 @@ public class BehaviourPool {
 
             bbPtr.stop();
         }
+    }
+
+    @Override
+    public HashMap<BehaviourConfiguration, BasicBehaviour> getAvailableBehaviours() {
+        CommonUtils.aboutNoImpl();
+        return null;
     }
 }

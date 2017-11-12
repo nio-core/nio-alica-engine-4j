@@ -17,18 +17,16 @@ public class RoleAssignment implements IRoleAssignment {
     private  RoleSet roleSet;
     private  Role ownRole;
     private  ArrayList<RobotProperties> availableRobots;
-    private AlicaEngine ae;
-    private TeamObserver to;
-    private HashMap<Long, Role> roles;
-    private IAlicaCommunication communicator;
+    private  AlicaEngine ae;
+    private  TeamObserver to;
+    private  HashMap<Long, Role> roles;
+    private  AlicaCommunication communication;
+    private  boolean updateRoles;
 
     public RoleAssignment(AlicaEngine ae) {
         this.ae = ae;
-        this.ownRobotProperties = null;
-        this.roleSet = null;
-        this.ownRole = null;
+        this.updateRoles = false;
         this.robotRoleMapping = new HashMap<Integer, Role>();
-        this.availableRobots = null;
         this.sortedRobots = new Vector<RobotRoleUtility>();
     }
 
@@ -122,26 +120,101 @@ public class RoleAssignment implements IRoleAssignment {
 
     private void mapRoleToRobot(RolePriority rp) {
 
+        this.sortedRobots.sort(new Comparator<RobotRoleUtility>() {
+            @Override
+            public int compare(RobotRoleUtility thisOne, RobotRoleUtility otherOne) {
+                if(otherOne.getRole().getId() != thisOne.getRole().getId())
+                    return otherOne.getRole().getId() < thisOne.getRole().getId() ? -1 :1;
+
+                if(otherOne.getUtilityValue() != thisOne.getUtilityValue())
+                    return otherOne.getUtilityValue() < thisOne.getUtilityValue() ? -1 :1;
+
+                if(otherOne.getRobot().getId() != thisOne.getRobot().getId())
+                    return otherOne.getRobot().getId() < thisOne.getRobot().getId() ? -1 :1;
+
+                return 0;
+            }
+        });
+
+        for (RoleUsage roleUsage : rp.getPriorityList())
+        {
+
+            for (RobotRoleUtility robRoleUtil : this.sortedRobots)
+            {
+
+                if (roleUsage.getRole() == robRoleUtil.getRole())
+                {
+                    if (this.robotRoleMapping.size() != 0
+                            && (this.robotRoleMapping.get(robRoleUtil.getRobot().getId()) != null
+                            || robRoleUtil.getUtilityValue() == 0))
+                    {
+                        continue;
+                    }
+                    this.robotRoleMapping.put(robRoleUtil.getRobot().getId(), robRoleUtil.getRole());
+
+                    if (this.ownRobotProperties.getId() == robRoleUtil.getRobot().getId())
+                    {
+                        this.ownRole = robRoleUtil.getRole();
+                    }
+
+                    to.getRobotById(robRoleUtil.getRobot().getId()).setLastRole(robRoleUtil.getRole());
+
+                    break;
+                }
+            }
+        }
     }
 
-    public void setCommunication(IAlicaCommunication communicator) {
-        this.communicator = communicator;
+    public void setCommunication(AlicaCommunication communication) {
+        this.communication = communication;
     }
 
     @Override
     public void tick() {
-        CommonUtils.aboutNoImpl();
+
+        if (this.updateRoles) {
+            this.updateRoles = false;
+            this.roleUtilities();
+        }
     }
 
     @Override
     public Role getOwnRole() {
-        CommonUtils.aboutNoImpl();
+        return ownRole;
+    }
+
+    public void setOwnRole(Role ownRole)
+    {
+        if (this.ownRole != ownRole)
+        {
+            RoleSwitch rs = new RoleSwitch();
+            rs.roleID = ownRole.getId();
+            this.communication.sendRoleSwitch(rs);
+        }
+        this.ownRole = ownRole;
+    }
+    
+    @Override
+    public Role getRole(int robotID) {
+        Role role = this.robotRoleMapping.get(robotID);
+
+        if (role != null)
+        {
+            return role;
+        }
+		else
+        {
+            role = this.to.getRobotById(robotID).getLastRole();
+            if (role != null)
+            {
+                return role;
+            }
+            CommonUtils.aboutError( "RA: There is no role assigned for robot: " + robotID );
+        }
         return null;
     }
 
-    @Override
-    public EntryPoint getRole(int robotID) {
-        CommonUtils.aboutNoImpl();
-        return null;
+    public void update() {
+        this.updateRoles = true;
     }
 }

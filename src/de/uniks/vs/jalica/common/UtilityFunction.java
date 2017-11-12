@@ -202,15 +202,15 @@ public class UtilityFunction {
                         break;
                     }
                 }
-                System.out.println("UF: taskId:" + taskId + " roleId:" + roleId + " prio: " + prio);
+                if (CommonUtils.UFDEBUG_debug) System.out.println("UF: taskId:" + taskId + " roleId:" + roleId + " prio: " + prio);
 //#endif
             }
         }
 //#ifdef UFDEBUG
-        System.out.println( "##" );
-        System.out.println( "UF: prioUI.Min = " + priResult.getMin());
-        System.out.println( "UF: prioUI.Max = " + priResult.getMax() );
-        System.out.println( "UF: denum = " + denum );
+        if (CommonUtils.UFDEBUG_debug)System.out.println( "##" );
+        if (CommonUtils.UFDEBUG_debug)System.out.println( "UF: prioUI.Min = " + priResult.getMin());
+        if (CommonUtils.UFDEBUG_debug)System.out.println( "UF: prioUI.Max = " + priResult.getMax() );
+        if (CommonUtils.UFDEBUG_debug)System.out.println( "UF: denum = " + denum );
 //#endif
         priResult.setMax(priResult.getMax() + priResult.getMin());
         if (denum != 0)
@@ -219,9 +219,9 @@ public class UtilityFunction {
             priResult.setMax(priResult.getMax() / denum);
         }
 //#ifdef UFDEBUG
-        System.out.println( "UF: prioUI.Min = " + priResult.getMin() );
-        System.out.println( "UF: prioUI.Max = " + priResult.getMax() );
-        System.out.println( "##" );
+        if (CommonUtils.UFDEBUG_debug)System.out.println( "UF: prioUI.Min = " + priResult.getMin() );
+        if (CommonUtils.UFDEBUG_debug)System.out.println( "UF: prioUI.Max = " + priResult.getMax() );
+        if (CommonUtils.UFDEBUG_debug)System.out.println( "##" );
 //#endif
         return priResult;
     }

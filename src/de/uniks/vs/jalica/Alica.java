@@ -1,42 +1,12 @@
 package de.uniks.vs.jalica;
 
-import de.uniks.vs.jalica.behaviours.BehaviourCreator;
-import de.uniks.vs.jalica.common.SolverType;
-import de.uniks.vs.jalica.conditions.ConditionCreator;
-import de.uniks.vs.jalica.constraints.ConstraintCreator;
-import de.uniks.vs.jalica.dummy_proxy.AlicaDummyCommunication;
-import de.uniks.vs.jalica.dummy_proxy.AlicaSystemClock;
-import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.reasoner.CGSolver;
-import de.uniks.vs.jalica.utilfunctions.UtilityFunctionCreator;
-
 /**
  * Created by alex on 13.07.17.
  */
 public class Alica {
 
-    private static AlicaEngine ae;
-    private static BehaviourCreator bc;
-    private static ConditionCreator cc;
-    private static UtilityFunctionCreator uc;
-    private static ConstraintCreator crc;
 
-    public Alica() {
-        ae = new AlicaEngine();
-        bc = new BehaviourCreator();
-        cc = new ConditionCreator();
-        uc = new UtilityFunctionCreator();
-        crc = new ConstraintCreator();
-
-        ae.setIAlicaClock(new AlicaSystemClock());
-        ae.setCommunicator(new AlicaDummyCommunication(ae));
-        ae.addSolver(SolverType.GRADIENTSOLVER, new CGSolver(ae));
-        String roleSetName = "Roleset";
-//        String masterPlanName = "WM16"; //"DummyPlan";
-        String masterPlanName =  "DummyPlan";
-        String roleSetDir = "roles/";
-        ae.init(bc, cc, uc, crc, roleSetName, masterPlanName, roleSetDir, false);  
-    }
+    public Alica() {}
 
     public static void main(String... param) {
         Alica alica = new Alica();
@@ -44,9 +14,29 @@ public class Alica {
     }
 
     private void start() {
-        ae.start();
+        String roleSetName = "Roleset";
+//        String masterPlanName = "WM16"; //"DummyPlan";
+        String masterPlanName =  "DummyPlan";
+        String roleSetDir = "roles/";
+        boolean sim = false;
+
+        System.out.println("\tMasterplan is:       \"" + masterPlanName + "\"" );
+        System.out.println( "\tRolset Directory is: \"" + roleSetDir + "\"" );
+        System.out.println( "\tRolset is:           \"" + (roleSetName.isEmpty() ? "Default" : roleSetName) + "\"" );
+
+        System.out.println( "\nConstructing Base ...");
+
+        System.out.println( "\nStarting Base ...");
+
+        Base base = new Base(roleSetName,  masterPlanName,  roleSetDir,  sim);
+        base.start();
+
+//        // STRG c abfangen
+//        while (true)
+//        {
+////            std::chrono::milliseconds dura(500);
+////            std::this_thread::sleep_for(dura);
+//        }
     }
-
-
 }
 

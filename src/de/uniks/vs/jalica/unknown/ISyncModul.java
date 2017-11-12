@@ -10,4 +10,7 @@ public interface ISyncModul {
 
     void setSynchronisation(Transition t, boolean b);
 
+    void onSyncTalk(SyncTalk st);
+
+    void onSyncReady(SyncReady sr);
 }

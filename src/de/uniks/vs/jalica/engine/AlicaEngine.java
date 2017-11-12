@@ -7,38 +7,39 @@ import de.uniks.vs.jalica.common.Logger;
 import de.uniks.vs.jalica.common.UtilityFunction;
 import de.uniks.vs.jalica.conditions.ConditionCreator;
 import de.uniks.vs.jalica.constraints.ConstraintCreator;
-import de.uniks.vs.jalica.dummy_proxy.AlicaDummyCommunication;
-import de.uniks.vs.jalica.dummy_proxy.AlicaSystemClock;
 import de.uniks.vs.jalica.parser.PlanParser;
+import de.uniks.vs.jalica.reasoner.Solver;
 import de.uniks.vs.jalica.teamobserver.PlanRepository;
 import de.uniks.vs.jalica.teamobserver.TeamObserver;
 import de.uniks.vs.jalica.reasoner.CGSolver;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.unknown.*;
 import de.uniks.vs.jalica.utilfunctions.UtilityFunctionCreator;
-import org.w3c.dom.Node;
+
+import java.util.HashMap;
 
 /**
  * Created by alex on 13.07.17.
  */
 public class AlicaEngine {
 
-    private IAlicaCommunication communicator;
     private SystemConfig sc = SystemConfig.getInstance();
-    private Boolean maySendMessages;
-    private Boolean useStaticRoles;
+
+    private AlicaCommunication communicator;
+    private boolean maySendMessages;
+    private boolean useStaticRoles;
     private boolean terminating;
     private boolean stepEngine;
+    private boolean stepCalled;
     private PlanRepository planRepository;
     private PlanParser planParser;
     private Plan masterPlan;
     private TeamObserver teamObserver;
-    private BehaviourPool behaviourPool;
+    private IBehaviourPool behaviourPool;
     private RoleSet roleSet;
     private RoleAssignment roleAssignment;
     private SyncModul syncModul;
     private ExpressionHandler expressionHandler;
-    private boolean stepCalled;
     private PartialAssignmentPool pap;
     private PlanBase planBase;
     private PlanSelector planSelector;
@@ -46,19 +47,20 @@ public class AlicaEngine {
     private Logger log;
     private VariableSyncModule variableSyncModule;
     private IAlicaClock alicaClock;
-//    private String robotName;
     private IPlanner planner;
+
+    private HashMap<Integer, Solver> solver = new HashMap<>();
 
     public void setIAlicaClock(IAlicaClock clock) {
         this.alicaClock = clock;
     }
 
-    public void setCommunicator(IAlicaCommunication communicator) {
+    public void setCommunicator(AlicaCommunication communicator) {
         this.communicator = communicator;
     }
 
-    public void addSolver(String gradientsolver, CGSolver cgSolver) {
-        CommonUtils.aboutNoImpl();
+    public void addSolver(int identifier, CGSolver solver) {
+        this.solver.put(identifier, solver);
     }
 
     public boolean init(BehaviourCreator bc, ConditionCreator cc, UtilityFunctionCreator uc, ConstraintCreator crc,
@@ -157,7 +159,15 @@ public class AlicaEngine {
         return everythingWorked;
     }
 
-    public IAlicaCommunication getCommunicator() {
+
+    void stepNotify()
+    {
+        this.setStepCalled(true);
+        this.getPlanBase().getStepModeCV().notify_all();
+    }
+
+
+    public AlicaCommunication getCommunicator() {
         return communicator;
     }
 
@@ -223,8 +233,16 @@ public class AlicaEngine {
         return stepCalled;
     }
 
+    /**
+     * Register with this EngineTrigger to be called after an engine iteration is complete.
+     */
     public void iterationComplete() {
+        //TODO: implement the trigger function for iteration complete
         CommonUtils.aboutNoImpl();
+    }
+
+    public PlanBase getPlanBase() {
+        return planBase;
     }
 
     public PlanSelector getPlanSelector() {
@@ -249,5 +267,18 @@ public class AlicaEngine {
 
     public PlanParser getPlanParser() {
         return planParser;
+    }
+
+    public AlicaCommunication getResultStore() {
+        CommonUtils.aboutNoImpl();
+        return null;
+    }
+
+    public IBehaviourPool getBehaviourPool() {
+        return behaviourPool;
+    }
+
+    public boolean isMaySendMessages() {
+        return maySendMessages;
     }
 }

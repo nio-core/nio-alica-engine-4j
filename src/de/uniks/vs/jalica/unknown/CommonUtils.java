@@ -9,6 +9,17 @@ import java.util.Vector;
  */
 public class CommonUtils {
 
+    public static final boolean RULE_debug = false;
+    public static final boolean SM_FAILURE_debug = false;
+    public static final boolean SM_MESSAGES_debug = false;
+    public static final boolean PP_DEBUG_debug = false;
+    public static final boolean UFDEBUG_debug = false;
+    public static final boolean PB_DEBUG_debug = false;
+    public static final boolean CM_REASON_DEBUG_debug = false;
+    public static final boolean CM_DEBUG_debug = false;
+    public static final boolean SUCDEBUG_debug = false;
+    public static final boolean CS_DEBUG_debug = false;
+
     public static final int EXIT_FAILURE = 1;
     public static final int EXIT_SUCCESS = 0;
 
@@ -20,10 +31,12 @@ public class CommonUtils {
     }
 
     public static <T> T find(Vector<T> list, int start, int end, Object obj) {
+        if(list.size() == 0 || start > end) {
+            CommonUtils.aboutError("CU: find error     start:" + start + " end:" + end + "  obj:" +obj);
+            return null;
+        }
         int index = list.subList(start, end).indexOf(obj);
-
         return index > -1 ? list.get(index): null;
-
     }
 
     public static <T> ArrayList<T> move(ArrayList<T> robots) {

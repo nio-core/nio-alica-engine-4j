@@ -85,8 +85,8 @@ public class PlanParser {
             baseRolePath = roleDir;
         }
 //#ifdef PP_DEBUG
-        System.out.println( "PP: basePlanPath: " + basePlanPath );
-        System.out.println(  "PP: baseRolePath: " + baseRolePath );
+        if (CommonUtils.PP_DEBUG_debug) System.out.println( "PP: basePlanPath: " + basePlanPath );
+        if (CommonUtils.PP_DEBUG_debug) System.out.println(  "PP: baseRolePath: " + baseRolePath );
 //#endif
         if (!(FileSystem.pathExists(basePlanPath)))
         {
@@ -119,7 +119,7 @@ public class PlanParser {
         masterPlanPath = FileSystem.findFile(this.basePlanPath, masterplan + ".pml", masterPlanPath);
         boolean found = masterplan != null;
 //#ifdef PP_DEBUG
-        System.out.println( "PP: masterPlanPath: " + masterPlanPath );
+        if (CommonUtils.PP_DEBUG_debug) System.out.println( "PP: masterPlanPath: " + masterPlanPath );
 //#endif
         if (!found)
         {
@@ -128,7 +128,7 @@ public class PlanParser {
         this.currentFile = masterPlanPath;
         this.currentDirectory = FileSystem.getParent(masterPlanPath);
 //#ifdef PP_DEBUG
-        System.out.println( "PP: CurFile: " + this.currentFile + " CurDir: " + this.currentDirectory );
+        if (CommonUtils.PP_DEBUG_debug) System.out.println( "PP: CurFile: " + this.currentFile + " CurDir: " + this.currentDirectory );
 //#endif
 
         this.masterPlan = parsePlanFile(masterPlanPath);
@@ -177,7 +177,7 @@ public class PlanParser {
         }
 
 //#ifdef PP_DEBUG
-        System.out.println( "PP: Parsing RoleSet " + roleSetName );
+        if (CommonUtils.PP_DEBUG_debug) System.out.println( "PP: Parsing RoleSet " + roleSetName );
 //#endif
 
         this.currentDirectory = FileSystem.getParent(roleSetName);
@@ -296,7 +296,7 @@ public class PlanParser {
 
     private void parseTaskFile(String file) {
         //  #ifdef PP_DEBUG
-        System.out.println( "PP: parsing Task file: " + currentFile );
+        if (CommonUtils.PP_DEBUG_debug) System.out.println( "PP: parsing Task file: " + currentFile );
         //#endif
 
         try {
@@ -324,7 +324,7 @@ public class PlanParser {
 
     private void parseRoleDefFile(String currentFile) {
 //#ifdef PP_DEBUG
-        System.out.println("PP: parsing RoleDef file: " + currentFile);
+        if (CommonUtils.PP_DEBUG_debug) System.out.println("PP: parsing RoleDef file: " + currentFile);
 //#endif
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -351,7 +351,7 @@ public class PlanParser {
 
     private void parseCapabilityDefFile(String currentFile){
 //        #ifdef PP_DEBUG
-        System.out.println("PP: parsing RoleDef file: " + currentFile);
+        if (CommonUtils.PP_DEBUG_debug) System.out.println("PP: parsing RoleDef file: " + currentFile);
 //#endif
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -380,7 +380,7 @@ public class PlanParser {
 
     private void parseBehaviourFile(String currentFile){
 //        #ifdef PP_DEBUG
-        System.out.println("PP: parsing Behaviour file: " + currentFile);;
+        if (CommonUtils.PP_DEBUG_debug) System.out.println("PP: parsing Behaviour file: " + currentFile);;
 //        #endif
         File file = new File(currentFile);
 
@@ -416,7 +416,7 @@ public class PlanParser {
     private Plan parsePlanFile(String planFile){
         Plan p = null;
 //#ifdef PP_DEBUG
-        System.out.println("PP: parsing Plan file: " + planFile );
+        if (CommonUtils.PP_DEBUG_debug) System.out.println("PP: parsing Plan file: " + planFile );
 //#endif
 
         File file = new File(planFile);
@@ -572,12 +572,12 @@ public class PlanParser {
             }
         }
 
-        System.err.println("Cannot resolve remote reference!\nAttributes of node in question are:" );
+        System.err.println("PP: Cannot resolve remote reference!\nAttributes of node in question are:" );
 
         for ( int i = 0; i < node.getAttributes().getLength(); i++) {
 
             Node curAttribute = node.getAttributes().item(i);
-            System.out.println(curAttribute.getNodeName() + " : " + curAttribute.getNodeName() );
+            System.out.println("PP: "+curAttribute.getNodeName() + " : " + curAttribute.getNodeName() );
         }
 
         ae.abort("PP: Couldn't resolve remote reference: " + (node.getNodeName()));

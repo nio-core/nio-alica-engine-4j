@@ -249,7 +249,7 @@ public class ModelFactory {
 
         removeRedundancy();
 //#ifdef MF_DEBUG
-        System.out.println("DONE!");
+        System.out.println("MF: DONE!");
 //#endif
 
     }
@@ -300,7 +300,7 @@ public class ModelFactory {
         Node curChild = element.getFirstChild().getNextSibling();
 
         while (curChild != null) {
-            System.out.println(curChild.getNodeName());
+            System.out.println("MF: " +curChild.getNodeName());
 
             parser.handleTag(curChild, plan, this);
             curChild = curChild.getNextSibling();
@@ -770,9 +770,9 @@ public class ModelFactory {
         System.out.println("MF: " + ael.getId() + "  " + ael.getName());
 //        if (this.elements.size()> 0 && this.elements.get(ael.getId()) != this.elements.values().toArray()[this.elements.values().size()-1])
         if (this.elements.size() > 0 && this.elements.get(ael.getId()) != null && this.elements.get(ael.getId()) != ael) {
-            System.out.println("ELEMENT >" + ael.getName() + "< >" + this.elements.get(ael.getId()).getName() + "<");
-            System.out.println("ELEMENT >" + ael.getId() + "< >" + this.elements.get(ael.getId()).getId() + "<");
-            System.out.println("ELEMENT >" + ael.hashCode() + "< >" + this.elements.get(ael.getId()).hashCode() + "<");
+            System.out.println("MF: ELEMENT >" + ael.getName() + "< >" + this.elements.get(ael.getId()).getName() + "<");
+            System.out.println("MF: ELEMENT >" + ael.getId() + "< >" + this.elements.get(ael.getId()).getId() + "<");
+            System.out.println("MF: ELEMENT >" + ael.hashCode() + "< >" + this.elements.get(ael.getId()).hashCode() + "<");
 //			cout << segfaultdebug::get_stacktrace() << endl;
             ae.abort("MF: ERROR Double IDs: " + ael.getId());
         }

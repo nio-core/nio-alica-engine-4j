@@ -90,4 +90,8 @@ public class EntryPoint extends AlicaElement implements Comparable<EntryPoint> {
 
         }
     }
+
+    public AbstractPlan getPlan() {return plan;}
+
+    public Set<State> getReachableStates() {return reachableStates;}
 }

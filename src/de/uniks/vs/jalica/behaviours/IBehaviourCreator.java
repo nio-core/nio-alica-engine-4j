@@ -5,5 +5,5 @@ package de.uniks.vs.jalica.behaviours;
  */
 public interface IBehaviourCreator {
 
-    public IBehaviourCreator createBehaviour(Long key) ;
+    public BasicBehaviour createBehaviour(Long key);
 }

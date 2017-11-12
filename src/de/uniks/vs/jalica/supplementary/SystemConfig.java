@@ -23,7 +23,7 @@ public class SystemConfig {
 
     public SystemConfig() {
         HashMap<String,String> alicaConfig = new HashMap<>();
-        alicaConfig.put("Alica.SilentStart", "false");
+        alicaConfig.put("Alica.SilentStart", "true");
         alicaConfig.put("Alica.UseStaticRoles", "false");
         alicaConfig.put("Alica.MaxEpsPerPlan", "10");
         alicaConfig.put("Alica.AllowIdling", "false");
@@ -36,6 +36,17 @@ public class SystemConfig {
         alicaConfig.put("Alica.TeamBlackList.InitiallyFull", "true");
         alicaConfig.put("Alica.MaxRuleApplications", "1");
         alicaConfig.put("Alica.Team", "1");
+        alicaConfig.put("Alica.AssignmentProtectionTime", "500");
+
+        alicaConfig.put("Alica.CycleDetection.CycleCount", "5");
+        alicaConfig.put("Alica.CycleDetection.Enabled", "true");
+        alicaConfig.put("Alica.CycleDetection.MinimalAuthorityTimeInterval", "800");
+        alicaConfig.put("Alica.CycleDetection.MaximalAuthorityTimeInterval", "500");
+        alicaConfig.put("Alica.CycleDetection.MessageTimeInterval", "60");
+        alicaConfig.put("Alica.CycleDetection.MessageWaitTimeInterval", "200");
+        alicaConfig.put("Alica.CycleDetection.HistorySize", "45");
+        alicaConfig.put("Alica.CycleDetection.IntervalIncreaseFactor", "1.5");
+        alicaConfig.put("Alica.CycleDetection.IntervalDecreaseFactor", "0.999");
 
         map.put("Alica", alicaConfig);
         configs.put("Globals", new GlobalConfiguration());
@@ -72,7 +83,21 @@ public class SystemConfig {
         return configs.get(key);
     }
 
-    public String getHostname() {
-        return hostname;
+    public String getHostname() {return hostname;}
+
+    /**
+     * Looks up the own robot's ID with the system config's local hostname.
+     * @return The own robot's ID
+     */
+    public int getOwnRobotID() {
+        return this.getRobotID(this.getHostname());
+    }
+    /**
+     * Looks up the robot's ID with the given name.
+     * @return The robot's ID
+     */
+    int getRobotID(String name)
+    {
+        return Integer.valueOf(this.getG("Globals").getSections("Team").get(name).get("ID"));
     }
 }
