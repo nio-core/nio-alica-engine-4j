@@ -313,7 +313,7 @@ public class TeamObserver implements ITeamObserver {
         String ss = "TO: Sending Plan Message: " +"\n";
 
         for (long i: msg) {
-            ss+= "TO:      " +i + "\t";
+            ss+= "    " +i + "\t";
         }
 
         ss+="\n";

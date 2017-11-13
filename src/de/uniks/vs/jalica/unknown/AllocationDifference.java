@@ -7,8 +7,8 @@ import java.util.Vector;
  */
 public class AllocationDifference {
     private Reason reason;
-    private Vector<EntryPointRobotPair> subtractions;
-    private Vector<EntryPointRobotPair> additions;
+    private Vector<EntryPointRobotPair> subtractions = new Vector<>();
+    private Vector<EntryPointRobotPair> additions = new Vector<>();
 
     public AllocationDifference() {
         this.reason = Reason.empty;
@@ -67,5 +67,22 @@ public class AllocationDifference {
         this.additions.clear();
         this.subtractions.clear();
         this.reason = Reason.empty;
+    }
+
+    @Override
+    public String toString() {
+        String ss = "Additions: ";
+
+        for (int i = 0; i < this.additions.size(); i++) {
+            ss += "+ " + this.additions.get(i).getRobot() + " (" + this.additions.get(i).getEntryPoint().getId() + ")";
+        }
+        ss += "\n" + "Substractions: ";
+
+        for (int i = 0; i < this.subtractions.size(); i++) {
+            ss += "- " + this.subtractions.get(i).getRobot() + " ("
+                + this.subtractions.get(i).getEntryPoint().getId() + ")";
+        }
+        ss += "\n" + "Reason [0=message, 1=utility, 2=empty]:" + this.reason.ordinal();
+        return ss;
     }
 }

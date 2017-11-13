@@ -1,6 +1,8 @@
 package de.uniks.vs.jalica.dummy_proxy;
 
+import de.uniks.vs.jalica.supplementary.Timer;
 import de.uniks.vs.jalica.unknown.AlicaTime;
+import de.uniks.vs.jalica.unknown.CommonUtils;
 import de.uniks.vs.jalica.unknown.IAlicaClock;
 
 /**
@@ -11,8 +13,9 @@ public class AlicaSystemClock implements IAlicaClock {
     public AlicaTime now() {
 //        time_t t;
 //        t = time(NULL);
-        long t = System.currentTimeMillis();
-        AlicaTime ret = new AlicaTime(t * 1000000000 + t*1000*1000);
+        long t = Timer.getCurrentTimeInNanoSec();
+//        AlicaTime ret = new AlicaTime(t * 1000000000 + t*1000*1000);
+        AlicaTime ret = new AlicaTime(t);
         return ret;
     }
 

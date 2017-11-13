@@ -55,7 +55,7 @@ public class CycleManager {
         this.intervalIncFactor = Double.valueOf(sc.get("Alica").get("Alica.CycleDetection.IntervalIncreaseFactor"));
         this.intervalDecFactor = Double.valueOf(sc.get("Alica").get("Alica.CycleDetection.IntervalDecreaseFactor"));
 
-        this.allocationHistory.setSize(this.historySize);
+//        this.allocationHistory.setSize(this.historySize);
         for (int i = 0; i < this.historySize; i++)
         {
             this.allocationHistory.add(i, new AllocationDifference());
@@ -174,8 +174,8 @@ public class CycleManager {
 //        lock_guard<mutex> lock(this.allocationHistoryMutex);
 
         this.newestAllocationDifference = (this.newestAllocationDifference + 1) % this.allocationHistory.size();
-        AllocationDifference old = this.allocationHistory.get(this.newestAllocationDifference);
-        this.allocationHistory.add(this.newestAllocationDifference, aldif);
+//        AllocationDifference old = this.allocationHistory.get(this.newestAllocationDifference);
+        this.allocationHistory.set(this.newestAllocationDifference, aldif);
 
 //#ifdef CM_DEBUG
         if (CommonUtils.CM_DEBUG_debug) System.out.println("CM: SetNewAllDiff(a): " + aldif.toString()  + " OWN ROBOT ID " + this.rp.getOwnID());
@@ -361,7 +361,7 @@ public class CycleManager {
             if (i < 0) {
                 i = this.allocationHistory.size() - 1;
             }
-            if (CommonUtils.CM_REASON_DEBUG_debug)  System.out.println("CM: REASON " + this.allocationHistory.get(i).getReason() + " : " + AllocationDifference.Reason.message );
+            if (CommonUtils.CM_REASON_DEBUG_debug)  System.out.println("CM: REASON " + this.allocationHistory.get(i).getReason().name() + " : " + AllocationDifference.Reason.message );
 
             if (this.allocationHistory.get(i).getReason() == AllocationDifference.Reason.utility) {
 

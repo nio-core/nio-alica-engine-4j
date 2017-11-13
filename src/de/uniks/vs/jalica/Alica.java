@@ -15,7 +15,7 @@ public class Alica {
 
     private void start() {
         String roleSetName = "Roleset";
-//        String masterPlanName = "WM16"; //"DummyPlan";
+//        String masterPlanName = "WM16";
         String masterPlanName =  "DummyPlan";
         String roleSetDir = "roles/";
         boolean sim = false;

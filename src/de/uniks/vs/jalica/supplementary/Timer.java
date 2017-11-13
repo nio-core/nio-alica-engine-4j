@@ -90,6 +90,8 @@ public class Timer extends ITrigger implements Runnable {
     }
 
     public static long getCurrentTimeInNanoSec() {
-        return clock.getEpochSecond() * 1000000000l;
+        long nanoTime = System.nanoTime();
+//        return clock.getEpochSecond() * 1000000000l;
+        return nanoTime;
     }
 }

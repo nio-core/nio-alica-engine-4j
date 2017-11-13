@@ -187,7 +187,9 @@ public class PlanBase implements Runnable {
 
             AlicaTime now = alicaClock.now();
 
-            if (now.time < this.lastSendTime.time)
+            System.out.println("PB: " + now.time + " > " +this.lastSendTime.time);
+
+            if (now.time <= this.lastSendTime.time)
             {
                 // Taker fix
                 System.out.println("PB: lastSendTime is in the future of the current system time, did the system time change?" );

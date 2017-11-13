@@ -16,7 +16,7 @@ public class CommonUtils {
     public static final boolean UFDEBUG_debug = false;
     public static final boolean PB_DEBUG_debug = false;
     public static final boolean CM_REASON_DEBUG_debug = false;
-    public static final boolean CM_DEBUG_debug = false;
+    public static final boolean CM_DEBUG_debug = true;
     public static final boolean SUCDEBUG_debug = false;
     public static final boolean CS_DEBUG_debug = false;
 

@@ -35,4 +35,6 @@ public class EntryPointRobotPair {
         }
         return false;
     }
+
+    public EntryPoint getEntryPoint() {return entryPoint;}
 }
