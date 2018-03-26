@@ -25,19 +25,19 @@ public class ConfigPair {
         if (this.parent != null) this.parent.value.add(this);
     }
 
-    public void print() {
-
-        if(value.get(0) instanceof String)
-            System.out.println(name +" = " + value);
-        else
-            System.out.println("["+name+ "]");
-
-        for (Object entry: value) {
-
-            if(entry instanceof ConfigPair)
-                ((ConfigPair)entry).print();
-        }
-    }
+//    public void print() {
+//
+//        if(value.get(0) instanceof String)
+//            System.out.println(name +" = " + value);
+//        else
+//            System.out.println("["+name+ "]");
+//
+//        for (Object entry: value) {
+//
+//            if(entry instanceof ConfigPair)
+//                ((ConfigPair)entry).print();
+//        }
+//    }
 
     public Object get(String string) {
         String[] parts = string.split("\\.");

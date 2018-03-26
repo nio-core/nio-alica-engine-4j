@@ -34,7 +34,7 @@ public class ConfigParser {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        current.print();
+//        current.print();
         return current;
     }
 
