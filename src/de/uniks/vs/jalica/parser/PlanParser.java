@@ -52,8 +52,8 @@ public class PlanParser {
         this.sc = SystemConfig.getInstance();
         this.domainConfigFolder = this.sc.getConfigPath();
 
-        this.planDir = this.sc.get("Alica").get("Alica.PlanDir");
-        this.roleDir = this.sc.get("Alica").get("Alica.RoleDir");
+        this.planDir = (String) this.sc.get("Alica").get("Alica.PlanDir");
+        this.roleDir = (String) this.sc.get("Alica").get("Alica.RoleDir");
 
 
         if (domainConfigFolder.lastIndexOf(FileSystem.PATH_SEPARATOR) != domainConfigFolder.length() - 1)

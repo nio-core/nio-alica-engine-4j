@@ -43,7 +43,7 @@ public class RunningPlan {
     private ArrayList<RunningPlan> children = new ArrayList<>();
 
     RunningPlan(AlicaEngine ae) {
-        this.assignmentProtectionTime = new AlicaTime(Long.valueOf(SystemConfig.getInstance().get("Alica").get("Alica.AssignmentProtectionTime")) * 1000000);
+        this.assignmentProtectionTime = new AlicaTime(Long.valueOf((String) SystemConfig.getInstance().get("Alica").get("Alica.AssignmentProtectionTime")) * 1000000);
         this.ae = ae;
         this.behaviour = false;
         this.planStartTime = new AlicaTime(0);

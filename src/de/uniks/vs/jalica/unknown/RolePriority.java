@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.unknown;
 
+import de.uniks.vs.jalica.common.ConfigPair;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 
@@ -22,13 +23,13 @@ public class RolePriority extends AlicaElement {
         SystemConfig sc = SystemConfig.getInstance();
         this.roles = ae.getPlanRepository().getRoles();
 
-        Vector<String> priorities = new Vector<>(sc.getG("Globals").getSections("RolePriority").get("RolePriority").keySet());
+        Vector<String> priorities = new Vector<>(((ConfigPair)sc.get("Globals").get("RolePriority")).getKeys());
 //        Vector<String> priorities = (sc)["Globals"].getNames("Globals", "RolePriority", NULL);
         int order = 0;
 
         for (String priority : priorities)
         {
-            order = Integer.valueOf(sc.getG("Globals").getSections("RolePriority").get("RolePriority").get(priority));
+            order = Integer.valueOf((String) sc.get("Globals").get("RolePriority."+priority));
 //            order = (sc)["Globals"].get<int>("Globals", "RolePriority", priority, null);
             for (long key : this.roles.keySet())
             {

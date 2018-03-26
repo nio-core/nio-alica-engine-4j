@@ -25,7 +25,7 @@ public class AbstractPlan extends AlicaElement {
         this.masterPlan = false;
         this.variables = new ArrayList<>();
         SystemConfig sc = SystemConfig.getInstance();
-        this.authorityTimeInterval = new AlicaTime(Long.valueOf(sc.get("Alica").get("Alica.CycleDetection.MinimalAuthorityTimeInterval")) * 1000000);
+        this.authorityTimeInterval = new AlicaTime(Long.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.MinimalAuthorityTimeInterval")) * 1000000);
     }
 
     public PreCondition getPreCondition() {

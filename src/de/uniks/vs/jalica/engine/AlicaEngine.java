@@ -66,10 +66,10 @@ public class AlicaEngine {
     public boolean init(BehaviourCreator bc, ConditionCreator cc, UtilityFunctionCreator uc, ConstraintCreator crc,
                                                 String roleSetName, String masterPlanName, String roleSetDir, boolean stepEngine) {
 
-        this.maySendMessages =  Boolean.valueOf(sc.get("Alica").get("Alica.SilentStart"));
-        this.useStaticRoles = Boolean.valueOf(sc.get("Alica").get("Alica.UseStaticRoles"));
-        AssignmentCollection.maxEpsCount = Short.valueOf(sc.get("Alica").get("Alica.MaxEpsPerPlan"));
-        AssignmentCollection.allowIdling  = Boolean.valueOf(sc.get("Alica").get("Alica.AllowIdling"));
+        this.maySendMessages =  Boolean.valueOf((String) sc.get("Alica").get("Alica.SilentStart"));
+        this.useStaticRoles = Boolean.valueOf((String) sc.get("Alica").get("Alica.UseStaticRoles"));
+        AssignmentCollection.maxEpsCount = Short.valueOf((String) sc.get("Alica").get("Alica.MaxEpsPerPlan"));
+        AssignmentCollection.allowIdling  = Boolean.valueOf((String) sc.get("Alica").get("Alica.AllowIdling"));
 
         this.terminating = false;
         this.stepEngine = stepEngine;

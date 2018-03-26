@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.unknown;
 
+import de.uniks.vs.jalica.common.ConfigPair;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 
@@ -23,13 +24,13 @@ public class RobotProperties {
         this.name = name;
         SystemConfig sc = SystemConfig.getInstance();
 //        this.id = (sc)["Globals"].tryGet<int>(-1, "Globals", "Team", name, "ID", null);
-        this.id = Integer.valueOf(sc.getG("Globals").getSections("Team").get(name).get("ID"));
+        this.id = Integer.valueOf((String) sc.get("Globals").get("Team."+name+".ID"));
         this.characteristics = new HashMap<>();
         this.capabilities = ae.getPlanRepository().getCapabilities();
         String key = "";
         String kvalue = "";
 //        Vector<String> caps = (sc)["Globals"].getNames("Globals", "Team", this.name, null);
-        Vector<String> caps = new Vector<>(sc.getG("Globals").getSections("Team").get(name).keySet());
+        Vector<String> caps = new Vector<>(((ConfigPair)sc.get("Globals").get("Team."+name)).getKeys());
         for (String s : caps)
         {
             if (s.equals("ID") || s.equals("DefaultRole"))
@@ -38,7 +39,7 @@ public class RobotProperties {
             }
             key = s;
 //            kvalue = (sc)["Globals"].get<String>("Globals", "Team", this.name, s, null);
-            kvalue = sc.getG("Globals").getSections("Team").get(name).get(s);
+            kvalue = (String) sc.get("Globals").get("Team."+name+"."+s);
             for ( Capability capability : this.capabilities.values())
             {
                 if (capability.getName().equals(key))
@@ -59,7 +60,7 @@ public class RobotProperties {
             }
         }
 //        this.defaultRole = (*sc)["Globals"].tryGet<string>("NOROLESPECIFIED", "Globals", "Team", name, "DefaultRole",  null);
-        this.defaultRole = sc.getG("Globals").getSections("Team").get(name).get("DefaultRole");
+        this.defaultRole = (String) sc.get("Globals").get("Team."+name+".DefaultRole");
     }
 
     public int getId() {

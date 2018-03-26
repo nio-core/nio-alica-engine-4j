@@ -73,9 +73,9 @@ public class PlanBase implements Runnable {
         this.ruleBook = new RuleBook(ae);
         SystemConfig sc = SystemConfig.getInstance();
 
-        double freq = Double.valueOf(sc.get("Alica").get("Alica.EngineFrequency"));
-        double minbcfreq = Double.valueOf(sc.get("Alica").get("Alica.MinBroadcastFrequency"));
-        double maxbcfreq = Double.valueOf(sc.get("Alica").get("Alica.MaxBroadcastFrequency"));
+        double freq = Double.valueOf((String) sc.get("Alica").get("Alica.EngineFrequency"));
+        double minbcfreq = Double.valueOf((String) sc.get("Alica").get("Alica.MinBroadcastFrequency"));
+        double maxbcfreq = Double.valueOf((String) sc.get("Alica").get("Alica.MaxBroadcastFrequency"));
 
         this.loopTime = new AlicaTime(Math.max(1000000, Math.round(1.0 / freq * 1000000000)));
 
@@ -95,11 +95,11 @@ public class PlanBase implements Runnable {
         AlicaTime halfLoopTime = new AlicaTime(this.loopTime.time / 2);
         this.running = false;
 
-        this.sendStatusMessages = Boolean.valueOf(sc.get("Alica").get("Alica.StatusMessages.Enabled"));
+        this.sendStatusMessages = Boolean.valueOf((String) sc.get("Alica").get("Alica.StatusMessages.Enabled"));
 
         if (sendStatusMessages)
         {
-            double stfreq = Double.valueOf(sc.get("Alica").get("Alica.StatusMessages.Frequency"));
+            double stfreq = Double.valueOf((String) sc.get("Alica").get("Alica.StatusMessages.Frequency"));
             this.sendStatusInterval = new AlicaTime(Math.max(1000000.0, Math.round(1.0 / stfreq * 1000000000)));
             this.statusMessage = new AlicaEngineInfo();
             this.statusMessage.senderID = this.teamObserver.getOwnId();

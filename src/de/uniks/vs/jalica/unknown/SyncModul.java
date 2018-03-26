@@ -35,15 +35,13 @@ public class SyncModul implements ISyncModul {
     public void tick() {
         ArrayList<Synchronisation> failedSyncs = new ArrayList<>();
 //        lock_guard<mutex> lock(lomutex);
-        for (Synchronisation synchronisation : this.synchSet.values())
-        {
-            if (!synchronisation.isValid(ticks))
-            {
+        for (Synchronisation synchronisation : this.synchSet.values()) {
+
+            if (!synchronisation.isValid(ticks)) {
                 failedSyncs.add(synchronisation);
             }
             ticks++;
-            for (Synchronisation s : failedSyncs)
-            {
+            for (Synchronisation s : failedSyncs) {
                 this.synchSet.remove(s.getSyncTransition());
             }
         }

@@ -43,17 +43,17 @@ public class CycleManager {
 
     public CycleManager(AlicaEngine ae, RunningPlan p) {
         SystemConfig sc = SystemConfig.getInstance();
-        maxAllocationCycles = Integer.valueOf(sc.get("Alica").get("Alica.CycleDetection.CycleCount"));
-        enabled = Boolean.valueOf(sc.get("Alica").get("Alica.CycleDetection.Enabled"));
-        minimalOverrideTimeInterval = new AlicaTime(Long.valueOf(sc.get("Alica").get("Alica.CycleDetection.MinimalAuthorityTimeInterval")) * 1000000);
-        maximalOverrideTimeInterval = new AlicaTime(Long.valueOf(sc.get("Alica").get("Alica.CycleDetection.MaximalAuthorityTimeInterval")) * 1000000);
-        overrideShoutInterval = new AlicaTime(Long.valueOf(sc.get("Alica").get("Alica.CycleDetection.MessageTimeInterval")) * 1000000);
-        overrideWaitInterval = new AlicaTime(Long.valueOf(sc.get("Alica").get("Alica.CycleDetection.MessageWaitTimeInterval")) * 1000000);
-        historySize = Integer.valueOf(sc.get("Alica").get("Alica.CycleDetection.HistorySize"));
+        maxAllocationCycles = Integer.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.CycleCount"));
+        enabled = Boolean.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.Enabled"));
+        minimalOverrideTimeInterval = new AlicaTime(Long.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.MinimalAuthorityTimeInterval")) * 1000000);
+        maximalOverrideTimeInterval = new AlicaTime(Long.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.MaximalAuthorityTimeInterval")) * 1000000);
+        overrideShoutInterval = new AlicaTime(Long.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.MessageTimeInterval")) * 1000000);
+        overrideWaitInterval = new AlicaTime(Long.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.MessageWaitTimeInterval")) * 1000000);
+        historySize = Integer.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.HistorySize"));
 
         this.ae = ae;
-        this.intervalIncFactor = Double.valueOf(sc.get("Alica").get("Alica.CycleDetection.IntervalIncreaseFactor"));
-        this.intervalDecFactor = Double.valueOf(sc.get("Alica").get("Alica.CycleDetection.IntervalDecreaseFactor"));
+        this.intervalIncFactor = Double.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.IntervalIncreaseFactor"));
+        this.intervalDecFactor = Double.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.IntervalDecreaseFactor"));
 
 //        this.allocationHistory.setSize(this.historySize);
         for (int i = 0; i < this.historySize; i++)
