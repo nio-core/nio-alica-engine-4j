@@ -1,6 +1,7 @@
 package de.uniks.vs.jalica.unknown;
 
 import com.sun.org.apache.bcel.internal.generic.ALOAD;
+import de.uniks.vs.jalica.engine.AlicaEngine;
 
 import java.util.ArrayList;
 
@@ -20,6 +21,10 @@ public class PlanningProblem extends AbstractPlan {
     private PostCondition postCondition;
     private PreCondition preCondition;
     private RuntimeCondition runtimeCondition;
+
+    public PlanningProblem(AlicaEngine ae) {
+        super(ae);
+    }
 
     public ArrayList<AbstractPlan> getPlans() {
         return plans;

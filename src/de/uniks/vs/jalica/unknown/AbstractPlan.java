@@ -3,6 +3,7 @@ package de.uniks.vs.jalica.unknown;
 import com.sun.javafx.geom.CubicCurve2D;
 import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
 import de.uniks.vs.jalica.common.UtilityFunction;
+import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 
 import java.util.ArrayList;
@@ -20,12 +21,12 @@ public class AbstractPlan extends AlicaElement {
     private AlicaTime authorityTimeInterval;
     private ArrayList<Variable> variables;
 
-    public AbstractPlan() {
+    public AbstractPlan(AlicaEngine ae) {
         super();
         this.masterPlan = false;
         this.variables = new ArrayList<>();
-        SystemConfig sc = SystemConfig.getInstance();
-        this.authorityTimeInterval = new AlicaTime(Long.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.MinimalAuthorityTimeInterval")) * 1000000);
+//        SystemConfig sc = SystemConfig.getInstance();
+        this.authorityTimeInterval = new AlicaTime(Long.valueOf((String) ae.getSystemConfig().get("Alica").get("Alica.CycleDetection.MinimalAuthorityTimeInterval")) * 1000000);
     }
 
     public PreCondition getPreCondition() {
@@ -38,6 +39,10 @@ public class AbstractPlan extends AlicaElement {
 
     public UtilityFunction getUtilityFunction() {
         return utilityFunction;
+    }
+
+    public void setUtilityFunction(UtilityFunction utilityFunction) {
+        this.utilityFunction = utilityFunction;
     }
 
     public double getUtilityThreshold() {

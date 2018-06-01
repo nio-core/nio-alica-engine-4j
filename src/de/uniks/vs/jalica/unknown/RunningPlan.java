@@ -43,7 +43,7 @@ public class RunningPlan {
     private ArrayList<RunningPlan> children = new ArrayList<>();
 
     RunningPlan(AlicaEngine ae) {
-        this.assignmentProtectionTime = new AlicaTime(Long.valueOf((String) SystemConfig.getInstance().get("Alica").get("Alica.AssignmentProtectionTime")) * 1000000);
+        this.assignmentProtectionTime = new AlicaTime(Long.valueOf((String) ae.getSystemConfig().get("Alica").get("Alica.AssignmentProtectionTime")) * 1000000);
         this.ae = ae;
         this.behaviour = false;
         this.planStartTime = new AlicaTime(0);
@@ -120,6 +120,7 @@ public class RunningPlan {
 
         if (this.children.size() > 0) {
             message.add(new Long(-1));
+
             for (RunningPlan r : this.children) {
                 r.toMessage(message, deepestNode, depth, curDepth + 1);
             }
@@ -755,5 +756,14 @@ public class RunningPlan {
                 + (this.getCycleManagement().isOverridden() ? "true" : "false") + "\n";
         ss += "\n########## ENDRP ###########" + "\n";
         return ss;
+    }
+
+    public boolean anyChildrenStatus(PlanStatus success) {
+        CommonUtils.aboutNoImpl();
+        return false;
+    }
+
+    public AlicaTime getStateStartTime() {
+        return stateStartTime;
     }
 }

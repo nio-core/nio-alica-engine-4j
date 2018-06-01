@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.behaviours;
 
+import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.unknown.AbstractPlan;
 import de.uniks.vs.jalica.unknown.AlicaElement;
 
@@ -15,6 +16,10 @@ public class BehaviourConfiguration extends AbstractPlan {
     private Behaviour behaviour;
     private boolean eventDriven;
     private LinkedHashMap<String,String> parameters;
+
+    public BehaviourConfiguration(AlicaEngine ae) {
+        super(ae);
+    }
 
     public int getDeferring() {
         return deferring;

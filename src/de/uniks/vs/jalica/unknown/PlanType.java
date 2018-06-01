@@ -1,5 +1,7 @@
 package de.uniks.vs.jalica.unknown;
 
+import de.uniks.vs.jalica.engine.AlicaEngine;
+
 import java.util.ArrayList;
 
 /**
@@ -7,6 +9,10 @@ import java.util.ArrayList;
  */
 public class PlanType extends AbstractPlan {
     private ArrayList<Plan> plans;
+
+    public PlanType(AlicaEngine ae) {
+        super(ae);
+    }
 
     public ArrayList<Plan> getPlans() {
         return plans;

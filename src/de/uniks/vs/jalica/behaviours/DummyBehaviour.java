@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.behaviours;
 
+import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.unknown.CommonUtils;
 
 /**
@@ -7,14 +8,14 @@ import de.uniks.vs.jalica.unknown.CommonUtils;
  */
 public class DummyBehaviour extends DomainBehaviour {
 
-    public DummyBehaviour() {
-        super("DummyBehaviour");
+    public DummyBehaviour(AlicaEngine ae) {
+        super("DummyBehaviour", ae);
         /*PROTECTED REGION ID(con1482486255763) ENABLED START*/ //Add additional options here
         /*PROTECTED REGION END*/
     }
 
-    public DummyBehaviour(String name) {
-        super(name);
+    public DummyBehaviour(String name, AlicaEngine ae) {
+        super(name,ae);
     }
 
     public void run(String msg) {

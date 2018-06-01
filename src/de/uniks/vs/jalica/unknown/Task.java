@@ -5,6 +5,8 @@ package de.uniks.vs.jalica.unknown;
  */
 public class Task extends AlicaElement {
 
+    public static final long IDLEID = -1;
+
     String description;
     TaskRepository taskRepository;
     boolean defaultTask;

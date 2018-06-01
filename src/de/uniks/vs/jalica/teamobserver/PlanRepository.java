@@ -13,6 +13,8 @@ import java.util.LinkedHashMap;
  **/
 public class PlanRepository {
 
+    //TODO: refactoring (struct)
+
     LinkedHashMap<Long, Plan> plans = new LinkedHashMap<>();
     LinkedHashMap<Long, Task> tasks = new LinkedHashMap<>();
     LinkedHashMap<Long, Behaviour> behaviours = new LinkedHashMap<>();

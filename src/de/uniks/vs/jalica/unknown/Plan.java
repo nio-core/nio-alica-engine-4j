@@ -1,5 +1,7 @@
 package de.uniks.vs.jalica.unknown;
 
+import de.uniks.vs.jalica.engine.AlicaEngine;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -21,11 +23,33 @@ public class Plan extends AbstractPlan {
     private ArrayList<Transition> transitions = new ArrayList<>();
     private ArrayList<SyncTransition> syncTransitions = new ArrayList<>();
 
-    public Plan(long id) {
+    public Plan(long id, AlicaEngine ae) {
+        super(ae);
         this.postCondition = null;
         this.id = id;
         this.minCardinality = 0;
         this.maxCardinality = 0;
+    }
+
+    EntryPoint getEntryPointTaskID(long taskID)
+    {
+        for (EntryPoint iter : entryPoints.values())
+        {
+			 Task task = iter.getTask();
+            if (task != null)
+            {
+                if (task.getId() == taskID)
+                {
+                    return iter;
+                }
+            }
+            else
+            {
+                System.out.println("Model: Class Plan: Entrypoint with ID " + iter.getId() + " does not have a Task");
+                CommonUtils.aboutError("");
+            }
+        }
+        return null;
     }
 
     public LinkedHashMap<Long, EntryPoint> getEntryPoints() {

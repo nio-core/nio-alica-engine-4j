@@ -107,152 +107,168 @@ public class ModelFactory {
     }
 
     public void attachRoleReferences() {
-//        #ifdef MF_DEBUG
-        System.out.println("MF: Attaching Plan references..");
-//#endif
-        //epTaskReferences
-        for (Pair<Long, Long> pairs : this.epTaskReferences) {
-            Task t = (Task) this.elements.get(pairs.snd);
-            EntryPoint ep = (EntryPoint) this.elements.get(pairs.fst);
-            ep.setTask(t);
-        }
-        this.epTaskReferences.clear();
-
-        //transitionAimReferences
-        for (Pair<Long, Long> pairs : this.transitionAimReferences) {
-            Transition t = (Transition) this.elements.get(pairs.fst);
-            State st = (State) this.elements.get(pairs.snd);
-            if (st == null) {
-                ae.abort("MF: Cannot resolve transitionAimReferences target: ", "" + pairs.fst);
-            }
-            t.setOutState(st);
-            st.getInTransitions().add(t);
-        }
-        this.transitionAimReferences.clear();
-
-        //epStateReferences
-        for (Pair<Long, Long> pairs : this.epStateReferences) {
-            State st = (State) this.elements.get(pairs.snd);
-            EntryPoint ep = (EntryPoint) this.elements.get(pairs.fst);
-            ep.setState(st);
-            st.setEntryPoint(ep);
-        }
-        this.epStateReferences.clear();
-
-        //stateInTransitionReferences
-        for (Pair<Long, Long> pairs : this.stateInTransitionReferences) {
-            Transition t = (Transition) this.elements.get(pairs.snd);
-            State st = (State) this.elements.get(pairs.fst);
-            if (st != t.getOutState()) {
-                ae.abort("MF: Unexpected reference in a transition! ", "" + pairs.fst);
-            }
-        }
-        this.stateInTransitionReferences.clear();
-
-        //stateOutTransitionReferences
-        for (Pair<Long, Long> pairs : this.stateOutTransitionReferences) {
-            State st = (State) this.elements.get(pairs.fst);
-            Transition t = (Transition) this.elements.get(pairs.snd);
-            st.getOutTransitions().add(t);
-            t.setInState(st);
-        }
-        this.stateOutTransitionReferences.clear();
-
-        //statePlanReferences
-        for (Pair<Long, Long> pairs : this.statePlanReferences) {
-            State st = (State) this.elements.get(pairs.fst);
-            AbstractPlan p = (AbstractPlan) this.elements.get(pairs.snd);
-            st.getPlans().add(p);
-        }
-        this.statePlanReferences.clear();
-
-        //planTypePlanReferences
-        for (Pair<Long, Long> pairs : this.planTypePlanReferences) {
-            PlanType pt = (PlanType) this.elements.get(pairs.fst);
-            Plan p = (Plan) this.elements.get(pairs.snd);
-            pt.getPlans().add(p);
-        }
-        this.planTypePlanReferences.clear();
-
-        //conditionVarReferences
-        for (Pair<Long, Long> pairs : this.conditionVarReferences) {
-            Condition c = (Condition) this.elements.get(pairs.fst);
-            Variable v = (Variable) this.elements.get(pairs.snd);
-            c.getVariables().add(v);
-        }
-        this.conditionVarReferences.clear();
-
-        //paramSubPlanReferences
-        for (Pair<Long, Long> pairs : this.paramSubPlanReferences) {
-            Parametrisation p = (Parametrisation) this.elements.get(pairs.fst);
-            AbstractPlan ap = (AbstractPlan) this.elements.get(pairs.snd);
-            p.setSubPlan(ap);
-        }
-        this.paramSubPlanReferences.clear();
-
-        //paramSubVarReferences
-        for (Pair<Long, Long> pairs : this.paramSubVarReferences) {
-            Parametrisation p = (Parametrisation) this.elements.get(pairs.fst);
-            Variable ap = (Variable) this.elements.get(pairs.snd);
-            p.setSubVar(ap);
-        }
-        this.paramSubVarReferences.clear();
-
-        //paramVarReferences
-        for (Pair<Long, Long> pairs : this.paramVarReferences) {
-            Parametrisation p = (Parametrisation) this.elements.get(pairs.fst);
-            Variable v = (Variable) this.elements.get(pairs.snd);
-            p.setVar(v);
-        }
-        this.paramVarReferences.clear();
-
-        //transitionSynchReferences
-        for (Pair<Long, Long> pairs : this.transitionSynchReferences) {
-            Transition t = (Transition) this.elements.get(pairs.fst);
-            SyncTransition sync = (SyncTransition) this.elements.get(pairs.snd);
-            t.setSyncTransition(sync);
-            sync.getInSync().add(t);
-        }
-        this.transitionSynchReferences.clear();
-
-        //planningProblemPlanReferences
-        for (Pair<Long, Long> pairs : this.planningProblemPlanReferences) {
-            PlanningProblem s = (PlanningProblem) this.elements.get(pairs.fst);
-            AbstractPlan p = (AbstractPlan) this.elements.get(pairs.snd);
-            s.getPlans().add(p);
-        }
-        this.planningProblemPlanReferences.clear();
-
-        //planningProblemPlanWaitReferences
-        for (Pair<Long, Long> pairs : this.planningProblemPlanWaitReferences) {
-            PlanningProblem s = (PlanningProblem) this.elements.get(pairs.fst);
-            Plan p = (Plan) this.elements.get(pairs.snd);
-            s.setWaitPlan(p);
-        }
-        this.planningProblemPlanWaitReferences.clear();
-
-        //planningProblemPlanAlternativeReferences
-        for (Pair<Long, Long> pairs : this.planningProblemPlanAlternativeReferences) {
-            PlanningProblem s = (PlanningProblem) this.elements.get(pairs.fst);
-            Plan p = (Plan) this.elements.get(pairs.snd);
-            s.setAlternativePlan(p);
-        }
-        this.planningProblemPlanAlternativeReferences.clear();
-
-        //quantifierScopeReferences
-        for (Pair<Long, Long> pairs : this.quantifierScopeReferences) {
-            AlicaElement ae = (AlicaElement) this.elements.get(pairs.snd);
-            Quantifier q = (Quantifier) this.elements.get(pairs.fst);
-            q.setScope(this.ae, ae);
-        }
-        this.quantifierScopeReferences.clear();
-
-        removeRedundancy();
 //#ifdef MF_DEBUG
-        System.out.println("MF: DONE!");
+        System.out.println("MF: Attaching Role references..." );
 //#endif
-
+        for (Pair<Long, Long> pairs : this.rtmRoleReferences) {
+            Role  r = this.rep.getRoles().get(pairs.snd);//find(pairs.second).second;
+            RoleTaskMapping rtm = (RoleTaskMapping) this.elements.get(pairs.fst);//find(pairs.first).second;
+            r.setRoleTaskMapping(rtm);
+            rtm.setRole(r);
+        }
+        this.rtmRoleReferences.clear();
+//#ifdef MF_DEBUG
+        System.out.println("MF: Attaching Role references... done!" );
+        //#endif
     }
+
+//    public void attachPlanReferences() {
+////        #ifdef MF_DEBUG
+//        System.out.println("MF: Attaching Plan references..");
+////#endif
+//        //epTaskReferences
+//        for (Pair<Long, Long> pairs : this.epTaskReferences) {
+//            Task t = (Task) this.elements.get(pairs.snd);
+//            EntryPoint ep = (EntryPoint) this.elements.get(pairs.fst);
+//            ep.setTask(t);
+//        }
+//        this.epTaskReferences.clear();
+//
+//        //transitionAimReferences
+//        for (Pair<Long, Long> pairs : this.transitionAimReferences) {
+//            Transition t = (Transition) this.elements.get(pairs.fst);
+//            State st = (State) this.elements.get(pairs.snd);
+//            if (st == null) {
+//                ae.abort("MF: Cannot resolve transitionAimReferences target: ", "" + pairs.fst);
+//            }
+//            t.setOutState(st);
+//            st.getInTransitions().add(t);
+//        }
+//        this.transitionAimReferences.clear();
+//
+//        //epStateReferences
+//        for (Pair<Long, Long> pairs : this.epStateReferences) {
+//            State st = (State) this.elements.get(pairs.snd);
+//            EntryPoint ep = (EntryPoint) this.elements.get(pairs.fst);
+//            ep.setState(st);
+//            st.setEntryPoint(ep);
+//        }
+//        this.epStateReferences.clear();
+//
+//        //stateInTransitionReferences
+//        for (Pair<Long, Long> pairs : this.stateInTransitionReferences) {
+//            Transition t = (Transition) this.elements.get(pairs.snd);
+//            State st = (State) this.elements.get(pairs.fst);
+//            if (st != t.getOutState()) {
+//                ae.abort("MF: Unexpected reference in a transition! ", "" + pairs.fst);
+//            }
+//        }
+//        this.stateInTransitionReferences.clear();
+//
+//        //stateOutTransitionReferences
+//        for (Pair<Long, Long> pairs : this.stateOutTransitionReferences) {
+//            State st = (State) this.elements.get(pairs.fst);
+//            Transition t = (Transition) this.elements.get(pairs.snd);
+//            st.getOutTransitions().add(t);
+//            t.setInState(st);
+//        }
+//        this.stateOutTransitionReferences.clear();
+//
+//        //statePlanReferences
+//        for (Pair<Long, Long> pairs : this.statePlanReferences) {
+//            State st = (State) this.elements.get(pairs.fst);
+//            AbstractPlan p = (AbstractPlan) this.elements.get(pairs.snd);
+//            st.getPlans().add(p);
+//        }
+//        this.statePlanReferences.clear();
+//
+//        //planTypePlanReferences
+//        for (Pair<Long, Long> pairs : this.planTypePlanReferences) {
+//            PlanType pt = (PlanType) this.elements.get(pairs.fst);
+//            Plan p = (Plan) this.elements.get(pairs.snd);
+//            pt.getPlans().add(p);
+//        }
+//        this.planTypePlanReferences.clear();
+//
+//        //conditionVarReferences
+//        for (Pair<Long, Long> pairs : this.conditionVarReferences) {
+//            Condition c = (Condition) this.elements.get(pairs.fst);
+//            Variable v = (Variable) this.elements.get(pairs.snd);
+//            c.getVariables().add(v);
+//        }
+//        this.conditionVarReferences.clear();
+//
+//        //paramSubPlanReferences
+//        for (Pair<Long, Long> pairs : this.paramSubPlanReferences) {
+//            Parametrisation p = (Parametrisation) this.elements.get(pairs.fst);
+//            AbstractPlan ap = (AbstractPlan) this.elements.get(pairs.snd);
+//            p.setSubPlan(ap);
+//        }
+//        this.paramSubPlanReferences.clear();
+//
+//        //paramSubVarReferences
+//        for (Pair<Long, Long> pairs : this.paramSubVarReferences) {
+//            Parametrisation p = (Parametrisation) this.elements.get(pairs.fst);
+//            Variable ap = (Variable) this.elements.get(pairs.snd);
+//            p.setSubVar(ap);
+//        }
+//        this.paramSubVarReferences.clear();
+//
+//        //paramVarReferences
+//        for (Pair<Long, Long> pairs : this.paramVarReferences) {
+//            Parametrisation p = (Parametrisation) this.elements.get(pairs.fst);
+//            Variable v = (Variable) this.elements.get(pairs.snd);
+//            p.setVar(v);
+//        }
+//        this.paramVarReferences.clear();
+//
+//        //transitionSynchReferences
+//        for (Pair<Long, Long> pairs : this.transitionSynchReferences) {
+//            Transition t = (Transition) this.elements.get(pairs.fst);
+//            SyncTransition sync = (SyncTransition) this.elements.get(pairs.snd);
+//            t.setSyncTransition(sync);
+//            sync.getInSync().add(t);
+//        }
+//        this.transitionSynchReferences.clear();
+//
+//        //planningProblemPlanReferences
+//        for (Pair<Long, Long> pairs : this.planningProblemPlanReferences) {
+//            PlanningProblem s = (PlanningProblem) this.elements.get(pairs.fst);
+//            AbstractPlan p = (AbstractPlan) this.elements.get(pairs.snd);
+//            s.getPlans().add(p);
+//        }
+//        this.planningProblemPlanReferences.clear();
+//
+//        //planningProblemPlanWaitReferences
+//        for (Pair<Long, Long> pairs : this.planningProblemPlanWaitReferences) {
+//            PlanningProblem s = (PlanningProblem) this.elements.get(pairs.fst);
+//            Plan p = (Plan) this.elements.get(pairs.snd);
+//            s.setWaitPlan(p);
+//        }
+//        this.planningProblemPlanWaitReferences.clear();
+//
+//        //planningProblemPlanAlternativeReferences
+//        for (Pair<Long, Long> pairs : this.planningProblemPlanAlternativeReferences) {
+//            PlanningProblem s = (PlanningProblem) this.elements.get(pairs.fst);
+//            Plan p = (Plan) this.elements.get(pairs.snd);
+//            s.setAlternativePlan(p);
+//        }
+//        this.planningProblemPlanAlternativeReferences.clear();
+//
+//        //quantifierScopeReferences
+//        for (Pair<Long, Long> pairs : this.quantifierScopeReferences) {
+//            AlicaElement ae = (AlicaElement) this.elements.get(pairs.snd);
+//            Quantifier q = (Quantifier) this.elements.get(pairs.fst);
+//            q.setScope(this.ae, ae);
+//        }
+//        this.quantifierScopeReferences.clear();
+//
+//        removeRedundancy();
+////#ifdef MF_DEBUG
+//        System.out.println("MF: DONE!");
+////#endif
+//
+//    }
 
 
     public void attachCharacteristicReferences() {
@@ -282,7 +298,7 @@ public class ModelFactory {
     public Plan createPlan(Document doc) {
         Node element = doc.getDocumentElement();
         long id = this.parser.parserId(element);
-        Plan plan = new Plan(id);
+        Plan plan = new Plan(id, ae);
         plan.setFileName(this.parser.getCurrentFile());
         setAlicaElementAttributes(plan, element);
         // insert into elements ma
@@ -996,7 +1012,7 @@ public class ModelFactory {
     }
 
     private BehaviourConfiguration createBehaviourConfiguration(Node element) {
-        BehaviourConfiguration b = new BehaviourConfiguration();
+        BehaviourConfiguration b = new BehaviourConfiguration(ae);
         b.setId(this.parser.parserId(element));
         b.setFileName(this.parser.getCurrentFile());
 

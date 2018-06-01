@@ -71,21 +71,19 @@ public class PlanBase implements Runnable {
         this.alicaClock = ae.getIAlicaClock();
 
         this.ruleBook = new RuleBook(ae);
-        SystemConfig sc = SystemConfig.getInstance();
+//        SystemConfig sc = SystemConfig.getInstance();
 
-        double freq = Double.valueOf((String) sc.get("Alica").get("Alica.EngineFrequency"));
-        double minbcfreq = Double.valueOf((String) sc.get("Alica").get("Alica.MinBroadcastFrequency"));
-        double maxbcfreq = Double.valueOf((String) sc.get("Alica").get("Alica.MaxBroadcastFrequency"));
+        double freq = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.EngineFrequency"));
+        double minbcfreq = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.MinBroadcastFrequency"));
+        double maxbcfreq = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.MaxBroadcastFrequency"));
 
         this.loopTime = new AlicaTime(Math.max(1000000, Math.round(1.0 / freq * 1000000000)));
 
-        if (this.loopTime.time == 1000000)
-        {
+        if (this.loopTime.time == 1000000) {
             System.out.println("PB: ALICA should not be used with more than 1000Hz . 1000Hz assumed");
         }
 
-        if (minbcfreq > maxbcfreq)
-        {
+        if (minbcfreq > maxbcfreq) {
             ae.abort( "PB: Alica.conf: Minimal broadcast frequency must be lower or equal to maximal broadcast frequency!");
         }
 
@@ -95,11 +93,11 @@ public class PlanBase implements Runnable {
         AlicaTime halfLoopTime = new AlicaTime(this.loopTime.time / 2);
         this.running = false;
 
-        this.sendStatusMessages = Boolean.valueOf((String) sc.get("Alica").get("Alica.StatusMessages.Enabled"));
+        this.sendStatusMessages = Boolean.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.StatusMessages.Enabled"));
 
         if (sendStatusMessages)
         {
-            double stfreq = Double.valueOf((String) sc.get("Alica").get("Alica.StatusMessages.Frequency"));
+            double stfreq = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.StatusMessages.Frequency"));
             this.sendStatusInterval = new AlicaTime(Math.max(1000000.0, Math.round(1.0 / stfreq * 1000000000)));
             this.statusMessage = new AlicaEngineInfo();
             this.statusMessage.senderID = this.teamObserver.getOwnId();
@@ -107,8 +105,7 @@ public class PlanBase implements Runnable {
         }
         this.stepModeCV = null;
 
-        if (this.ae.getStepEngine())
-        {
+        if (this.ae.getStepEngine()) {
             this.stepModeCV = new condition_variable();
         }
 
@@ -116,8 +113,7 @@ public class PlanBase implements Runnable {
         if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: Engine loop time is " +(loopTime.time / 1000000)+ "ms, broadcast interval is "+(this.minSendInterval.time / 1000000)
                 + "ms - " + (this.maxSendInterval.time / 1000000) + "ms" );
 //#endif
-        if (halfLoopTime.time < this.minSendInterval.time)
-        {
+        if (halfLoopTime.time < this.minSendInterval.time) {
             this.minSendInterval.time -= halfLoopTime.time;
             this.maxSendInterval.time -= halfLoopTime.time;
         }
@@ -157,9 +153,7 @@ public class PlanBase implements Runnable {
                         return;
                 }
                 beginTime = alicaClock.now();
-
             }
-
 
             //Send tick to other modules
             this.ae.getCommunicator().tick();
@@ -189,16 +183,14 @@ public class PlanBase implements Runnable {
 
             System.out.println("PB: " + now.time + " > " +this.lastSendTime.time);
 
-            if (now.time <= this.lastSendTime.time)
-            {
+            if (now.time <= this.lastSendTime.time) {
                 // Taker fix
                 System.out.println("PB: lastSendTime is in the future of the current system time, did the system time change?" );
                 this.lastSendTime.time = now.time;
             }
 
             if ((this.ruleBook.isChangeOccured() && (this.lastSendTime.time + this.minSendInterval.time) < now.time)
-					|| (this.lastSendTime.time + this.maxSendInterval.time) < now.time)
-            {
+					|| (this.lastSendTime.time + this.maxSendInterval.time) < now.time) {
                 ArrayList<Long> msg = new ArrayList<>();
                 this.deepestNode = this.rootNode;
                 this.treeDepth = 0;
@@ -208,23 +200,20 @@ public class PlanBase implements Runnable {
                 this.ruleBook.setChangeOccured(false);
             }
 
-            if (this.sendStatusMessages && (this.lastSentStatusTime.time + this.sendStatusInterval.time) < alicaClock.now().time)
-            {
-                if (this.deepestNode != null)
-                {
+            if (this.sendStatusMessages && (this.lastSentStatusTime.time + this.sendStatusInterval.time) < alicaClock.now().time) {
+
+                if (this.deepestNode != null) {
                     this.statusMessage.robotIDsWithMe.clear();
                     this.statusMessage.currentPlan = this.deepestNode.getPlan().getName();
-                    if (this.deepestNode.getOwnEntryPoint() != null)
-                    {
+
+                    if (this.deepestNode.getOwnEntryPoint() != null) {
                         this.statusMessage.currentTask = this.deepestNode.getOwnEntryPoint().getTask().getName();
                     }
-					else
-                    {
+					else {
                         this.statusMessage.currentTask = "IDLE";
                     }
 
-                    if (this.deepestNode.getActiveState() != null)
-                    {
+                    if (this.deepestNode.getActiveState() != null) {
                         this.statusMessage.currentState = this.deepestNode.getActiveState().getName();
                         CommonUtils.copy(this.deepestNode.getAssignment().getRobotStateMapping().getRobotsInState(
                             this.deepestNode.getActiveState()), 0,
@@ -235,8 +224,7 @@ public class PlanBase implements Runnable {
                         );
 
                     }
-					else
-                    {
+					else {
                         this.statusMessage.currentState = "NONE";
                     }
                     this.statusMessage.currentRole = this.ra.getOwnRole().getName();
@@ -244,38 +232,30 @@ public class PlanBase implements Runnable {
                     this.lastSentStatusTime = alicaClock.now();
                 }
             }
-
             this.log.iterationEnds(this.rootNode);
-
             this.ae.iterationComplete();
-
             long availTime;
-
             now = alicaClock.now();
-            if (this.loopTime.time > (now.time - beginTime.time))
-            {
+
+            if (this.loopTime.time > (now.time - beginTime.time)) {
                 availTime = (long)((this.loopTime.time - (now.time - beginTime.time)) / 1000);
             }
-			else
-            {
+			else {
                 availTime = 0;
             }
 
-            if (fpEvents.size() > 0)
-            {
+            if (fpEvents.size() > 0) {
                 //lock for fpEvents
                 {
 //                    lock_guard<mutex> lock(lomutex);
-                    while (this.running && availTime > 1000 && fpEvents.size() > 0)
-                    {
+                    while (this.running && availTime > 1000 && fpEvents.size() > 0) {
                         RunningPlan rp = fpEvents.peek();//front();
                         fpEvents.poll();
 
-                        if (rp.isActive())
-                        {
+                        if (rp.isActive()) {
                             boolean first = true;
-                            while (rp != null)
-                            {
+
+                            while (rp != null) {
                                 System.out.println( "PB: TICK FPEVENT " );
                                 PlanChange change = this.ruleBook.visit(rp);
                                 System.out.println("PB: AFTER TICK FPEVENT " );
@@ -288,12 +268,11 @@ public class PlanBase implements Runnable {
                             }
                         }
                         now = alicaClock.now();
-                        if (this.loopTime.time > (now.time - beginTime.time))
-                        {
+
+                        if (this.loopTime.time > (now.time - beginTime.time)) {
                             availTime = (long)((this.loopTime.time - (now.time - beginTime.time)) / 1000);
                         }
-						else
-                        {
+						else {
                             availTime = 0;
                         }
                     }
@@ -304,8 +283,7 @@ public class PlanBase implements Runnable {
 //#ifdef PB_DEBUG
             if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: availTime " + availTime );
 //#endif
-            if (availTime > 1 && !ae.getStepEngine())
-            {
+            if (availTime > 1 && !ae.getStepEngine()) {
                 alicaClock.sleep(availTime);
             }
         }
@@ -313,8 +291,7 @@ public class PlanBase implements Runnable {
 
     public void start() {
 
-        if (!this.running)
-        {
+        if (!this.running) {
             this.running = true;
             this.mainThread = new Thread(this);
             this.mainThread.start();

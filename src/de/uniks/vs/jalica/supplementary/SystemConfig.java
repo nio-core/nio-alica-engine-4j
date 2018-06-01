@@ -1,7 +1,7 @@
 package de.uniks.vs.jalica.supplementary;
 
-import de.uniks.vs.jalica.common.ConfigPair;
-import de.uniks.vs.jalica.common.ConfigParser;
+import de.uniks.vs.jalica.common.config.ConfigPair;
+import de.uniks.vs.jalica.common.config.ConfigParser;
 
 import java.util.HashMap;
 
@@ -9,8 +9,6 @@ import java.util.HashMap;
  * Created by alex on 13.07.17.
  */
 public class SystemConfig {
-    private static SystemConfig instance;
-
     //    static mutex configsMapMutex;
     static String DOMAIN_FOLDER = "DOMAIN_FOLDER";
     static String DOMAIN_CONFIG_FOLDER = "DOMAIN_CONFIG_FOLDER";
@@ -19,22 +17,30 @@ public class SystemConfig {
     protected String rootPath;
     protected String logPath;
     protected String configPath;
-    protected String hostname;
+    protected String id= "nio_zero";
 
     private HashMap<String, ConfigPair> configurations;
 
     public SystemConfig() {
+        init();
+    }
+
+    public SystemConfig(String id) {
+        this.id = id;
+        init();
+    }
+
+    private void init() {
         configurations = new HashMap<>();
         //TODO : path
         configPath = "config/";
         rootPath = ".";
-        hostname = "nio_zero";
         logPath = "log/";
 
-       System.out.println("SC: Root:           \"" + rootPath + "\"" );
-       System.out.println("SC: ConfigRoot:     \"" + configPath + "\"" );
-       System.out.println("SC: Hostname:       \"" + hostname + "\"" );
-       System.out.println("SC: Logging Folder: \"" + logPath + "\"" );
+        System.out.println("SC: Root:           \"" + rootPath + "\"" );
+        System.out.println("SC: ConfigRoot:     \"" + configPath + "\"" );
+        System.out.println("SC: Hostname:       \"" + id + "\"" );
+        System.out.println("SC: Logging Folder: \"" + logPath + "\"" );
     }
 
     public ConfigPair get(String name) {
@@ -54,18 +60,11 @@ public class SystemConfig {
         return ConfigParser.getInstance().parse(path);
     }
 
-    public static SystemConfig getInstance() {
-
-        if (instance == null)
-            instance = new SystemConfig();
-        return instance;
-    }
-
     public String getConfigPath() {
         return configPath;
     }
 
-    public String getHostname() {return hostname;}
+    public String getHostname() {return id;}
 
     /**
      * Looks up the own robot's ID with the system config's local hostname.

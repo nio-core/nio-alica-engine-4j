@@ -23,7 +23,7 @@ import java.util.HashMap;
  */
 public class AlicaEngine {
 
-    private SystemConfig sc = SystemConfig.getInstance();
+    private SystemConfig sc;
 
     private AlicaCommunication communicator;
     private boolean maySendMessages;
@@ -48,7 +48,6 @@ public class AlicaEngine {
     private VariableSyncModule variableSyncModule;
     private IAlicaClock alicaClock;
     private IPlanner planner;
-
     private HashMap<Integer, Solver> solver = new HashMap<>();
 
     public void setIAlicaClock(IAlicaClock clock) {
@@ -63,10 +62,10 @@ public class AlicaEngine {
         this.solver.put(identifier, solver);
     }
 
-    public boolean init(BehaviourCreator bc, ConditionCreator cc, UtilityFunctionCreator uc, ConstraintCreator crc,
+    public boolean init(SystemConfig sc, BehaviourCreator bc, ConditionCreator cc, UtilityFunctionCreator uc, ConstraintCreator crc,
                                                 String roleSetName, String masterPlanName, String roleSetDir, boolean stepEngine) {
 
-        this.maySendMessages =  Boolean.valueOf((String) sc.get("Alica").get("Alica.SilentStart"));
+        this.maySendMessages =  !Boolean.valueOf((String) sc.get("Alica").get("Alica.SilentStart"));
         this.useStaticRoles = Boolean.valueOf((String) sc.get("Alica").get("Alica.UseStaticRoles"));
         AssignmentCollection.maxEpsCount = Short.valueOf((String) sc.get("Alica").get("Alica.MaxEpsPerPlan"));
         AssignmentCollection.allowIdling  = Boolean.valueOf((String) sc.get("Alica").get("Alica.AllowIdling"));
@@ -74,49 +73,40 @@ public class AlicaEngine {
         this.terminating = false;
         this.stepEngine = stepEngine;
 
-        if (this.planRepository == null)
-        {
+        this.sc = sc;
+
+        if (this.planRepository == null) {
             this.planRepository = new PlanRepository();
         }
-        if (this.planParser == null)
-        {
+        if (this.planParser == null) {
             this.planParser = new PlanParser(this, this.planRepository);
         }
-        if (this.masterPlan == null)
-        {
+        if (this.masterPlan == null) {
             this.masterPlan = this.planParser.parsePlanTree(masterPlanName);
         }
-        if (this.roleSet == null)
-        {
+        if (this.roleSet == null) {
             this.roleSet = this.planParser.parseRoleSet(roleSetName, roleSetDir);
         }
-        if (this.behaviourPool == null)
-        {
+        if (this.behaviourPool == null) {
             this.behaviourPool = new BehaviourPool(this);
         }
-        if (this.teamObserver == null)
-        {
+        if (this.teamObserver == null) {
             this.teamObserver = new TeamObserver(this);
         }
-        if (this.roleAssignment == null)
-        {
-            if (this.useStaticRoles)
-            {
+        if (this.roleAssignment == null) {
+            if (this.useStaticRoles) {
                 this.roleAssignment = new StaticRoleAssignment(this);
             }
-			else
-            {
+			else {
                 this.roleAssignment = new RoleAssignment(this);
             }
             // the communicator is expected to be set before init() is called
             this.roleAssignment.setCommunication(communicator);
         }
-        if (this.syncModul == null)
-        {
+        if (this.syncModul == null) {
             this.syncModul = new SyncModul(this);
         }
-        if (this.expressionHandler == null)
-        {
+        if (this.expressionHandler == null) {
             this.expressionHandler = new ExpressionHandler(this, cc, uc, crc);
         }
 
@@ -128,12 +118,10 @@ public class AlicaEngine {
         this.teamObserver.init();
         this.roleAssignment.init();
 
-        if (this.pap == null)
-        {
+        if (this.pap == null) {
             pap = new PartialAssignmentPool();
         }
-        if (planSelector == null)
-        {
+        if (planSelector == null) {
             this.planSelector = new PlanSelector(this, pap);
         }
 
@@ -238,7 +226,7 @@ public class AlicaEngine {
      */
     public void iterationComplete() {
         //TODO: implement the trigger function for iteration complete
-        CommonUtils.aboutNoImpl();
+        //CommonUtils.aboutNoImpl();
     }
 
     public PlanBase getPlanBase() {
@@ -280,5 +268,9 @@ public class AlicaEngine {
 
     public boolean isMaySendMessages() {
         return maySendMessages;
+    }
+
+    public SystemConfig getSystemConfig() {
+        return sc;
     }
 }

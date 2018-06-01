@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.behaviours;
 
+import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 
 /**
@@ -12,9 +13,9 @@ public class DomainBehaviour extends BasicBehaviour {
     private double __maxTranslation;
     private int ownID;
 
-    public DomainBehaviour(String name) {
+    public DomainBehaviour(String name, AlicaEngine ae) {
         super(name);
-        this.sc = SystemConfig.getInstance();
+        this.sc = ae.getSystemConfig();
         this.ownID = sc.getOwnRobotID();
     }
 }

@@ -42,7 +42,7 @@ public class CycleManager {
     private Vector<AllocationDifference> allocationHistory = new Vector<>();
 
     public CycleManager(AlicaEngine ae, RunningPlan p) {
-        SystemConfig sc = SystemConfig.getInstance();
+        SystemConfig sc = ae.getSystemConfig();
         maxAllocationCycles = Integer.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.CycleCount"));
         enabled = Boolean.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.Enabled"));
         minimalOverrideTimeInterval = new AlicaTime(Long.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.MinimalAuthorityTimeInterval")) * 1000000);

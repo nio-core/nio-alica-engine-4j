@@ -49,7 +49,7 @@ public class PlanParser {
 
         this.masterPlan = null;
         this.mf = new ModelFactory(ae, this, rep);
-        this.sc = SystemConfig.getInstance();
+        this.sc = ae.getSystemConfig();
         this.domainConfigFolder = this.sc.getConfigPath();
 
         this.planDir = (String) this.sc.get("Alica").get("Alica.PlanDir");

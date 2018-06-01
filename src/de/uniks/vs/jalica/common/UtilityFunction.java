@@ -3,7 +3,9 @@ package de.uniks.vs.jalica.common;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.unknown.*;
 
+import javax.sound.sampled.Line;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 /**
@@ -11,10 +13,11 @@ import java.util.LinkedHashMap;
  */
 public class UtilityFunction {
 
-    double DIFFERENCETHRESHOLD = 0.0001;
+    protected static final double DIFFERENCETHRESHOLD = 0.0001;
 
-    private double priorityWeight;
-    private double similarityWeight;
+    private final String name;
+    protected double priorityWeight;
+    protected double similarityWeight;
     private ArrayList<USummand> utilSummands;
     private UtilityInterval simUI;
     private UtilityInterval priResult;
@@ -25,8 +28,82 @@ public class UtilityFunction {
     private Plan plan;
     private AlicaEngine ae;
 
-    public static void initDataStructures(AlicaEngine alicaEngine) {
 
+    protected UtilityFunction(String name, ArrayList<USummand> utilSummands, double priorityWeight,
+                              double similarityWeight, Plan plan)
+    {
+
+        priResult = new UtilityInterval(0.0, 0.0);
+        simUI = new UtilityInterval(0.0, 0.0);
+        this.ra = null;
+        this.ae = null;
+        this.lookupStruct = new TaskRoleStruct(0, 0);
+        this.name = name;
+        this.utilSummands = utilSummands;
+        this.priorityWeight = priorityWeight;
+        this.similarityWeight = similarityWeight;
+        this.plan = plan;
+
+    }
+
+    public static void initDataStructures(AlicaEngine ae) {
+        HashMap<Long, Plan> plans = ae.getPlanRepository().getPlans();
+
+        for (Plan plan : plans.values()) {
+            plan.getUtilityFunction().init(ae);
+        }
+    }
+
+    private void init(AlicaEngine ae) {
+        // CREATE MATRIX && HIGHEST PRIORITY ARRAY
+        // init dicts
+        this.roleHighestPriorityMap = new LinkedHashMap<Long, Double>();
+        this.priorityMartix = new LinkedHashMap<TaskRoleStruct, Double> ();
+        RoleSet roleSet = ae.getRoleSet();
+        long taskId;
+        long roleId;
+        double curPrio = 0.0;
+
+        for (RoleTaskMapping rtm : roleSet.getRoleTaskMappings()) {
+            roleId = rtm.getRole().getId();
+            this.roleHighestPriorityMap.put(roleId, 0.0);
+
+            for (EntryPoint epIter : this.plan.getEntryPoints().values()) {
+                taskId = epIter.getTask().getId();
+                Double iter = rtm.getTaskPriorities().get(taskId);
+
+                if (iter == null) {
+                    System.out.println("UF: There is no priority for the task " + taskId + " in the roleTaskMapping of the role "
+                            + rtm.getRole().getName() + " with id " + roleId
+                        + "!\n We are in the UF for the plan " + this.plan.getName() + "!" );
+                }
+                else {
+                    curPrio = iter;
+                }
+                TaskRoleStruct trs = new TaskRoleStruct(taskId, roleId);
+
+                if (this.priorityMartix.get(trs) == null) {
+                    this.priorityMartix.put(trs, curPrio);
+                }
+
+                if (this.roleHighestPriorityMap.get(roleId) < curPrio) {
+                    this.roleHighestPriorityMap.put(roleId, curPrio);
+                }
+            }
+            // Add Priority for Idle-EntryPoint
+            this.priorityMartix.put(new TaskRoleStruct(Task.IDLEID, roleId), 0.0);
+        }
+        //c# != null
+        // INIT UTILITYSUMMANDS
+        if (this.utilSummands.size() != 0) {
+            // it is null for default utility function
+
+            for (USummand utilSum : this.utilSummands){
+                utilSum.init(ae);
+            }
+        }
+        this.ae = ae;
+        this.ra = this.ae.getRoleAssignment();
     }
 
     public double eval(RunningPlan newRp, RunningPlan oldRp) {
@@ -91,7 +168,7 @@ public class UtilityFunction {
         return 0.0;
     }
 
-    private UtilityInterval getSimilarity(IAssignment newAss, IAssignment oldAss) {
+    protected UtilityInterval getSimilarity(IAssignment newAss, IAssignment oldAss) {
         simUI.setMax(0.0);
         simUI.setMin(0.0);
         // Calculate the similarity to the old Assignment
@@ -137,7 +214,7 @@ public class UtilityFunction {
         return simUI;
     }
 
-    private UtilityInterval getPriorityResult(IAssignment ass) {
+    protected UtilityInterval getPriorityResult(IAssignment ass) {
         this.priResult.setMax(0.0);
         this.priResult.setMin(0.0);
         if (this.priorityWeight == 0)

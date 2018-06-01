@@ -16,6 +16,7 @@ public class Condition extends AlicaElement{
     private String conditionString;
     private String plugInName;
     private ArrayList<Parameter> parameters;
+    private BasicConstraint basicConstraint;
 
     public boolean evaluate(RunningPlan rp) {
         if (basicCondition == null)
@@ -61,5 +62,17 @@ public class Condition extends AlicaElement{
 
     public void setAbstractPlan(AbstractPlan abstractPlan) {
         this.abstractPlan = abstractPlan;
+    }
+
+    public void setBasicCondition(BasicCondition basicCondition) {
+        this.basicCondition = basicCondition;
+    }
+
+    public BasicCondition getBasicCondition() {
+        return basicCondition;
+    }
+
+    public void setBasicConstraint(BasicConstraint basicConstraint) {
+        this.basicConstraint = basicConstraint;
     }
 }

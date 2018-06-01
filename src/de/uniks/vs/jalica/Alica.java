@@ -3,40 +3,51 @@ package de.uniks.vs.jalica;
 /**
  * Created by alex on 13.07.17.
  */
-public class Alica {
+public class Alica extends Thread {
 
+    private String id;
 
-    public Alica() {}
+    public Alica() {
+    }
+
+    public Alica(String id) {
+        this.id = id;
+    }
 
     public static void main(String... param) {
-        Alica alica = new Alica();
+        Alica alica = new Alica(param[0]);
         alica.start();
     }
 
-    private void start() {
+    protected void init() {
         String roleSetName = "Roleset";
-//        String masterPlanName = "WM16";
         String masterPlanName =  "DummyPlan";
         String roleSetDir = "roles/";
-        boolean sim = false;
+        boolean sim = true;
 
-        System.out.println("\tMasterplan is:       \"" + masterPlanName + "\"" );
-        System.out.println( "\tRolset Directory is: \"" + roleSetDir + "\"" );
-        System.out.println( "\tRolset is:           \"" + (roleSetName.isEmpty() ? "Default" : roleSetName) + "\"" );
+        System.out.println("\tMasterplan is:       \"" + masterPlanName + "\"");
+        System.out.println("\tRolset Directory is: \"" + roleSetDir + "\"");
+        System.out.println("\tRolset is:           \"" + (roleSetName.isEmpty() ? "Default" : roleSetName) + "\"");
+        System.out.println("\nConstructing Base ...");
+        System.out.println("\nStarting Base ...");
 
-        System.out.println( "\nConstructing Base ...");
-
-        System.out.println( "\nStarting Base ...");
-
-        Base base = new Base(roleSetName,  masterPlanName,  roleSetDir,  sim);
+        Base base = new Base(this.id, roleSetName, masterPlanName, roleSetDir, sim);
         base.start();
+    }
 
-//        // STRG c abfangen
-//        while (true)
-//        {
+    @Override
+    public void run() {
+        init();
+        //        // STRG c abfangen
+        while (true) {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 ////            std::chrono::milliseconds dura(500);
 ////            std::this_thread::sleep_for(dura);
-//        }
+        }
     }
 }
 

@@ -23,7 +23,9 @@ public class AlicaDummyCommunication extends AlicaCommunication {
     }
 
     @Override
-    public void tick() {CommonUtils.aboutNoImpl();}
+    public void tick() {
+        CommonUtils.aboutNoImpl();
+    }
 
     @Override
     public void sendAlicaEngineInfo(AlicaEngineInfo statusMessage) {

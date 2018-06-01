@@ -8,6 +8,7 @@ import de.uniks.vs.jalica.dummy_proxy.AlicaDummyCommunication;
 import de.uniks.vs.jalica.dummy_proxy.AlicaSystemClock;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.reasoner.CGSolver;
+import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.utilfunctions.UtilityFunctionCreator;
 
 /**
@@ -21,13 +22,22 @@ public class Base {
     private static UtilityFunctionCreator uc;
     private static ConstraintCreator crc;
 
-    private final String roleSetName;
-    private final String masterPlanName;
-    private final String roleSetDir;
-    private final boolean sim;
+    private String roleSetName;
+    private String masterPlanName;
+    private String roleSetDir;
+    private boolean sim;
+    private String id;
 
     public Base(String roleSetName, String masterPlanName, String roleSetDir, boolean sim) {
+        init(roleSetName, masterPlanName, roleSetDir, sim);
+    }
 
+    public Base(String id, String roleSetName, String masterPlanName, String roleSetDir, boolean sim) {
+        this.id = id;
+        init(roleSetName,  masterPlanName, roleSetDir, sim);
+    }
+
+    private void init(String roleSetName, String masterPlanName, String roleSetDir, boolean sim) {
         this.roleSetName = roleSetName;
         this.masterPlanName = masterPlanName;
         this.roleSetDir = roleSetDir;
@@ -42,7 +52,8 @@ public class Base {
         ae.setIAlicaClock(new AlicaSystemClock());
         ae.setCommunicator(new AlicaDummyCommunication(ae));
         ae.addSolver(SolverType.GRADIENTSOLVER.ordinal(), new CGSolver(ae));
-        ae.init(bc, cc, uc, crc, roleSetName, masterPlanName, roleSetDir, false);
+        SystemConfig sc = new SystemConfig(this.id);
+        ae.init(sc, bc, cc, uc, crc, roleSetName, masterPlanName, roleSetDir, false);
     }
 
     public void start() {
@@ -50,7 +61,7 @@ public class Base {
 
         while (true)
             try {
-                Thread.sleep(500);
+                Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

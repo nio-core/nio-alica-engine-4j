@@ -27,7 +27,7 @@ public class RuleBook {
         this.ps = ae.getPlanSelector();
         this.sm = ae.getSyncModul();
         this.log = ae.getLog();
-        SystemConfig sc = SystemConfig.getInstance();
+        SystemConfig sc = ae.getSystemConfig();
         this.maxConsecutiveChanges = Integer.valueOf((String) sc.get("Alica").get("Alica.MaxRuleApplications"));
         this.changeOccured = true;
     }

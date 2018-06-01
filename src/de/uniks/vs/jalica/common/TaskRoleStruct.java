@@ -6,4 +6,10 @@ package de.uniks.vs.jalica.common;
 public class TaskRoleStruct {
     public long taskId;
     public long roleId;
+
+
+    public TaskRoleStruct(long taskId, long roleId) {
+        this.taskId = taskId;
+        this.roleId = roleId;
+    }
 }

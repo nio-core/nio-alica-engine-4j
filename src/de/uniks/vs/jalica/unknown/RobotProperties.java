@@ -1,6 +1,6 @@
 package de.uniks.vs.jalica.unknown;
 
-import de.uniks.vs.jalica.common.ConfigPair;
+import de.uniks.vs.jalica.common.config.ConfigPair;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 
@@ -22,7 +22,7 @@ public class RobotProperties {
     public RobotProperties(AlicaEngine ae, String name) {
         this.ae = ae;
         this.name = name;
-        SystemConfig sc = SystemConfig.getInstance();
+        SystemConfig sc = ae.getSystemConfig();
 //        this.id = (sc)["Globals"].tryGet<int>(-1, "Globals", "Team", name, "ID", null);
         this.id = Integer.valueOf((String) sc.get("Globals").get("Team."+name+".ID"));
         this.characteristics = new HashMap<>();

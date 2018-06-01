@@ -24,15 +24,16 @@ public class BehaviourPool implements IBehaviourPool {
     }
 
     public boolean init(BehaviourCreator bc) {
+
         if (this.behaviourCreator != null) {
             this.behaviourCreator = null;
         }
-
         this.behaviourCreator = bc;
-
         HashMap<Long, BehaviourConfiguration> behaviourConfs = ae.getPlanRepository().getBehaviourConfigurations();
+
         for (Long key : behaviourConfs.keySet()) {
-            BasicBehaviour basicBeh = (BasicBehaviour)this.behaviourCreator.createBehaviour(key);
+            BasicBehaviour basicBeh = (BasicBehaviour)this.behaviourCreator.createBehaviour(key, ae);
+
             if (basicBeh != null) {
                 // set stuff from behaviour configuration in basic behaviour object
                 basicBeh.setParameters(behaviourConfs.get(key).getParameters());
@@ -61,6 +62,7 @@ public class BehaviourPool implements IBehaviourPool {
         if (bc != null)
         {
             BasicBehaviour bb = this.availableBehaviours.get(bc);
+
             if (bb != null) {
                 // set both directions rp <. bb
                 rp.setBasicBehaviour(bb);
@@ -83,7 +85,7 @@ public class BehaviourPool implements IBehaviourPool {
         HashMap<Long, BehaviourConfiguration> behaviourConfs = ae.getPlanRepository().getBehaviourConfigurations();
         for (long key : behaviourConfs.keySet())
         {
-            BasicBehaviour basicBeh = this.behaviourCreator.createBehaviour(key);
+            BasicBehaviour basicBeh = this.behaviourCreator.createBehaviour(key, ae);
             if (basicBeh != null)
             {
                 BehaviourConfiguration configuration = behaviourConfs.get(key);

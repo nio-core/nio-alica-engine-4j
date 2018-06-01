@@ -1,13 +1,11 @@
 package de.uniks.vs.jalica.teamobserver;
 
-import de.uniks.vs.jalica.common.ConfigPair;
+import de.uniks.vs.jalica.common.config.ConfigPair;
 import de.uniks.vs.jalica.common.Logger;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.unknown.*;
 
-import java.lang.reflect.Array;
-import java.net.CookieHandler;
 import java.util.*;
 
 /**
@@ -37,14 +35,14 @@ public class TeamObserver implements ITeamObserver {
     }
 
     public void init() {
-        SystemConfig sc = SystemConfig.getInstance();
+//        SystemConfig sc = SystemConfig.getInstance();
         this.log = ae.getLog();
 
         String ownPlayerName = ae.getRobotName();
         System.out.println( "TO: Initing Robot " + ownPlayerName );
-        this.teamTimeOut = Long.valueOf((String) sc.get("Alica").get("Alica.TeamTimeOut")) * 1000000;
+        this.teamTimeOut = Long.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.TeamTimeOut")) * 1000000;
 //        Vector<String> playerNames = new Vector<>(sc.getG("Globals").get("Team").keySet());
-        Vector<String> playerNames =((ConfigPair)sc.get("Globals").get("Team")).getKeys();
+        Vector<String> playerNames =((ConfigPair)this.ae.getSystemConfig().get("Globals").get("Team")).getKeys();
 //        Vector<String> playerNames = new Vector<>(sc.get("Globals").get("Team"));
         boolean foundSelf = false;
 
@@ -83,7 +81,7 @@ public class TeamObserver implements ITeamObserver {
             ae.abort("TO: Could not find own robot name in Globals Id = " + ownPlayerName);
         }
 
-        if (Boolean.valueOf((String) sc.get("Alica").get("Alica.TeamBlackList.InitiallyFull")))
+        if (Boolean.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.TeamBlackList.InitiallyFull")))
         {
             for (RobotEngineData r : this.allOtherRobots)
             {

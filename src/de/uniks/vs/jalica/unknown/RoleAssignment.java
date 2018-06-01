@@ -53,8 +53,8 @@ public class RoleAssignment implements IRoleAssignment {
         }
         this.availableRobots = ae.getTeamObserver().getAvailableRobotProperties();
 
-        System.out.println("RA: Available robots: " + this.availableRobots.size() );
-        System.out.println("RA: Robot Ids: ");
+        System.out.println("RA: Available agents: " + this.availableRobots.size() );
+        System.out.println("RA: agent Ids: ");
 
         for (RobotProperties aRobot : this.availableRobots) {
             System.out.println("           " + aRobot.getId() + " " +aRobot.getName());

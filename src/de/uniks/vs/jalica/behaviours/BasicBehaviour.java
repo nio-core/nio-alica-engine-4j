@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.behaviours;
 
+import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.supplementary.ITrigger;
 import de.uniks.vs.jalica.supplementary.Timer;
 import de.uniks.vs.jalica.unknown.CommonUtils;
@@ -114,7 +115,7 @@ public class BasicBehaviour implements IBehaviourCreator, Runnable {
 
 
     @Override
-    public BasicBehaviour createBehaviour(Long key) {
+    public BasicBehaviour createBehaviour(Long key,  AlicaEngine ae) {
         CommonUtils.aboutNoImpl();
         return null;
     }
@@ -215,4 +216,5 @@ public class BasicBehaviour implements IBehaviourCreator, Runnable {
     }
 
     public String getName() {return name;}
+
 }
