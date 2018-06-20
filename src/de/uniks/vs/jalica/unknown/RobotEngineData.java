@@ -12,9 +12,9 @@ public class RobotEngineData {
 
     private AlicaEngine ae;
     /**
-     * The robot's RobotProperties
+     * The robot's AgentProperties
      */
-    private RobotProperties properties;
+    private AgentProperties properties;
     /**
      * Whether or not the robot is considered active
      */
@@ -31,7 +31,7 @@ public class RobotEngineData {
     Role lastRole;
 
 
-    public RobotEngineData(AlicaEngine ae, RobotProperties properties) {
+    public RobotEngineData(AlicaEngine ae, AgentProperties properties) {
         this.ae = ae;
         this.active = false;
         this.lastMessageTime = 0;
@@ -49,7 +49,7 @@ public class RobotEngineData {
         this.active = active;
     }
 
-    public RobotProperties getProperties() {
+    public AgentProperties getProperties() {
         return properties;
     }
 
@@ -96,7 +96,7 @@ public class RobotEngineData {
 
     public long makeUniqueId(String s)
     {
-        long ret = (long)this.getProperties().getId() << 32;
+        long ret = (long)this.getProperties().getID() << 32;
         ret +=  s.hashCode();
 
         if(this.ae.getPlanParser().getParsedElements().get(ret) != null) {

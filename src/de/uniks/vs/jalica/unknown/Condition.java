@@ -10,13 +10,15 @@ import java.util.Vector;
 public class Condition extends AlicaElement{
 
     private BasicCondition basicCondition;
-    private Vector<Variable> variables;
-    private ArrayList<Quantifier> quantifiers;
     private AlicaElement abstractPlan;
-    private String conditionString;
     private String plugInName;
     private ArrayList<Parameter> parameters;
     private BasicConstraint basicConstraint;
+    protected ArrayList<Quantifier> quantifiers;
+    protected Vector<Variable> variables;
+    protected String conditionString;
+
+    public Condition() {}
 
     public boolean evaluate(RunningPlan rp) {
         if (basicCondition == null)

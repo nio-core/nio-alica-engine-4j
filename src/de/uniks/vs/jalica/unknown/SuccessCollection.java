@@ -1,7 +1,5 @@
 package de.uniks.vs.jalica.unknown;
 
-import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
-
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -11,13 +9,13 @@ import java.util.Vector;
 public class SuccessCollection {
 
     ArrayList<EntryPoint> entryPoints;
-    Vector<ArrayList<Integer>> robots;
+    Vector<ArrayList<Integer>> agents;
     int count = 0;
 
     public SuccessCollection(Plan plan) {
         this.count = plan.getEntryPoints().size();
         this.entryPoints = new ArrayList<EntryPoint>(this.count);
-        this.robots = new Vector<ArrayList<Integer>>(this.count);
+        this.agents = new Vector<ArrayList<Integer>>(this.count);
         int i = 0;
         ArrayList<EntryPoint> eps = new ArrayList<>();
 
@@ -31,15 +29,15 @@ public class SuccessCollection {
         for (EntryPoint ep : eps)
         {
             this.entryPoints.add(i, ep);
-            this.robots.add(i, new ArrayList<Integer>());
+            this.agents.add(i, new ArrayList<Integer>());
             i++;
         }
     }
 
-    public ArrayList<Integer> getRobots(EntryPoint entryPoint) {
+    public ArrayList<Integer> getAgents(EntryPoint entryPoint) {
         for (int i = 0; i < this.count; i++) {
             if (this.getEntryPoints().get(i) == entryPoint) {
-                return this.robots.get(i);
+                return this.agents.get(i);
             }
         }
         return null;
@@ -52,24 +50,24 @@ public class SuccessCollection {
     public void clear() {
         for (int i = 0; i < this.count; i++)
         {
-            this.robots.get(i).clear();
+            this.agents.get(i).clear();
         }
     }
 
-    public Vector<ArrayList<Integer>> getRobots() {
-        return robots;
+    public Vector<ArrayList<Integer>> getAgents() {
+        return agents;
     }
 
     public int getCount() {
         return count;
     }
 
-    public void setSuccess(int robot, EntryPoint ep) {
+    public void setSuccess(int agent, EntryPoint ep) {
         for (int i = 0; i < this.count; i++)
         {
             if (this.entryPoints.get(i) == ep)
             {
-                this.robots.get(i).add(robot);
+                this.agents.get(i).add(agent);
                 return;
             }
         }

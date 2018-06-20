@@ -3,7 +3,6 @@ package de.uniks.vs.jalica.unknown;
 import de.uniks.vs.jalica.behaviours.BasicBehaviour;
 import de.uniks.vs.jalica.behaviours.BehaviourConfiguration;
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.teamobserver.ITeamObserver;
 
 import java.util.*;
@@ -18,7 +17,8 @@ public class RunningPlan {
     private boolean active;
     private State activeState;
     private boolean behaviour;
-    private EntryPoint ownEntryPoint;
+//    private EntryPoint ownEntryPoint;
+    private EntryPoint activeEntryPoint;
     private RunningPlan parent;
     private boolean allocationNeeded;
     private ITeamObserver to;
@@ -30,7 +30,6 @@ public class RunningPlan {
     private AlicaTime planStartTime;
     private AlicaTime stateStartTime;
     private PlanStatus status;
-    private EntryPoint activeEntryPoint;
     private int ownId;
     private boolean failHandlingNeeded;
     private int failCount;
@@ -39,7 +38,7 @@ public class RunningPlan {
     protected AlicaTime assignmentProtectionTime;
 
     private LinkedHashMap<AbstractPlan, Integer> failedSubPlans = new LinkedHashMap<>();
-    private ArrayList<Integer> robotsAvail = new ArrayList<>();
+    private ArrayList<Integer> agentsAvail = new ArrayList<>();
     private ArrayList<RunningPlan> children = new ArrayList<>();
 
     RunningPlan(AlicaEngine ae) {
@@ -49,7 +48,7 @@ public class RunningPlan {
         this.planStartTime = new AlicaTime(0);
         this.stateStartTime = new AlicaTime(0);
         this.to = ae.getTeamObserver();
-        this.ownId = to.getOwnId();
+        this.ownId = to.getOwnID();
         this.status = PlanStatus.Running;
         this.failCount = 0;
         this.active = false;
@@ -57,7 +56,7 @@ public class RunningPlan {
         this.failHandlingNeeded = false;
         this.constraintStore = new ConditionStore();
         this.cycleManagement = new CycleManager(ae, this);
-        this.robotsAvail = new ArrayList<>();
+        this.agentsAvail = new ArrayList<>();
     }
 
     public RunningPlan(AlicaEngine ae, PlanType pt) {
@@ -84,11 +83,11 @@ public class RunningPlan {
 //                            {	return val.second;
 //                            }
 //        );
+
         for (EntryPoint e:  plan.getEntryPoints().values()) {
             epCol.add(e);
         }
         Collections.sort(epCol);
-
         this.behaviour = false;
     }
 
@@ -156,9 +155,8 @@ public class RunningPlan {
         return behaviour;
     }
 
-    public EntryPoint getOwnEntryPoint() {
-        return ownEntryPoint;
-    }
+//    public EntryPoint getOwnEntryPoint() { return ownEntryPoint; }
+    public EntryPoint getOwnEntryPoint() { return activeEntryPoint; }
 
     public State getActiveState() {
         return activeState;
@@ -174,7 +172,7 @@ public class RunningPlan {
     {
         deactivateChildren();
         clearChildren();
-        this.assignment.moveRobots(this.activeState, nextState);
+        this.assignment.moveAgents(this.activeState, nextState);
         this.setActiveState(nextState);
         this.failedSubPlans.clear();
     }
@@ -192,7 +190,7 @@ public class RunningPlan {
                 }
 				else if (this.activeState.isSuccessState())
                 {
-                    this.assignment.getEpSuccessMapping().getRobots(this.activeEntryPoint).add(this.ownId);
+                    this.assignment.getEpSuccessMapping().getAgents(this.activeEntryPoint).add(this.ownId);
                     this.to.getOwnEngineData().getSuccessMarks().markSuccessfull(this.plan,
                         this.activeEntryPoint);
                 }
@@ -220,7 +218,7 @@ public class RunningPlan {
         }
 		else
         {
-            this.to.notifyRobotLeftPlan(this.plan);
+            this.to.notifyAgentLeftPlan(this.plan);
         }
         revokeAllConstraints();
         deactivateChildren();
@@ -250,20 +248,20 @@ public class RunningPlan {
     {
         if (this.activeEntryPoint != value)
         {
-            this.assignment.removeRobot(ownId);
+            this.assignment.removeAgent(ownId);
             this.activeEntryPoint = value;
             if (this.activeEntryPoint != null)
             {
                 this.setActiveState(this.activeEntryPoint.getState());
-                this.assignment.addRobot(ownId, this.activeEntryPoint, this.activeState);
+                this.assignment.addAgent(ownId, this.activeEntryPoint, this.activeState);
             }
         }
     }
 
-    public void setRobotsAvail(ArrayList<Integer> robots)
+    public void setAgentsAvail(ArrayList<Integer> agents)
     {
-        this.robotsAvail.clear();
-        this.robotsAvail = CommonUtils.move(robots);
+        this.agentsAvail.clear();
+        this.agentsAvail = CommonUtils.move(agents);
     }
 
     public Assignment getAssignment() {
@@ -386,7 +384,7 @@ public class RunningPlan {
         return children;
     }
 
-    public void limitToRobots(Set<Integer> robots) {
+    public void limitToAgents(Set<Integer> agents) {
         if (this.isBehaviour())
         {
             return;
@@ -396,31 +394,31 @@ public class RunningPlan {
             return;
         }
         boolean recurse = false;
-        Vector<Integer> curRobots = this.assignment.getAllRobots();
-        for (int r : curRobots)
+        Vector<Integer> curentAgents = this.assignment.getAllAgents();
+        for (int r : curentAgents)
         {
-            if (CommonUtils.find(curRobots,0, curRobots.size()-1, r) == curRobots.lastElement())
+            if (CommonUtils.find(curentAgents,0, curentAgents.size()-1, r) == curentAgents.lastElement())
             {
                 if (this.activeState != null
-                    && this.assignment.getRobotStateMapping().stateOfRobot(r) == this.activeState)
+                    && this.assignment.getAgentStateMapping().stateOfAgent(r) == this.activeState)
                 {
                     recurse = true;
                 }
-                this.assignment.removeRobot(r);
+                this.assignment.removeAgent(r);
             }
         }
         if (recurse)
         {
             for (RunningPlan c : this.children)
             {
-                c.limitToRobots(robots);
+                c.limitToAgents(agents);
             }
         }
     }
 
     public void adaptAssignment(RunningPlan r) {
-        State newState = r.getAssignment().getRobotStateMapping().getState(this.ownId);
-        r.getAssignment().getRobotStateMapping().reconsiderOldAssignment(this.assignment, r.getAssignment());
+        State newState = r.getAssignment().getAgentStateMapping().getState(this.ownId);
+        r.getAssignment().getAgentStateMapping().reconsiderOldAssignment(this.assignment, r.getAssignment());
         boolean reactivate = false;
 
         if (this.activeState != newState)
@@ -434,10 +432,10 @@ public class RunningPlan {
         }
 		else
         {
-            Set<Integer> robotsJoined = r.getAssignment().getRobotStateMapping().getRobotsInState(newState);
+            Set<Integer> agentsJoined = r.getAssignment().getAgentStateMapping().getAgentsInState(newState);
             for (RunningPlan r1 : this.children)
             {
-                r1.limitToRobots(robotsJoined);
+                r1.limitToAgents(agentsJoined);
             }
         }
 
@@ -535,43 +533,43 @@ public class RunningPlan {
             if (spt.getState().getInPlan() != this.plan) { //the robot is no longer participating in this plan
 
                 if (!keepTask & !auth) {
-                    EntryPoint ep = this.getAssignment().getEntryPointOfRobot(spt.getRobotId());
+                    EntryPoint ep = this.getAssignment().getEntryPointOfAgent(spt.getAgentID());
 
                     if (ep != null ) {
-                        this.getAssignment().removeRobot(spt.getRobotId());
+                        this.getAssignment().removeAgent(spt.getAgentID());
                         ret = true;
-                        aldif.getSubtractions().add(new EntryPointRobotPair(ep, spt.getRobotId()));
+                        aldif.getSubtractions().add(new EntryPointAgentPair(ep, spt.getAgentID()));
                     }
                 }
             }
 			else {
 
                 if (keepTask || auth) { //Update only state, and that only if it is in the reachability graph of its current entrypoint, else ignore
-                    EntryPoint cep = this.getAssignment().getEntryPointOfRobot(spt.getRobotId());
+                    EntryPoint cep = this.getAssignment().getEntryPointOfAgent(spt.getAgentID());
 
                     if (cep != null ) {
 
                         if (!cep.getReachableStates().contains(spt.getState())) {
-                            this.getAssignment().getRobotStateMapping().setState(spt.getRobotId(), spt.getState());
+                            this.getAssignment().getAgentStateMapping().setState(spt.getAgentID(), spt.getState());
                         }
                     }
                     else { //robot was not expected to be here during protected assignment time, add it.
-                        this.getAssignment().addRobot(spt.getRobotId(), spt.getEntryPoint(), spt.getState());
+                        this.getAssignment().addAgent(spt.getAgentID(), spt.getEntryPoint(), spt.getState());
                         aldif.getAdditions().add(
-                                        new EntryPointRobotPair(spt.getEntryPoint(), spt.getRobotId()));
+                                        new EntryPointAgentPair(spt.getEntryPoint(), spt.getAgentID()));
 
                     }
                 }
                 else
                 { //Normal Update
-                    EntryPoint ep = this.getAssignment().getEntryPointOfRobot(spt.getRobotId());
-                    ret |= this.getAssignment().updateRobot(spt.getRobotId(), spt.getEntryPoint(), spt.getState());
+                    EntryPoint ep = this.getAssignment().getEntryPointOfAgent(spt.getAgentID());
+                    ret |= this.getAssignment().updateAgent(spt.getAgentID(), spt.getEntryPoint(), spt.getState());
 
                     if (spt.getEntryPoint() != ep) {
-                        aldif.getAdditions().add(new EntryPointRobotPair(spt.getEntryPoint(), spt.getRobotId()));
+                        aldif.getAdditions().add(new EntryPointAgentPair(spt.getEntryPoint(), spt.getAgentID()));
 
                         if (ep != null )
-                            aldif.getSubtractions().add(new EntryPointRobotPair(ep, spt.getRobotId()));
+                            aldif.getSubtractions().add(new EntryPointAgentPair(ep, spt.getAgentID()));
                     }
 
                 }
@@ -584,9 +582,9 @@ public class RunningPlan {
             EntryPoint ep;
 
             for (int i = 0; i < this.getAssignment().getEntryPointCount(); i++) {
-                ep = this.getAssignment().getEpRobotsMapping().getEp(i);
+                ep = this.getAssignment().getEpAgentsMapping().getEp(i);
                 rem.clear();
-                Vector<Integer> robs = this.getAssignment().getRobotsWorking(ep);
+                Vector<Integer> robs = this.getAssignment().getAgentsWorking(ep);
 
                 for (int rob : (robs)) {
 
@@ -601,7 +599,7 @@ public class RunningPlan {
 
                     for (SimplePlanTree spt : spts) {
 
-                        if (spt.getRobotId() == rob) {
+                        if (spt.getAgentID() == rob) {
                             found = true;
                             break;
                         }
@@ -610,25 +608,25 @@ public class RunningPlan {
                     if (!found) {
                         rem.add(rob);
                         //this.Assignment.RemoveRobot(rob);
-                        aldif.getSubtractions().add(new EntryPointRobotPair(ep, rob));
+                        aldif.getSubtractions().add(new EntryPointAgentPair(ep, rob));
                         ret = true;
                     }
                 }
 
                 for (int rob : rem) {
-                    this.getAssignment().removeRobot(rob, ep);
+                    this.getAssignment().removeAgent(rob, ep);
                 }
             }
         }
 
-        //enforce consistency between RA and PlanTree by removing robots deemed inactive:
-        if (!auth) { //under authority do not remove robots from assignment
+        //enforce consistency between RA and PlanTree by removing agents deemed inactive:
+        if (!auth) { //under authority do not remove agents from assignment
             EntryPoint ep;
 
             for (int i = 0; i < this.getAssignment().getEntryPointCount(); i++) {
-                ep = this.getAssignment().getEpRobotsMapping().getEp(i);
+                ep = this.getAssignment().getEpAgentsMapping().getEp(i);
                 rem.clear();
-                Vector<Integer> robs = this.getAssignment().getRobotsWorking(ep);
+                Vector<Integer> robs = this.getAssignment().getAgentsWorking(ep);
 
                 for (int rob : (robs)) {
                     //if (rob==ownId) continue;
@@ -636,13 +634,13 @@ public class RunningPlan {
                     if (!availableAgents.contains(rob)) {
                         rem.add(rob);
                         //this.Assignment.RemoveRobot(rob);
-                        aldif.getSubtractions().add(new EntryPointRobotPair(ep, rob));
+                        aldif.getSubtractions().add(new EntryPointAgentPair(ep, rob));
                         ret = true;
                     }
                 }
 
                 for (int rob : rem) {
-                    this.getAssignment().removeRobot(rob, ep);
+                    this.getAssignment().removeAgent(rob, ep);
                 }
             }
         }
@@ -652,13 +650,13 @@ public class RunningPlan {
 //Update Success Collection:
         this.to.updateSuccessCollection((Plan)this.getPlan(), this.getAssignment().getEpSuccessMapping());
 
-//If Assignment Protection Time for newly started plans is over, limit available robots to those in this active state.
+//If Assignment Protection Time for newly started plans is over, limit available agents to those in this active state.
         if (this.stateStartTime.time + assignmentProtectionTime.time > now.time) {
-            Set<Integer> robotsJoined = this.getAssignment().getRobotStateMapping().getRobotsInState(this.getActiveState());
+            Set<Integer> agentsJoined = this.getAssignment().getAgentStateMapping().getAgentsInState(this.getActiveState());
 
             for (int i = 0; i < availableAgents.size(); i++) {
 
-                if (!robotsJoined.contains(availableAgents.get(i))) {
+                if (!agentsJoined.contains(availableAgents.get(i))) {
 
                     availableAgents.remove(availableAgents.get(i));
                     i--;
@@ -667,13 +665,13 @@ public class RunningPlan {
         }
 		else if (auth)
     { // in case of authority, remove all that are not assigned to same task
-        Vector<Integer> robotsJoined = this.getAssignment().getRobotsWorking(this.getOwnEntryPoint());
+        Vector<Integer> agentsJoined = this.getAssignment().getAgentsWorking(this.getOwnEntryPoint());
 
-        if (robotsJoined != null) {
+        if (agentsJoined != null) {
 
             for (int i = 0; i < availableAgents.size(); i++) {
 
-                if (!robotsJoined.contains(availableAgents.get(i)) ) {
+                if (!agentsJoined.contains(availableAgents.get(i)) ) {
                     availableAgents.remove(availableAgents.get(i));
                     i--;
                 }
@@ -727,7 +725,7 @@ public class RunningPlan {
         ss += "Status: " + (this.status == PlanStatus.Running ? "RUNNING" : (this.status == PlanStatus.Success ? "SUCCESS" : "FAILED")) + "\n";
         ss += "AvailRobots: ";
 
-        for (int r : (this.robotsAvail)) {
+        for (int r : (this.agentsAvail)) {
             ss += " " + r;
         }
         ss += "\n";

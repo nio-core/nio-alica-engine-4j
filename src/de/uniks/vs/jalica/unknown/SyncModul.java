@@ -26,7 +26,7 @@ public class SyncModul implements ISyncModul {
     public void init() {
         this.ticks = 0;
         this.running = true;
-        this.myId = ae.getTeamObserver().getOwnId();
+        this.myId = ae.getTeamObserver().getOwnID();
         this.pr = this.ae.getPlanRepository();
         this.communicator = this.ae.getCommunicator();
     }

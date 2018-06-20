@@ -3,7 +3,6 @@ package de.uniks.vs.jalica.teamobserver;
 import de.uniks.vs.jalica.common.config.ConfigPair;
 import de.uniks.vs.jalica.common.Logger;
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.unknown.*;
 
 import java.util.*;
@@ -21,8 +20,8 @@ public class TeamObserver implements ITeamObserver {
     private long teamTimeOut;
     private int myId;
     private Set<Integer> ignoredRobots = new HashSet<>();
-    private RobotProperties ownRobotProperties;
-    private ArrayList<RobotProperties> availableRobotProperties = new ArrayList<>();
+    private AgentProperties ownRobotProperties;
+    private ArrayList<AgentProperties> availableRobotProperties = new ArrayList<>();
 
     public TeamObserver(AlicaEngine ae) {
         this.teamTimeOut = 0;
@@ -38,7 +37,7 @@ public class TeamObserver implements ITeamObserver {
 //        SystemConfig sc = SystemConfig.getInstance();
         this.log = ae.getLog();
 
-        String ownPlayerName = ae.getRobotName();
+        String ownPlayerName = ae.getAgentName();
         System.out.println( "TO: Initing Robot " + ownPlayerName );
         this.teamTimeOut = Long.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.TeamTimeOut")) * 1000000;
 //        Vector<String> playerNames = new Vector<>(sc.getG("Globals").get("Team").keySet());
@@ -48,28 +47,28 @@ public class TeamObserver implements ITeamObserver {
 
         for (int i = 0; i < playerNames.size(); i++)
         {
-            RobotProperties rp = new RobotProperties(ae, playerNames.get(i));
+            AgentProperties rp = new AgentProperties(ae, playerNames.get(i));
             if (!foundSelf && playerNames.get(i).equals(ownPlayerName))
             {
                 foundSelf = true;
                 this.me = new RobotEngineData(ae, rp);
                 this.me.setActive(true);
-                this.myId = rp.getId();
+                this.myId = rp.getID();
             }
             else
             {
                 for (RobotEngineData red : this.allOtherRobots)
                 {
-                    if (red.getProperties().getId() == rp.getId())
+                    if (red.getProperties().getID() == rp.getID())
                     {
                         String ss;
-                        ss = "TO: Found twice Robot ID " + rp.getId() + "in globals team section" + "\n";
+                        ss = "TO: Found twice Robot ID " + rp.getID() + "in globals team section" + "\n";
                         ae.abort(ss);
                     }
-                    if (rp.getId() == myId)
+                    if (rp.getID() == myId)
                     {
                         String ss2;
-                        ss2 = "TO: Found myself twice Robot ID " + rp.getId() + "in globals team section" + "\n";
+                        ss2 = "TO: Found myself twice Robot ID " + rp.getID() + "in globals team section" + "\n";
                         ae.abort(ss2);
                     }
                 }
@@ -85,12 +84,12 @@ public class TeamObserver implements ITeamObserver {
         {
             for (RobotEngineData r : this.allOtherRobots)
             {
-                this.ignoredRobots.add(r.getProperties().getId());
+                this.ignoredRobots.add(r.getProperties().getID());
             }
         }
     }
 
-    public RobotProperties getOwnRobotProperties() {
+    public AgentProperties getOwnAgentProperties() {
         return this.me.getProperties();
     }
 
@@ -118,7 +117,7 @@ public class TeamObserver implements ITeamObserver {
                 if (suc != null) {
 
                     for (EntryPoint ep : suc) {
-                        sc.setSuccess(r.getProperties().getId(), ep);
+                        sc.setSuccess(r.getProperties().getID(), ep);
                     }
                 }
             }
@@ -133,8 +132,8 @@ public class TeamObserver implements ITeamObserver {
         }
     }
 
-    public ArrayList<RobotProperties> getAvailableRobotProperties() {
-        ArrayList<RobotProperties> ret = new ArrayList<>();
+    public ArrayList<AgentProperties> getAvailableAgentProperties() {
+        ArrayList<AgentProperties> ret = new ArrayList<>();
         ret.add(me.getProperties());
 
         for (RobotEngineData r : this.allOtherRobots)
@@ -147,7 +146,7 @@ public class TeamObserver implements ITeamObserver {
         return ret;
     }
 
-    public void notifyRobotLeftPlan(AbstractPlan plan) {
+    public void notifyAgentLeftPlan(AbstractPlan plan) {
 
 //        lock_guard<mutex> lock(this.simplePlanTreeMutex);
 
@@ -162,14 +161,14 @@ public class TeamObserver implements ITeamObserver {
     }
 
     @Override
-    public ArrayList<Integer> getAvailableRobotIds() {
+    public ArrayList<Integer> getAvailableAgentIDs() {
         ArrayList<Integer> ret = new ArrayList<>();
         ret.add(myId);
         for (RobotEngineData r : this.allOtherRobots)
         {
             if (r.isActive())
             {
-                ret.add(r.getProperties().getId());
+                ret.add(r.getProperties().getID());
             }
         }
         return CommonUtils.move(ret);
@@ -203,7 +202,7 @@ public class TeamObserver implements ITeamObserver {
                 {
                     for (EntryPoint ep : suc)
                     {
-                        ret.setSuccess(r.getProperties().getId(), ep);
+                        ret.setSuccess(r.getProperties().getID(), ep);
                     }
                 }
             }
@@ -220,7 +219,7 @@ public class TeamObserver implements ITeamObserver {
     }
 
     @Override
-    public int getOwnId() {
+    public int getOwnID() {
         return myId;
     }
 
@@ -238,7 +237,7 @@ public class TeamObserver implements ITeamObserver {
                 r.setActive(false);
                 r.getSuccessMarks().clear();
 //                lock_guard<mutex> lock(this.simplePlanTreeMutex);
-                this.simplePlanTrees.remove(r.getProperties().getId());
+                this.simplePlanTrees.remove(r.getProperties().getID());
             }
             else if (!r.isActive()) {
                 r.setActive(true);
@@ -246,7 +245,7 @@ public class TeamObserver implements ITeamObserver {
             }
 
             if (r.isActive()) {
-                robotsAvail.add(r.getProperties().getId());
+                robotsAvail.add(r.getProperties().getID());
             }
         }
 
@@ -265,7 +264,7 @@ public class TeamObserver implements ITeamObserver {
             for (int key : this.simplePlanTrees.keySet()) {
                 SimplePlanTree second = this.simplePlanTrees.get(key);
 
-                if (robotsAvail.contains(second.getRobotId())) {
+                if (robotsAvail.contains(second.getAgentID())) {
 
                     if (second.isNewSimplePlanTree())
                     {
@@ -280,7 +279,7 @@ public class TeamObserver implements ITeamObserver {
 //#ifdef TO_DEBUG
                         System.out.println("TO: added to noupdate" );
 //#endif
-                        noUpdates.add(second.getRobotId());
+                        noUpdates.add(second.getAgentID());
                     }
                 }
             }
@@ -327,7 +326,7 @@ public class TeamObserver implements ITeamObserver {
         return this.me;
     }
 
-    public RobotEngineData getRobotById(int id) {
+    public RobotEngineData getAgentById(int id) {
 
         if (id == myId) {
             return this.me;
@@ -335,7 +334,7 @@ public class TeamObserver implements ITeamObserver {
 
         for (RobotEngineData r : this.allOtherRobots) {
 
-            if (r.getProperties().getId() == id) {
+            if (r.getProperties().getID() == id) {
                 return r;
             }
         }

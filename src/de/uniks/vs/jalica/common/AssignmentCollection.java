@@ -15,17 +15,16 @@ public class AssignmentCollection {
     public static Boolean allowIdling;
 
     private int numEps;
-    Vector<Vector<Integer>> robots;
+    private Vector<Vector<Integer>> agents;
     private ArrayList<EntryPoint> entryPoints;
-    private int size;
 
     public AssignmentCollection(int size) {
         this.numEps = size;
         this.entryPoints = new ArrayList<EntryPoint>(size);
-        this.robots = new Vector<>();
-        for (short i = 0; i < size; i++)
-        {
-            this.robots.add(i, new Vector<Integer>());
+        this.agents = new Vector<>();
+
+        for (short i = 0; i < size; i++) {
+            this.agents.add(i, new Vector<Integer>());
         }
     }
 
@@ -33,10 +32,10 @@ public class AssignmentCollection {
         return this.numEps;
     }
 
-    public Vector<Integer> getRobots(int index) {
+    public Vector<Integer> getAgents(int index) {
         if (index < this.numEps)
         {
-            return this.robots.get(index);
+            return this.agents.get(index);
         }
 		else
         {
@@ -44,12 +43,12 @@ public class AssignmentCollection {
         }
     }
 
-    public Vector<Integer> getRobotsByEp(EntryPoint ep) {
+    public Vector<Integer> getAgentsByEp(EntryPoint ep) {
         for (int i = 0; i < this.numEps; i++)
         {
             if (this.entryPoints.get(i) == ep)
             {
-                return this.robots.get(i);
+                return this.agents.get(i);
             }
         }
         return null;
@@ -58,24 +57,23 @@ public class AssignmentCollection {
     public void clear() {
         for (int i = 0; i < this.numEps; i++)
         {
-            this.robots.get(i).clear();
+            this.agents.get(i).clear();
         }
     }
 
     public EntryPoint getEp(int index) {
-        if (index < this.numEps)
-        {
+
+        if (index < this.numEps) {
             return this.entryPoints.get(index);
         }
-		else
-        {
+		else {
             return null;
         }
     }
 
-    public boolean setRobots(short index, Vector<Integer> robots) {
+    public boolean setAgents(short index, Vector<Integer> agents) {
         if (index < this.numEps) {
-            this.robots.set(index,robots);
+            this.agents.set(index,agents);
             return true;
         }
 		else
@@ -98,27 +96,28 @@ public class AssignmentCollection {
     }
 
     public void setSize(int size) {
-        this.size = size;
+        this.numEps = size;
     }
 
     public void sortEps() {
         //		cout << "<<<< Check Sort!!!!! " << endl;
 //		for (short i = 0; i < this.numEps; i++)
 //		{
-//			cout << i << ": " << entryPoints[i].getTask().getId() << endl;
+//			cout << i << ": " << entryPoints[i].getTask().getID() << endl;
 //		}
 
         // Stopfers sort style
         Vector<EntryPoint> sortedEpVec = new Vector<>();
-        for (short i = 0; i < this.numEps; i++)
-        {
+
+//        int maxIndex = getMaxIndex();
+
+        for (short i = 0; i < this.numEps; i++)  {
             sortedEpVec.add(this.entryPoints.get(i));
         }
 //        CommonUtils.stable_sort(sortedEpVec.begin(), sortedEpVec.end(), EntryPoint.compareTo());
         Collections.sort( sortedEpVec );
 
-        for (short i = 0; i < this.numEps; i++)
-        {
+        for (short i = 0; i < this.numEps; i++) {
             this.entryPoints.add(i, sortedEpVec.get(i));
         }
 
@@ -130,11 +129,33 @@ public class AssignmentCollection {
 //		cout << "<<<<< Nachher!!!! " << endl;
 //		for (short i = 0; i < this.numEps; i++)
 //		{
-//			cout << i << ": " << entryPoints[i].getTask().getId() << endl;
+//			cout << i << ": " << entryPoints[i].getTask().getID() << endl;
 //		}
     }
 
+//    private int getMaxIndex() {
+//        return (this.numEps > this.entryPoints.size()) ? this.entryPoints.size() : this.numEps;
+//    }
+
     public ArrayList<EntryPoint> getEntryPoints() {
         return entryPoints;
+    }
+
+    @Override
+    public String toString() {
+        String string = "";
+
+        for (int i = 0; i < this.numEps; i++) {
+
+            if (this.entryPoints.get(i) != null){
+                string += this.entryPoints.get(i).getId() + " : ";
+
+                for (int robot : this.agents.get(i)) {
+                    string += robot + ", ";
+                }
+                string += "\n";
+            }
+        }
+        return string;
     }
 }

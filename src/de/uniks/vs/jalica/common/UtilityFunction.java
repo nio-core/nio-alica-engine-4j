@@ -3,7 +3,6 @@ package de.uniks.vs.jalica.common;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.unknown.*;
 
-import javax.sound.sampled.Line;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -172,29 +171,29 @@ public class UtilityFunction {
         simUI.setMax(0.0);
         simUI.setMin(0.0);
         // Calculate the similarity to the old Assignment
-        int numOldAssignedRobots = 0;
+        int numOldAssignedAgents = 0;
         //shared_ptr<vector<EntryPoint*> > oldAssEps = oldAss.getEntryPoints();
         EntryPoint ep;
         for (short i = 0; i < oldAss.getEntryPointCount(); ++i)
         {
-            ep = oldAss.getEpRobotsMapping().getEp(i);
+            ep = oldAss.getEpAgentsMapping().getEp(i);
             // for normalisation
-            ArrayList<Integer> oldRobots = oldAss.getRobotsWorkingAndFinished(ep);
-            numOldAssignedRobots += oldRobots.size();
-            ArrayList<Integer> newRobots = newAss.getRobotsWorkingAndFinished(ep);
+            ArrayList<Integer> oldAgents = oldAss.getAgentsWorkingAndFinished(ep);
+            numOldAssignedAgents += oldAgents.size();
+            ArrayList<Integer> newAgents = newAss.getAgentsWorkingAndFinished(ep);
 
-            //C# newRobots != null
-            if (newRobots.size() != 0)
+            //C# newAgents != null
+            if (newAgents.size() != 0)
             {
-                for (int oldRobot : oldRobots)
+                for (int oldAgent : oldAgents)
                 {
-                    if (CommonUtils.find(newRobots,0, newRobots.size()-1, oldRobot) != newRobots.get(newRobots.size()-1))
+                    if (CommonUtils.find(newAgents,0, newAgents.size()-1, oldAgent) != newAgents.get(newAgents.size()-1))
                     {
                         simUI.setMin(simUI.getMin() + 1);
                     }
-                    else if (ep.getMaxCardinality() > newRobots.size()
-                            && CommonUtils.find(newAss.getUnassignedRobots(), 0, newAss.getUnassignedRobots().size()-1,
-                            oldRobot) != newAss.getUnassignedRobots().lastElement())
+                    else if (ep.getMaxCardinality() > newAgents.size()
+                            && CommonUtils.find(newAss.getUnassignedAgents(), 0, newAss.getUnassignedAgents().size()-1,
+                            oldAgent) != newAss.getUnassignedAgents().lastElement())
                     {
                         simUI.setMax(simUI.getMax() + 1);
                     }
@@ -204,10 +203,10 @@ public class UtilityFunction {
 
         simUI.setMax(simUI.getMax() + simUI.getMin());
         // Normalise if possible
-        if (numOldAssignedRobots > 0)
+        if (numOldAssignedAgents > 0)
         {
-            simUI.setMin(simUI.getMin() / numOldAssignedRobots);
-            simUI.setMax(simUI.getMax() / numOldAssignedRobots);
+            simUI.setMin(simUI.getMin() / numOldAssignedAgents);
+            simUI.setMax(simUI.getMax() / numOldAssignedAgents);
 
         }
 
@@ -224,14 +223,14 @@ public class UtilityFunction {
         //c# != null
         // SUM UP HEURISTIC PART OF PRIORITY UTILITY
 
-        if (ass.getUnassignedRobots().size() != 0) // == null, when it is a normal assignment
+        if (ass.getUnassignedAgents().size() != 0) // == null, when it is a normal assignment
         {
-            for (int robotID : ass.getUnassignedRobots())
+            for (int agentID : ass.getUnassignedAgents())
             {
 
                 this.priResult.setMax(
                     this.priResult.getMax()
-                    + this.roleHighestPriorityMap.get(this.ra.getRole(robotID).getId()));
+                    + this.roleHighestPriorityMap.get(this.ra.getRole(agentID).getId()));
             }
         }
         // SUM UP DEFINED PART OF PRIORITY UTILITY
@@ -245,12 +244,12 @@ public class UtilityFunction {
         EntryPoint ep;
         for (short i = 0; i < ass.getEntryPointCount(); ++i)
         {
-            ep = ass.getEpRobotsMapping().getEp(i);
+            ep = ass.getEpAgentsMapping().getEp(i);
             taskId = ep.getTask().getId();
-            ArrayList<Integer> robotList = ass.getUniqueRobotsWorkingAndFinished(ep);
-            for(int robot : robotList)
+            ArrayList<Integer> agents = ass.getUniqueAgentsWorkingAndFinished(ep);
+            for(int agent : agents)
             {
-                roleId = this.ra.getRole(robot).getId();
+                roleId = this.ra.getRole(agent).getId();
                 this.lookupStruct.taskId = taskId;
                 this.lookupStruct.roleId = roleId;
                 for (TaskRoleStruct key : this.priorityMartix.keySet())

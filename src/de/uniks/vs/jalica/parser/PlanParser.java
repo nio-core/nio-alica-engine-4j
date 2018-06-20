@@ -115,8 +115,7 @@ public class PlanParser {
 
     public Plan parsePlanTree(String masterplan) {
 
-        String masterPlanPath = null;
-        masterPlanPath = FileSystem.findFile(this.basePlanPath, masterplan + ".pml", masterPlanPath);
+        String masterPlanPath  = FileSystem.findFile(this.basePlanPath, masterplan + ".pml");
         boolean found = masterplan != null;
 //#ifdef PP_DEBUG
         if (CommonUtils.PP_DEBUG_debug) System.out.println( "PP: masterPlanPath: " + masterPlanPath );
@@ -528,7 +527,7 @@ public class PlanParser {
     public long parserId(Node node) {
         long id = -1;
         String idString1 = "";
-        Node idItem = node.getAttributes().getNamedItem("id");
+        Node idItem = node.getAttributes() != null ? node.getAttributes().getNamedItem("id") : null;
 
         if (idItem != null)
             idString1 = idItem.getTextContent();
@@ -547,7 +546,7 @@ public class PlanParser {
         else
         {
             String idString2 = "";
-			Node idChar = node.getAttributes().getNamedItem("href");
+			Node idChar = node.getAttributes() != null ? node.getAttributes().getNamedItem("href") : null;
             if (idChar != null)
                 idString2 = idChar.getTextContent();
             if (idString2.length() > 0)
@@ -572,13 +571,14 @@ public class PlanParser {
             }
         }
 
-        System.err.println("PP: Cannot resolve remote reference!\nAttributes of node in question are:" );
+        System.err.println("PP: Cannot resolve remote reference!\n    Attributes of node in question are:" );
 
-        for ( int i = 0; i < node.getAttributes().getLength(); i++) {
+        if (node.getAttributes() != null)
 
-            Node curAttribute = node.getAttributes().item(i);
-            System.out.println("PP: "+curAttribute.getNodeName() + " : " + curAttribute.getNodeName() );
-        }
+            for ( int i = 0; i < node.getAttributes().getLength(); i++) {
+                Node curAttribute = node.getAttributes().item(i);
+                System.out.println("PP: "+curAttribute.getNodeName() + " : " + curAttribute.getNodeName() );
+            }
 
         ae.abort("PP: Couldn't resolve remote reference: " + (node.getNodeName()));
         return -1;

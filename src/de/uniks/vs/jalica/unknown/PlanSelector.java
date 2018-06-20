@@ -11,36 +11,37 @@ import java.util.Vector;
  * Created by alex on 13.07.17.
  */
 public class PlanSelector implements IPlanSelector {
-    private PartialAssignmentPool pap;
+    private PartialAssignmentPool partialAssignmentPool;
     private AlicaEngine ae;
-    private ITeamObserver to;
+    private ITeamObserver teamObserver;
 
     public PlanSelector(AlicaEngine alicaEngine, PartialAssignmentPool pap) {
         this.ae = alicaEngine;
-        this.pap = pap;
+        this.teamObserver = ae.getTeamObserver();
+        this.partialAssignmentPool = pap;
     }
 
     @Override
     public ArrayList<RunningPlan> getPlansForState(RunningPlan planningParent,
-                                                   ArrayList<AbstractPlan> plans, Vector<Integer> robotIDs) {
-        PartialAssignment.reset(pap);
-        ArrayList<RunningPlan> ll = this.getPlansForStateInternal(planningParent, plans, robotIDs);
-        return ll;
+                                                   ArrayList<AbstractPlan> plans, Vector<Integer> agents) {
+        PartialAssignment.reset(partialAssignmentPool);
+        ArrayList<RunningPlan> newPlans = this.getPlansForStateInternal(planningParent, plans, agents);
+        return newPlans;
     }
 
     @Override
-    public RunningPlan getBestSimilarAssignment(RunningPlan rp, Vector<Integer> robots) {
+    public RunningPlan getBestSimilarAssignment(RunningPlan rp, Vector<Integer> agents) {
         CommonUtils.aboutNoImpl();
         return null;
     }
 
-    private ArrayList<RunningPlan> getPlansForStateInternal(RunningPlan planningParent, ArrayList<AbstractPlan> plans, Vector<Integer> robotIDs) {
+    private ArrayList<RunningPlan> getPlansForStateInternal(RunningPlan planningParent, ArrayList<AbstractPlan> plans, Vector<Integer> agentIDs) {
         ArrayList<RunningPlan> rps = new ArrayList<RunningPlan>();
 //#ifdef PSDEBUG
         System.out.println("<######PS: GetPlansForState: Parent:"
                 + (planningParent != null ? planningParent.getPlan().getName() : "null") + " plan count: "
-                + plans.size() + " robot count: "
-                + robotIDs.size() + " ######>" );
+                + plans.size() + " agent count: "
+                + agentIDs.size() + " ######>" );
 //#endif
         RunningPlan rp;
         ArrayList<Plan> planList;
@@ -51,9 +52,9 @@ public class PlanSelector implements IPlanSelector {
         for (AbstractPlan ap : plans)
         {
             // BEHAVIOUR CONFIGURATION
-            bc = (BehaviourConfiguration)(ap);
-            if (bc != null)
-            {
+//            bc = (BehaviourConfiguration) ap;
+            if (ap instanceof BehaviourConfiguration) {
+                bc = (BehaviourConfiguration) ap;
                 rp = new RunningPlan(ae, bc);
                 // A BehaviourConfiguration is a Plan too (in this context)
                 rp.setPlan(bc);
@@ -73,11 +74,11 @@ public class PlanSelector implements IPlanSelector {
                     p = (Plan)ap;
                     planList = new ArrayList<Plan>();
                     planList.add(p);
-                    rp = this.createRunningPlan(planningParent, planList, robotIDs, null, null);
+                    rp = this.createRunningPlan(planningParent, planList, agentIDs, null, null);
                     if (rp == null)
                     {
 //#ifdef PSDEBUG
-                        System.out.println("PS: It was not possible to create a RunningPlan for the Plan " + p.getName() + "!"
+                        System.out.println("PS: It was not possible teamObserver create a RunningPlan for the Plan " + p.getName() + "!"
                         );
 //#endif
                         return null;
@@ -92,11 +93,11 @@ public class PlanSelector implements IPlanSelector {
                     if (ap instanceof PlanType)
                     {
                         pt = (PlanType)(ap);
-                        rp = this.createRunningPlan(planningParent, pt.getPlans(), robotIDs, null, pt);
+                        rp = this.createRunningPlan(planningParent, pt.getPlans(), agentIDs, null, pt);
                         if (rp == null)
                         {
 //#ifdef PSDEBUG
-                            System.out.println( "PS: It was not possible to create a RunningPlan for the Plan " + pt.getName()
+                            System.out.println( "PS: It was not possible teamObserver create a RunningPlan for the Plan " + pt.getName()
                                     + "!" );
 //#endif
                             return null;
@@ -125,11 +126,11 @@ public class PlanSelector implements IPlanSelector {
                         Plan myP = ae.getPlanner().requestPlan(pp);
                         planList = new ArrayList<Plan>();
                         planList.add(myP);
-                        rp = this.createRunningPlan(planningParent, planList, robotIDs, null, null);
+                        rp = this.createRunningPlan(planningParent, planList, agentIDs, null, null);
                         if (rp == null)
                         {
 //#ifdef PSDEBUG
-                            System.out.println( "PS: Unable to execute planning result" );
+                            System.out.println( "PS: Unable teamObserver execute planning result" );
 //#endif
                             return null;
                         }
@@ -142,23 +143,22 @@ public class PlanSelector implements IPlanSelector {
     }
 
     private RunningPlan createRunningPlan(RunningPlan planningParent, ArrayList<Plan> plans,
-                                          Vector<Integer> robotIDs, RunningPlan oldRp, PlanType relevantPlanType) {
+                                          Vector<Integer> agentIDs, RunningPlan oldRp, PlanType relevantPlanType) {
         ArrayList<Plan> newPlanList = new ArrayList<>();
         // REMOVE EVERY PLAN WITH TOO GREAT MIN CARDINALITY
         for (Plan plan : plans)
         {
-            // CHECK: number of robots < minimum cardinality of this plan
-            if (plan.getMinCardinality() > (robotIDs.size()
-                    + to.successesInPlan(plan)))
+            // CHECK: number of agents < minimum cardinality of this plan
+            if (plan.getMinCardinality() > (agentIDs.size() + teamObserver.successesInPlan(plan)))
             {
 //#ifdef PSDEBUG
                 String ss = "";
-                ss += "PS: RobotIds: ";
-                for (int robot : robotIDs)
+                ss += "PS: AgentIDs: ";
+                for (int agent : agentIDs)
                 {
-                    ss += robot + ", ";
+                    ss += agent + ", ";
                 }
-                ss += "= " + robotIDs.size() + " IDs are not enough for the plan " + plan.getName() + "!" ;
+                ss += "= " + agentIDs.size() + " IDs are not enough for the plan " + plan.getName() + "!" ;
                 //this.baseModule.Mon.Error(1000, msg);
 
                 System.out.println(ss);
@@ -166,11 +166,11 @@ public class PlanSelector implements IPlanSelector {
             }
             else
             {
-                // this plan was ok according to its cardinalities, so we can add it
+                // this plan was ok according teamObserver its cardinalities, so we can add it
                 newPlanList.add(plan);
             }
         }
-        // WE HAVE NOT ENOUGH ROBOTS TO EXECUTE ANY PLAN
+        // WE HAVE NOT ENOUGH AGENTS TO EXECUTE ANY PLAN
         if (newPlanList.size() == 0)
         {
             return null;
@@ -181,22 +181,22 @@ public class PlanSelector implements IPlanSelector {
         RunningPlan rp;
         if (oldRp == null)
         {
-            // preassign other robots, because we dont need a similar assignment
+            // preassign other agents, because we dont need a similar assignment
             rp = new RunningPlan(ae, relevantPlanType);
-            ta = new TaskAssignment(this.ae.getPartialAssignmentPool(), this.ae.getTeamObserver(), newPlanList, robotIDs, true);
+            ta = new TaskAssignment(this.ae.getPartialAssignmentPool(), this.ae.getTeamObserver(), newPlanList, agentIDs, true);
         }
         else
         {
-            // dont preassign other robots, because we need a similar assignment (not the same)
+            // dont preassign other agents, because we need a similar assignment (not the same)
             rp = new RunningPlan(ae, oldRp.getPlanType());
-            ta = new TaskAssignment(this.ae.getPartialAssignmentPool(), this.ae.getTeamObserver(), newPlanList, robotIDs, false);
+            ta = new TaskAssignment(this.ae.getPartialAssignmentPool(), this.ae.getTeamObserver(), newPlanList, agentIDs, false);
             oldAss = oldRp.getAssignment();
         }
 
 
         // some variables for the do while loop
         EntryPoint ep = null;
-        RobotProperties ownRobProb = to.getOwnRobotProperties();
+        AgentProperties ownAgentProb = teamObserver.getOwnAgentProperties();
         // PLANNINGPARENT
         rp.setParent(planningParent);
         ArrayList<RunningPlan> rpChildren = null;
@@ -215,7 +215,7 @@ public class PlanSelector implements IPlanSelector {
             // PLAN (needed for Conditionchecks)
             rp.setPlan(rp.getAssignment().getPlan());
 //#ifdef PSDEBUG
-            System.out.println( "PS: rp.Assignment of Plan " + rp.getPlan().getName() + " from " + ownRobProb.getId() + " is: " + rp.getAssignment().toString());
+            System.out.println( "PS: rp.Assignment of Plan " + rp.getPlan().getName() + " from " + ownAgentProb.getID() + " is: " + rp.getAssignment().toString());
 //#endif
             // CONDITIONCHECK
             if (!rp.evalPreCondition())
@@ -228,33 +228,33 @@ public class PlanSelector implements IPlanSelector {
             }
 
             // OWN ENTRYPOINT
-            ep = rp.getAssignment().getEntryPointOfRobot(ownRobProb.getId());
+            ep = rp.getAssignment().getEntryPointOfAgent(ownAgentProb.getID());
 
             if (ep == null)
             {
 //#ifdef PSDEBUG
-                System.out.println( "PS: The robot " + ownRobProb.getName() + "(Id: " + ownRobProb.getId()
-                        + ") is not assigned to enter the plan " + rp.getPlan().getName() + " and will IDLE!");
+                System.out.println( "PS: The agent " + ownAgentProb.getName() + "(Id: " + ownAgentProb.getID()
+                        + ") is not assigned teamObserver enter the plan " + rp.getPlan().getName() + " and will IDLE!");
 //#endif
                 rp.setActiveState(null);
                 rp.setOwnEntryPoint(null);
-                return rp; // If we return here, this robot will idle (no ep at rp)
+                return rp; // If we return here, this agent will idle (no ep at rp)
             }
             else
             {
-                // assign found EntryPoint (this robot dont idle)
+                // assign found EntryPoint (this agent dont idle)
                 rp.setOwnEntryPoint(ep);
             }
             // ACTIVE STATE set by RunningPlan
             if(oldRp == null)
             {
                 // RECURSIVE PLANSELECTING FOR NEW STATE
-                rpChildren = this.getPlansForStateInternal(rp, rp.getActiveState().getPlans(), rp.getAssignment().getRobotsWorking(ep));
+                rpChildren = this.getPlansForStateInternal(rp, rp.getActiveState().getPlans(), rp.getAssignment().getAgentsWorking(ep));
             }
             else
             {
 //#ifdef PSDEBUG
-                System.out.println( "PS: no recursion due to utilitycheck" );
+                System.out.println( "PS: no recursion due teamObserver utilitycheck" );
 //#endif
                 // Don't calculate children, because we have an
                 // oldRp . we just replace the oldRp
@@ -262,7 +262,7 @@ public class PlanSelector implements IPlanSelector {
                 break;
             }
         } while (rpChildren == null);
-        // WHEN WE GOT HERE, THIS ROBOT WONT IDLE AND WE HAVE A
+        // WHEN WE GOT HERE, THIS AGENT WONT IDLE AND WE HAVE A
         // VALID ASSIGNMENT, WHICH PASSED ALL RUNTIME CONDITIONS
         if(rpChildren != null && rpChildren.size() != 0) // c# rpChildren != null
         {
@@ -275,7 +275,7 @@ public class PlanSelector implements IPlanSelector {
         System.out.println( "PS: Created RunningPlan: \n" + rp.toString() );
 //#endif
         ta = null;
-        return rp; // If we return here, this robot is normal assigned
+        return rp; // If we return here, this agent is normal assigned
     }
         
 

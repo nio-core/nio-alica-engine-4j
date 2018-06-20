@@ -63,7 +63,7 @@ public class CycleManager {
         this.newestAllocationDifference = 0;
         this.state = CycleState.observing;
         this.rp = p;
-        this.myID = ae.getTeamObserver().getOwnId();
+        this.myID = ae.getTeamObserver().getOwnID();
         this.pr = ae.getPlanRepository();
         this.overrideTimestamp = new AlicaTime(0);
         this.overrideShoutTime = new AlicaTime(0);
@@ -105,9 +105,9 @@ public class CycleManager {
             }
         }
         rp.setAssignment(new Assignment(newPlan, this.fixedAllocation));
-        for (EntryPointRobots epr : this.fixedAllocation.entryPointRobots)
+        for (EntryPointAgents epr : this.fixedAllocation.entryPointAgents)
         {
-            if (CommonUtils.find(epr.robots, 0, epr.robots.size()-1, myID) != epr.robots.lastElement())
+            if (CommonUtils.find(epr.agents, 0, epr.agents.size()-1, myID) != epr.agents.lastElement())
             {
                 myEntryPoint = pr.getEntryPoints().get(epr.entrypoint);
             }
@@ -118,15 +118,15 @@ public class CycleManager {
     }
 		else
     {
-        for (EntryPointRobots epr : this.fixedAllocation.entryPointRobots)
+        for (EntryPointAgents epr : this.fixedAllocation.entryPointAgents)
         {
-            for (int robot : epr.robots)
+            for (int agent : epr.agents)
             {
                 EntryPoint e = pr.getEntryPoints().get(epr.entrypoint);
-                boolean changed = rp.getAssignment().updateRobot(robot, e);
+                boolean changed = rp.getAssignment().updateAgent(agent, e);
                 if (changed)
                 {
-                    if (robot == myID)
+                    if (agent == myID)
                     {
                         modifiedSelf = true;
                         myEntryPoint = e;
@@ -152,10 +152,10 @@ public class CycleManager {
     {
         if (rp.getActiveState() != null)
         {
-            Set<Integer> robotsJoined = rp.getAssignment().getRobotStateMapping().getRobotsInState(rp.getActiveState());
-            for (RunningPlan c : rp.getChildren())
+            Set<Integer> agentsJoined = rp.getAssignment().getAgentStateMapping().getAgentsInState(rp.getActiveState());
+            for (RunningPlan runningPlan : rp.getChildren())
             {
-                c.limitToRobots(robotsJoined);
+                runningPlan.limitToAgents(agentsJoined);
             }
         }
     }
@@ -178,7 +178,7 @@ public class CycleManager {
         this.allocationHistory.set(this.newestAllocationDifference, aldif);
 
 //#ifdef CM_DEBUG
-        if (CommonUtils.CM_DEBUG_debug) System.out.println("CM: SetNewAllDiff(a): " + aldif.toString()  + " OWN ROBOT ID " + this.rp.getOwnID());
+        if (CommonUtils.CM_DEBUG_debug) System.out.println("CM: SetNewAllDiff(a): " + aldif.toString()  + " OWN AGENT ID " + this.rp.getOwnID());
 //#endif
 
     }
@@ -200,26 +200,26 @@ public class CycleManager {
             EntryPoint ep;
             //for (EntryPoint* ep : (*oldAss.getEntryPoints()))
             for (short i = 0; i < oldAss.getEntryPointCount(); i++) {
-                ep = oldAss.getEpRobotsMapping().getEp(i);
+                ep = oldAss.getEpAgentsMapping().getEp(i);
 
-                Vector<Integer> newRobots = newAss.getRobotsWorking(ep);
-                Vector<Integer> oldRobots = oldAss.getRobotsWorking(ep);
+                Vector<Integer> newAgents = newAss.getAgentsWorking(ep);
+                Vector<Integer> oldAgents = oldAss.getAgentsWorking(ep);
 
-                for (int oldId : (oldRobots)) {
+                for (int oldId : (oldAgents)) {
 
-                    if (newRobots == null || CommonUtils.find(newRobots,0, newRobots.size()-1, oldId) == newRobots.lastElement()) {
+                    if (newAgents == null || CommonUtils.find(newAgents,0, newAgents.size()-1, oldId) == newAgents.lastElement()) {
                         this.allocationHistory.get(this.newestAllocationDifference).getSubtractions().add(
-                            new EntryPointRobotPair(ep, oldId));
+                            new EntryPointAgentPair(ep, oldId));
                     }
                 }
 
-                if (newRobots != null) {
+                if (newAgents != null) {
 
-                    for (int newId : (newRobots)) {
+                    for (int newId : (newAgents)) {
 
-                        if (CommonUtils.find(oldRobots, 0, oldRobots.size()-1, newId) == oldRobots.lastElement()) {
+                        if (CommonUtils.find(oldAgents, 0, oldAgents.size()-1, newId) == oldAgents.lastElement()) {
                             this.allocationHistory.get(this.newestAllocationDifference).getAdditions().add(
-                                new EntryPointRobotPair(ep, newId));
+                                new EntryPointAgentPair(ep, newId));
                         }
                     }
                 }

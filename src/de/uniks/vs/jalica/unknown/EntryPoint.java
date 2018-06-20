@@ -9,6 +9,9 @@ import java.util.Vector;
  * Created by alex on 13.07.17.
  */
 public class EntryPoint extends AlicaElement implements Comparable<EntryPoint> {
+
+    public static final long IDLEID = -1;
+
     private Task task;
     private State state;
     private int maxCardinality;

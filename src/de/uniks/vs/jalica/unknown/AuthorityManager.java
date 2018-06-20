@@ -19,7 +19,7 @@ public class AuthorityManager {
     }
 
     public void init() {
-        this.ownID = ae.getTeamObserver().getOwnId();
+        this.ownID = ae.getTeamObserver().getOwnID();
     }
 
     public void tick(RunningPlan rp) {
@@ -71,13 +71,13 @@ public class AuthorityManager {
 		if (!p.getParent().expired())
 		{
 			cout << "AM: Parent-WeakPtr is NOT expired!" << endl;
-			cout << "AM: Parent-ActiveState is: " << (shared.getActiveState() != nullptr ? shared.getActiveState().getId() : NULL) << endl;
+			cout << "AM: Parent-ActiveState is: " << (shared.getActiveState() != nullptr ? shared.getActiveState().getID() : NULL) << endl;
 			cout << "AM: AAI-ParentState is: " << aai.parentState << endl;
 		}
 		else
 		{
 			cout << "AM: Parent-WeakPtr is expired!" << endl;
-			cout << "AM: Current-ActiveState is: " << p.getActiveState().getId() << endl;
+			cout << "AM: Current-ActiveState is: " << p.getActiveState().getID() << endl;
 			cout << "AM: AAI-ParentState is: " << aai.parentState << endl;
 		}
 #endif*/

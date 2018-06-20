@@ -1,9 +1,7 @@
 package de.uniks.vs.jalica.unknown;
 
-import de.uniks.vs.jalica.behaviours.BehaviourConfiguration;
 import de.uniks.vs.jalica.common.AssignmentCollection;
 
-import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.Vector;
@@ -11,22 +9,19 @@ import java.util.Vector;
 /**
  * Created by alex on 17.07.17.
  */
-public class Assignment implements IAssignment{
+public class Assignment extends IAssignment {
 
-    private double max;
-    private double min;
-    private StateCollection robotStateMapping;
-    private AssignmentCollection epRobotsMapping;
+    private StateCollection agentStateMapping;
+    private AssignmentCollection epAgentsMapping;
     private Plan plan;
     private SuccessCollection epSucMapping;
-    private Vector<Integer> unassignedRobots;
 
     public Assignment(Plan p) {
         this.plan = p;
         this.max = 0.0;
         this.min = 0.0;
 
-        this.epRobotsMapping = new AssignmentCollection(this.plan.getEntryPoints().size());
+        this.epAgentsMapping = new AssignmentCollection(this.plan.getEntryPoints().size());
 
         // sort the entrypoints of the given plan
         ArrayList<EntryPoint> sortedEpList = new ArrayList<>();
@@ -40,11 +35,11 @@ public class Assignment implements IAssignment{
         short i = 0;
         for (EntryPoint ep : sortedEpList)
         {
-            this.epRobotsMapping.setEp(i++, ep);
+            this.epAgentsMapping.setEp(i++, ep);
         }
-        this.epRobotsMapping.sortEps();
+        this.epAgentsMapping.sortEps();
 
-        this.robotStateMapping = new StateCollection(this.epRobotsMapping);
+        this.agentStateMapping = new StateCollection(this.epAgentsMapping);
         this.epSucMapping = new SuccessCollection(p);
     }
 
@@ -53,15 +48,15 @@ public class Assignment implements IAssignment{
         this.max = 1;
         this.min = 1;
 
-        this.epRobotsMapping = new AssignmentCollection(p.getEntryPoints().size());
+        this.epAgentsMapping = new AssignmentCollection(p.getEntryPoints().size());
 
-        Vector<Integer> curRobots;
+        Vector<Integer> curentAgents;
         short i = 0;
-        for (EntryPoint epPair : p.getEntryPoints().values())
-        {
+
+        for (EntryPoint epPair : p.getEntryPoints().values()) {
+
             // set the entrypoint
-            if (!this.epRobotsMapping.setEp(i, epPair))
-            {
+            if (!this.epAgentsMapping.setEp(i, epPair)) {
                 System.err.println(  "Ass: AssignmentCollection Index out of entrypoints bounds!" );
                 try {
                     throw new Exception();
@@ -70,50 +65,85 @@ public class Assignment implements IAssignment{
                 }
             }
 
-            curRobots = new  Vector<Integer>();
-            for (EntryPointRobots epRobots : aai.entryPointRobots)
-            {
+            curentAgents = new  Vector<Integer>();
+            for (EntryPointAgents epAgents : aai.entryPointAgents) {
+
                 // find the right entrypoint
-                if (epRobots.entrypoint == epPair.getId())
-                {
-                    // copy robots
-                    for (int robot : epRobots.robots)
-                    {
-                        curRobots.add(robot);
+                if (epAgents.entrypoint == epPair.getId()) {
+
+                    // copy agents
+                    for (int agent : epAgents.agents) {
+                        curentAgents.add(agent);
                     }
 
-                    // set the robots
-                    if (!this.epRobotsMapping.setRobots(i, curRobots))
-                    {
-                        System.err.println("Ass: AssignmentCollection Index out of robots bounds!" );
+                    // set the agents
+                    if (!this.epAgentsMapping.setAgents(i, curentAgents)) {
+                        System.err.println("Ass: AssignmentCollection Index out of agents bounds!" );
                         try {
                             throw new Exception();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
-
                     break;
                 }
             }
-
             i++;
         }
 
         this.epSucMapping = new SuccessCollection(p);
-        this.robotStateMapping = new StateCollection(this.epRobotsMapping);
+        this.agentStateMapping = new StateCollection(this.epAgentsMapping);
     }
 
-    public void moveRobots(State from, State to) {
+    public Assignment(PartialAssignment pa) {
+        this.max = pa.getMax();
+        this.min = max;
+        this.plan = pa.getPlan();
 
-        Set<Integer> movingRobots = this.robotStateMapping.getRobotsInState(from);
+        AssignmentCollection assCol = pa.getEpAgentsMapping();
+
+        if (AssignmentCollection.allowIdling) {
+            this.epAgentsMapping = new AssignmentCollection(assCol.getSize() - 1);
+        }
+        else {
+            this.epAgentsMapping = new AssignmentCollection(assCol.getSize());
+        }
+
+        Vector<Integer> curAgents;
+        for (short i = 0; i < this.epAgentsMapping.getSize(); i++) {
+            // set the entrypoint
+            if (!this.epAgentsMapping.setEp(i, assCol.getEp(i))) {
+                CommonUtils.aboutError("Ass: AssignmentCollection Index out of entrypoints bounds!");
+            }
+
+            // copy agents
+            Vector<Integer> agents = assCol.getAgents(i);
+            curAgents = new Vector<Integer>();
+
+            for (int rob : agents) {
+                curAgents.add(rob);
+            }
+
+            // set the agents
+            if (!this.epAgentsMapping.setAgents(i, curAgents)) {
+                CommonUtils.aboutError("Ass: AssignmentCollection Index out of agents bounds!");
+            }
+        }
+        this.agentStateMapping = new StateCollection(this.epAgentsMapping);
+        this.epSucMapping = pa.getEpSuccessMapping();
+
+    }
+
+    public void moveAgents(State from, State to) {
+
+        Set<Integer> movingAgents = this.agentStateMapping.getAgentsInState(from);
         if (to == null)
         {
-            System.out.println("A: MoveRobots is given a State which is NULL!");
+            System.out.println("A: MoveAgents is given a State which is NULL!");
         }
-        for (int r : movingRobots)
+        for (int r : movingAgents)
         {
-            this.robotStateMapping.setState(r, to);
+            this.agentStateMapping.setState(r, to);
         }
     }
 
@@ -121,38 +151,38 @@ public class Assignment implements IAssignment{
         return epSucMapping;
     }
 
-    public boolean removeRobot(int robotId) {
+    public boolean removeAgent(int agentID) {
 
-        this.robotStateMapping.removeRobot(robotId);
-        Vector<Integer> curRobots;
-        for (int i = 0; i < this.epRobotsMapping.getSize(); i++)
+        this.agentStateMapping.removeAgent(agentID);
+        Vector<Integer> curentAgents;
+        for (int i = 0; i < this.epAgentsMapping.getSize(); i++)
         {
-            curRobots = this.epRobotsMapping.getRobots(i);
+            curentAgents = this.epAgentsMapping.getAgents(i);
 
-            //TODO: why is curRobots size zero?
-            if(curRobots.isEmpty())
+            //TODO: why is curentAgents size zero?
+            if(curentAgents.isEmpty())
                 return false;
 
-            int robotid = CommonUtils.find(curRobots, 0, curRobots.size() - 1, robotId);
+            int newAgentID = CommonUtils.find(curentAgents, 0, curentAgents.size() - 1, agentID);
 
-            if (robotid != curRobots.size()-1)
+            if (newAgentID != curentAgents.size()-1)
             {
-                curRobots.remove(robotid);
+                curentAgents.remove(newAgentID);
                 return true;
             }
         }
         return false;
     }
 
-    public boolean removeRobot(int robot, EntryPoint ep) {
+    public boolean removeAgent(int agent, EntryPoint ep) {
 
         if (ep == null) {
             return false;
         }
-        this.robotStateMapping.removeRobot(robot);
+        this.agentStateMapping.removeAgent(agent);
 
-        if (this.epRobotsMapping.getRobotsByEp(ep).contains(robot)) {
-            this.epRobotsMapping.getRobotsByEp(ep).remove(robot);
+        if (this.epAgentsMapping.getAgentsByEp(ep).contains(agent)) {
+            this.epAgentsMapping.getAgentsByEp(ep).remove(agent);
             return true;
         }
 		else {
@@ -160,118 +190,118 @@ public class Assignment implements IAssignment{
         }
     }
 
-    public void addRobot(int id, EntryPoint e, State s) {
+    public void addAgent(int id, EntryPoint e, State s) {
         if (e == null)
         {
             return;
         }
-        this.robotStateMapping.setState(id, s);
-        this.epRobotsMapping.getRobotsByEp(e).add(id);
+        this.agentStateMapping.setState(id, s);
+        this.epAgentsMapping.getAgentsByEp(e).add(id);
         return;
     }
 
     public void clear() {
-        this.robotStateMapping.clear();
-        this.epRobotsMapping.clear();
+        this.agentStateMapping.clear();
+        this.epAgentsMapping.clear();
         this.epSucMapping.clear();
     }
 
-    public void setAllToInitialState(ArrayList<Integer> robots, EntryPoint defep) {
-        Vector<Integer> rlist = this.epRobotsMapping.getRobotsByEp(defep);
-        for (int r : robots)
+    public void setAllToInitialState(ArrayList<Integer> agents, EntryPoint defep) {
+        Vector<Integer> rlist = this.epAgentsMapping.getAgentsByEp(defep);
+        for (int r : agents)
         {
             rlist.add(r);
         }
-        for (int r : robots)
+        for (int r : agents)
         {
-            this.robotStateMapping.setState(r, defep.getState());
+            this.agentStateMapping.setState(r, defep.getState());
         }
     }
 
-    public StateCollection getRobotStateMapping() {
-        return robotStateMapping;
+    public StateCollection getAgentStateMapping() {
+        return agentStateMapping;
     }
 
     public Plan getPlan() {
         return plan;
     }
 
-    public EntryPoint getEntryPointOfRobot(int robot) {
+    public EntryPoint getEntryPointOfAgent(int agent) {
 
-        for (int i = 0; i < this.epRobotsMapping.getSize(); i++)
+        for (int i = 0; i < this.epAgentsMapping.getSize(); i++)
         {
-            Integer iter = CommonUtils.find(this.epRobotsMapping.getRobots(i), 0, this.epRobotsMapping.getRobots(i).size() - 1,
-                    Integer.valueOf(robot));
-            if (iter != this.epRobotsMapping.getRobots(i).get(this.epRobotsMapping.getRobots(i).size()-1))
+            Integer iter = CommonUtils.find(this.epAgentsMapping.getAgents(i), 0, this.epAgentsMapping.getAgents(i).size() - 1,
+                    Integer.valueOf(agent));
+            if (iter != this.epAgentsMapping.getAgents(i).get(this.epAgentsMapping.getAgents(i).size()-1))
             {
-                return this.epRobotsMapping.getEp(i);
+                return this.epAgentsMapping.getEp(i);
             }
         }
         return null;
     }
 
-    public Vector<Integer> getRobotsWorking(EntryPoint ep) {
-        return this.getEpRobotsMapping().getRobotsByEp(ep);
+    public Vector<Integer> getAgentsWorking(EntryPoint ep) {
+        return this.getEpAgentsMapping().getAgentsByEp(ep);
     }
 
-    public AssignmentCollection getEpRobotsMapping() {
-        return epRobotsMapping;
+    public AssignmentCollection getEpAgentsMapping() {
+        return epAgentsMapping;
     }
 
-    public boolean updateRobot(int robot, EntryPoint ep) {
+    public boolean updateAgent(int agentID, EntryPoint ep) {
         boolean ret = false;
-        for (int i = 0; i < this.epRobotsMapping.getSize(); i++)
+        for (int i = 0; i < this.epAgentsMapping.getSize(); i++)
         {
-            if (this.epRobotsMapping.getEp(i) == ep)
+            if (this.epAgentsMapping.getEp(i) == ep)
             {
-                if (CommonUtils.find(this.epRobotsMapping.getRobots(i),0, this.epRobotsMapping.getRobots(i).size()-1,
-                    robot) != this.epRobotsMapping.getRobots(i).lastElement())
+                if (CommonUtils.find(this.epAgentsMapping.getAgents(i),0, this.epAgentsMapping.getAgents(i).size()-1,
+                    agentID) != this.epAgentsMapping.getAgents(i).lastElement())
                 {
                     return false;
                 }
 				else
                 {
-                    this.epRobotsMapping.getRobots(i).add(robot);
+                    this.epAgentsMapping.getAgents(i).add(agentID);
                     ret = true;
                 }
             }
 			else
             {
-                Integer iter = CommonUtils.find(this.epRobotsMapping.getRobots(i), 0, this.epRobotsMapping.getRobots(i).size() - 1, robot);
-                if (iter != this.epRobotsMapping.getRobots(i).lastElement())
+                Integer iter = CommonUtils.find(this.epAgentsMapping.getAgents(i), 0, this.epAgentsMapping.getAgents(i).size() - 1, agentID);
+                if (iter != this.epAgentsMapping.getAgents(i).lastElement())
                 {
-                    this.epRobotsMapping.getRobots(i).remove(iter);
+                    this.epAgentsMapping.getAgents(i).remove(iter);
                     ret = true;
                 }
             }
         }
         if (ret)
         {
-            this.robotStateMapping.setState(robot, ep.getState());
+            this.agentStateMapping.setState(agentID, ep.getState());
         }
         return ret;
     }
 
-    public Vector<Integer> getAllRobots() {
+    public Vector<Integer> getAllAgents() {
         Vector<Integer> ret = new Vector<Integer>();
-        for (int i = 0; i < this.epRobotsMapping.getSize(); i++)
+        for (int i = 0; i < this.epAgentsMapping.getSize(); i++)
         {
-            for (int j = 0; j < this.epRobotsMapping.getRobots(i).size(); j++)
+            for (int j = 0; j < this.epAgentsMapping.getAgents(i).size(); j++)
             {
-                ret.add(this.epRobotsMapping.getRobots(i).get(j));
+                ret.add(this.epAgentsMapping.getAgents(i).get(j));
             }
         }
         return ret;
     }
 
     public boolean isValid() {
-        Vector<ArrayList<Integer>> success = this.epSucMapping.getRobots();
+        Vector<ArrayList<Integer>> success = this.epSucMapping.getAgents();
 
-        for (int i = 0; i < this.epRobotsMapping.getSize(); ++i)
+        for (int i = 0; i < this.epAgentsMapping.getSize(); ++i)
         {
-            int c = this.epRobotsMapping.getRobots(i).size() + success.get(i).size();
-            if (c > this.epRobotsMapping.getEp(i).getMaxCardinality()
-                || c < this.epRobotsMapping.getEp(i).getMinCardinality())
+            int c = this.epAgentsMapping.getAgents(i).size() + success.get(i).size();
+            if (c > this.epAgentsMapping.getEp(i).getMaxCardinality()
+                || c < this.epAgentsMapping.getEp(i).getMinCardinality())
             {
                 return false;
             }
@@ -279,8 +309,8 @@ public class Assignment implements IAssignment{
         return true;
     }
 
-    public Vector<Integer> getUnassignedRobots() {
-        return unassignedRobots;
+    public Vector<Integer> getUnassignedAgents() {
+        return unassignedAgents;
     }
 
 
@@ -293,8 +323,8 @@ public class Assignment implements IAssignment{
         {
             if (this.epSucMapping.getEntryPoints().get(i).getSuccessRequired())
             {
-                if (!(this.epSucMapping.getRobots().get(i).size() > 0
-                    && this.epSucMapping.getRobots().get(i).size()
+                if (!(this.epSucMapping.getAgents().get(i).size() > 0
+                    && this.epSucMapping.getAgents().get(i).size()
                     >= this.epSucMapping.getEntryPoints().get(i).getMinCardinality()))
                 {
                     return false;
@@ -307,28 +337,28 @@ public class Assignment implements IAssignment{
 
     @Override
     public int getEntryPointCount() {
-        return this.epRobotsMapping.getSize();
+        return this.epAgentsMapping.getSize();
     }
 
     @Override
-    public ArrayList<Integer> getRobotsWorkingAndFinished(EntryPoint ep) {
+    public ArrayList<Integer> getAgentsWorkingAndFinished(EntryPoint ep) {
         CommonUtils.aboutNoImpl();
         return null;
     }
 
     @Override
-    public ArrayList<Integer> getUniqueRobotsWorkingAndFinished(EntryPoint ep) {
+    public ArrayList<Integer> getUniqueAgentsWorkingAndFinished(EntryPoint ep) {
         ArrayList<Integer>  ret = new ArrayList<>();
 
         if (this.plan.getEntryPoints().containsKey(ep.getId()))
         {
-            Vector<Integer> robots = this.epRobotsMapping.getRobotsByEp(ep);
+            Vector<Integer> agents = this.epAgentsMapping.getAgentsByEp(ep);
 
-            for (int i = 0; i < robots.size(); i++) {
-                ret.add(robots.get(i));
+            for (int i = 0; i < agents.size(); i++) {
+                ret.add(agents.get(i));
             }
 
-            for (Integer r : this.epSucMapping.getRobots(ep)) {
+            for (Integer r : this.epSucMapping.getAgents(ep)) {
 
                 if (CommonUtils.find(ret, 0, ret.size()-1, r) == ret.get(ret.size()-1)) {
                     ret.add(r);
@@ -338,27 +368,27 @@ public class Assignment implements IAssignment{
         return ret;
     }
 
-    public boolean updateRobot(int robot, EntryPoint ep, State s) {
-        this.robotStateMapping.setState(robot, s);
+    public boolean updateAgent(int agent, EntryPoint ep, State s) {
+        this.agentStateMapping.setState(agent, s);
         boolean ret = false;
 
-        for (int i = 0; i < this.epRobotsMapping.getSize(); i++) {
+        for (int i = 0; i < this.epAgentsMapping.getSize(); i++) {
 
-            if (this.epRobotsMapping.getEp(i) == ep) {
+            if (this.epAgentsMapping.getEp(i) == ep) {
 
-                if (this.epRobotsMapping.getRobots(i).contains(robot)) {
+                if (this.epAgentsMapping.getAgents(i).contains(agent)) {
                     return false;
                 }
                 else {
-                    this.epRobotsMapping.getRobots(i).add(robot);
+                    this.epAgentsMapping.getAgents(i).add(agent);
                     ret = true;
                 }
             }
             else
             {
-                if ( this.epRobotsMapping.getRobots(i).contains(robot))
+                if ( this.epAgentsMapping.getAgents(i).contains(agent))
                 {
-                    this.epRobotsMapping.getRobots(i).remove(robot);
+                    this.epAgentsMapping.getAgents(i).remove(agent);
                     ret = true;
                 }
             }
@@ -376,4 +406,8 @@ public class Assignment implements IAssignment{
         CommonUtils.aboutNoImpl();
     }
 
+    @Override
+    public String toString() {
+        return "ASS\n" + this.epAgentsMapping.toString();
+    }
 }

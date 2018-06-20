@@ -1,5 +1,7 @@
 package de.uniks.vs.jalica.behaviours;
 
+import de.uniks.vs.jalica.behaviours.helloworld.Publish;
+import de.uniks.vs.jalica.behaviours.helloworld.Subscribe;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 
 /**
@@ -17,6 +19,15 @@ public class BehaviourCreator implements IBehaviourCreator {
             return new DummyBehaviour(ae);
 //            break;
         }
+
+        if (behaviourConfId == 1528125256074l) {
+            return new Subscribe(ae);
+        }
+
+        if (behaviourConfId == 1528125242157l) {
+            return new Publish(ae);
+        }
+
         else {
 //            default:
                 System.err.println( "BehaviourCreator: Unknown behaviour requested: " + behaviourConfId );

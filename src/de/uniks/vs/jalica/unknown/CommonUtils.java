@@ -1,21 +1,20 @@
 package de.uniks.vs.jalica.unknown;
 
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.Vector;
+import java.lang.reflect.Array;
+import java.util.*;
 
 /**
  * Created by alex on 21.07.17.
  */
 public class CommonUtils {
 
-    public static final boolean RULE_debug = false;
+    public static final boolean RULE_debug = true;
     public static final boolean SM_FAILURE_debug = false;
     public static final boolean SM_MESSAGES_debug = false;
     public static final boolean PP_DEBUG_debug = false;
     public static final boolean UFDEBUG_debug = false;
     public static final boolean PB_DEBUG_debug = false;
-    public static final boolean CM_REASON_DEBUG_debug = false;
+    public static final boolean CM_REASON_DEBUG_debug = true;
     public static final boolean CM_DEBUG_debug = true;
     public static final boolean SUCDEBUG_debug = false;
     public static final boolean CS_DEBUG_debug = false;
@@ -39,17 +38,17 @@ public class CommonUtils {
         return index > -1 ? list.get(index): null;
     }
 
-    public static <T> ArrayList<T> move(ArrayList<T> robots) {
-        ArrayList<T> robots2 = robots;
-        robots.clear();
-        return robots2;
+    public static <T> ArrayList<T> move(ArrayList<T> agents) {
+        ArrayList<T> newAgents = agents;
+        agents.clear();
+        return newAgents;
     }
 
-    public static <T> void copy(Set<T> robotsInState, int start, int end, Vector<T> robots) {
-        T[] array = (T[]) robotsInState.toArray();
+    public static <T> void copy(Set<T> agentsInState, int start, int end, Vector<T> agents) {
+        T[] array = (T[]) agentsInState.toArray();
 
         for (int i = start; i <= end; i++)
-            robots.add(array[i]);
+            agents.add(array[i]);
     }
 
     public static int stoi(String string) {
@@ -95,5 +94,27 @@ public class CommonUtils {
             System.err.println(stackTrace[1] + " ->  Implementation incomplete!");
             System.err.flush();
         }
+    }
+
+    public static void stable_sort(Vector vector, int start, int end) {
+
+        if (end < start) {
+            System.out.println("CU: sort start > end" );
+            return;
+        }
+        Collections.sort(vector.subList(start,end));
+    }
+
+    public static double round(double d) {
+        return (Math.round(d));
+    }
+
+    public static double roundCorrect(double num, int precision) {
+        double EPSILON = 1.0;
+        double c = 0.5 * EPSILON * num;
+        double p = 1; while (precision--> 0) p *= 10;
+        if (num < 0)
+            p *= -1;
+        return Math.round((num + c) * p) / p;
     }
 }

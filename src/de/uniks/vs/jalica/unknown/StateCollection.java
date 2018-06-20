@@ -11,28 +11,28 @@ import java.util.Vector;
  */
 public class StateCollection {
 
-    private Vector<Integer> robots = new Vector<>();
+    private Vector<Integer> agents = new Vector<>();
     private Vector<State> states = new Vector<>();
 
     public StateCollection(AssignmentCollection ac) {
         for(int i = 0;i < ac.getSize(); i ++)
         {
             State initialState = ac.getEp(i).getState();
-            for(Integer r : ac.getRobots(i))
+            for(Integer r : ac.getAgents(i))
             {
                 this.setState(r,initialState);
             }
         }
     }
 
-    public Set<Integer> getRobotsInState(State s) {
+    public Set<Integer> getAgentsInState(State s) {
 
         Set<Integer> ret = new HashSet<>();
-        for (int i = 0; i < this.robots.size(); i++)
+        for (int i = 0; i < this.agents.size(); i++)
         {
             if (this.states.get(i) == s)
             {
-                ret.add(this.robots.get(i));
+                ret.add(this.agents.get(i));
             }
         }
         return ret;
@@ -43,25 +43,25 @@ public class StateCollection {
     }
 
 
-    public void setState(int robot, State state) {
-        for (int i = 0; i < this.robots.size(); i++)
+    public void setState(int agent, State state) {
+        for (int i = 0; i < this.agents.size(); i++)
         {
-            if (this.robots.get(i) == robot)
+            if (this.agents.get(i) == agent)
             {
                 this.states.set(i, state);
                 return;
             }
         }
-        this.robots.add(robot);
+        this.agents.add(agent);
         this.states.add(state);
     }
 
-    public void removeRobot(int r) {
+    public void removeAgent(int r) {
         for(int i = 0; i < this.states.size();i++)
         {
-            if(this.robots.get(i) == r)
+            if(this.agents.get(i) == r)
             {
-                this.robots.remove( i);
+                this.agents.remove( i);
                 this.states.remove( i);
                 return;
             }
@@ -69,14 +69,14 @@ public class StateCollection {
     }
 
     public void clear() {
-        this.robots.clear();
+        this.agents.clear();
         this.states.clear();
     }
 
-    public State stateOfRobot(int robot) {
-        for (int i = 0; i < this.robots.size(); i++)
+    public State stateOfAgent(int agent) {
+        for (int i = 0; i < this.agents.size(); i++)
         {
-            if (this.robots.get(i) == robot)
+            if (this.agents.get(i) == agent)
             {
                 return this.states.get(i);
             }
@@ -84,18 +84,18 @@ public class StateCollection {
         return null;
     }
 
-    public void setStates(Vector<Integer> robots, State state) {
+    public void setStates(Vector<Integer> agents, State state) {
 
-        for(int i = 0; i <  robots.size(); i++)
+        for(int i = 0; i <  agents.size(); i++)
         {
-            setState(robots.get(i), state);
+            setState(agents.get(i), state);
         }
     }
 
     public State getState(int r) {
-        for (int i = 0; i < this.robots.size(); i++)
+        for (int i = 0; i < this.agents.size(); i++)
         {
-            if (this.robots.get(i) == r)
+            if (this.agents.get(i) == r)
             {
                 return this.states.get(i);
             }
@@ -112,13 +112,13 @@ public class StateCollection {
         EntryPoint ep;
         for(short i = 0; i < oldOne.getEntryPointCount(); i++)
         {
-            ep = oldOne.getEpRobotsMapping().getEp(i);
-            for(int rid : (oldOne.getRobotsWorking(ep)))
+            ep = oldOne.getEpAgentsMapping().getEp(i);
+            for(int rid : (oldOne.getAgentsWorking(ep)))
             {
-                Integer iter = CommonUtils.find(newOne.getRobotsWorking(ep), 0, newOne.getRobotsWorking(ep).size() - 1, rid);
-                if(iter != newOne.getRobotsWorking(ep).lastElement())
+                Integer iter = CommonUtils.find(newOne.getAgentsWorking(ep), 0, newOne.getAgentsWorking(ep).size() - 1, rid);
+                if(iter != newOne.getAgentsWorking(ep).lastElement())
                 {
-                    this.setState(rid, oldOne.getRobotStateMapping().getState(rid));
+                    this.setState(rid, oldOne.getAgentStateMapping().getState(rid));
                 }
             }
         }

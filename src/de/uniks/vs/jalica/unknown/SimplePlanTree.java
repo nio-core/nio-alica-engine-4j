@@ -1,7 +1,6 @@
 package de.uniks.vs.jalica.unknown;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 
 /**
@@ -14,14 +13,14 @@ public class SimplePlanTree {
     private SimplePlanTree parent;
     private HashSet<SimplePlanTree> children;
     /**
-     * The state occupied by the respective robot.
+     * The state occupied by the respective agent.
      */
     private State state;
     private EntryPoint entryPoint;
     /**
-     * The id of the robot to which this tree refers to
+     * The id of the agent to which this tree refers to
      */
-    private int robotId = -1;
+    private int agentID = -1;
     private boolean newSimplePlanTree;
     /**
      * The timestamp denoting when this tree was received.
@@ -56,7 +55,7 @@ public class SimplePlanTree {
 
     public State getState() {return state;}
 
-    public int getRobotId() {return robotId;}
+    public int getAgentID() {return agentID;}
 
-    public void setRobotId(int robotId) {this.robotId = robotId;}
+    public void setAgentID(int agentID) {this.agentID = agentID;}
 }

@@ -316,7 +316,7 @@ public class ModelFactory {
         Node curChild = element.getFirstChild().getNextSibling();
 
         while (curChild != null) {
-            System.out.println("MF: " +curChild.getNodeName());
+            System.out.println("MF: Nodename " +curChild.getNodeName());
 
             parser.handleTag(curChild, plan, this);
             curChild = curChild.getNextSibling();
@@ -586,24 +586,28 @@ public class ModelFactory {
         SuccessState suc = new SuccessState();
         suc.setId(this.parser.parserId(element));
         setAlicaElementAttributes(suc, element);
-
         addElement(suc);
         this.rep.getStates().put(suc.getId(), suc);
-
         Node curChild = element.getFirstChild();
-        while (curChild != null) {
-            String val = curChild.getNodeValue();
-            long cid = this.parser.parserId(curChild);
-            if (inTransitions.equals(val)) {
-                this.stateInTransitionReferences.add(new Pair(suc.getId(), cid));
-            } else if (postCondition.equals(val)) {
-                PostCondition postCon = createPostCondition(curChild);
-                suc.setPostCondition(postCon);
-            } else {
-                ae.abort("MF: Unhandled SuccesState Child:", curChild.getNodeValue());
-            }
 
-            curChild = curChild.getNextSibling();
+        while (curChild != null) {
+            // TODO: FIXME skip #text (extract to method)
+            if ("#text".equals(curChild.getNodeName()))
+                curChild = curChild.getNextSibling();
+            else {
+                String val = curChild.getNodeName();
+                long cid = this.parser.parserId(curChild);
+
+                if (inTransitions.equals(val)) {
+                    this.stateInTransitionReferences.add(new Pair(suc.getId(), cid));
+                } else if (postCondition.equals(val)) {
+                    PostCondition postCon = createPostCondition(curChild);
+                    suc.setPostCondition(postCon);
+                } else {
+                    ae.abort("MF: Unhandled SuccesState Child:", curChild.getNodeValue());
+                }
+                curChild = curChild.getNextSibling();
+            }
         }
         return suc;
     }
@@ -784,7 +788,7 @@ public class ModelFactory {
     public void addElement(AlicaElement ael) {
         //TODO: Fix
         System.out.println("MF: " + ael.getId() + "  " + ael.getName());
-//        if (this.elements.size()> 0 && this.elements.get(ael.getId()) != this.elements.values().toArray()[this.elements.values().size()-1])
+//        if (this.elements.size()> 0 && this.elements.get(ael.getID()) != this.elements.values().toArray()[this.elements.values().size()-1])
         if (this.elements.size() > 0 && this.elements.get(ael.getId()) != null && this.elements.get(ael.getId()) != ael) {
             System.out.println("MF: ELEMENT >" + ael.getName() + "< >" + this.elements.get(ael.getId()).getName() + "<");
             System.out.println("MF: ELEMENT >" + ael.getId() + "< >" + this.elements.get(ael.getId()).getId() + "<");

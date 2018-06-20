@@ -1,6 +1,5 @@
 package de.uniks.vs.jalica.unknown;
 
-import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
 import de.uniks.vs.jalica.common.AssignmentCollection;
 import de.uniks.vs.jalica.common.UtilityFunction;
 
@@ -10,77 +9,125 @@ import java.util.Vector;
 /**
  * Created by alex on 21.07.17.
  */
-public class PartialAssignment implements IAssignment{
+public class PartialAssignment extends IAssignment  implements Comparable<PartialAssignment> {
 
     private static final long PRECISION = 1073741824;
-    private double min;
-    private double max;
+    private static final int INFINIT = Integer.MAX_VALUE;
+    private final PartialAssignmentPool pap;
+
     private long compareVal;
-    private Vector<Integer> unassignedRobots;
-    private AssignmentCollection epRobotsMapping;
     private boolean hashCalculated;
-    private Vector<Integer> robots;
+    private Vector<Integer> agents;
     private Plan plan;
     private UtilityFunction utilFunc;
     private SuccessCollection epSuccessMapping;
+    private AssignmentCollection epAgentsMapping;
     private Vector<DynCardinality> dynCardinalities;
 
-    public static void reset(PartialAssignmentPool pap) {
-        pap.curIndex = 0;
+    public PartialAssignment(PartialAssignmentPool partialAssignmentPool) {
+        this.pap = partialAssignmentPool;
+        this.hashCalculated = false;
+        this.epAgentsMapping = new AssignmentCollection(AssignmentCollection.maxEpsCount);
+        this.unassignedAgents = new Vector<>();
+        this.dynCardinalities = new Vector<>(AssignmentCollection.maxEpsCount);
+        this.compareVal = PRECISION;
+
+        for (int i = 0; i < AssignmentCollection.maxEpsCount; i++) {
+            this.dynCardinalities.add(i, new DynCardinality());
+        }
     }
 
-    public static PartialAssignment getNew(PartialAssignmentPool pap, Vector<Integer> robots, Plan plan, SuccessCollection sucCol) {
+    public static void reset(PartialAssignmentPool partialAssignmentPool) {
+        partialAssignmentPool.curentIndex = 0;
+    }
 
-        if (pap.curIndex >= pap.maxCount) {
+    public static PartialAssignment getNew(PartialAssignmentPool pap, PartialAssignment oldPA) {
+
+        if (pap.curentIndex >= pap.maxCount) {
+            System.err.println("max PA count reached!");
+        }
+        PartialAssignment ret = pap.partialAssignments.get(pap.curentIndex++);
+        ret.clear();
+        ret.min = oldPA.min;
+        ret.max = oldPA.max;
+        ret.plan = oldPA.plan;
+        ret.agents = oldPA.agents;
+        ret.utilFunc = oldPA.utilFunc;
+        ret.epSuccessMapping = oldPA.epSuccessMapping;
+
+        for (int i = 0; i < oldPA.unassignedAgents.size(); i++) {
+            ret.unassignedAgents.add(oldPA.unassignedAgents.get(i));
+        }
+
+        for (int i = 0; i < oldPA.dynCardinalities.size(); i++) {
+            ret.dynCardinalities.add(i, new DynCardinality(oldPA.dynCardinalities.get(i).getMin(), oldPA.dynCardinalities.get(i).getMax()));
+        }
+
+        ret.epAgentsMapping.setSize(oldPA.epAgentsMapping.getSize());
+
+        for (int i = 0; i < oldPA.epAgentsMapping.getSize(); i++) {
+            ret.epAgentsMapping.setEp(i, oldPA.epAgentsMapping.getEp(i));
+
+            for (int j = 0; j < oldPA.epAgentsMapping.getAgents(i).size(); j++) {
+                ret.epAgentsMapping.getAgents(i).add(oldPA.epAgentsMapping.getAgents(i).get(j));
+            }
+        }
+
+        return ret;
+    }
+
+    public static PartialAssignment getNew(PartialAssignmentPool partialAssignmentPool, Vector<Integer> agents, Plan plan, SuccessCollection successCollection) {
+
+        if (partialAssignmentPool.curentIndex >= partialAssignmentPool.maxCount) {
             System.out.println( "PA: max PA count reached!" );
         }
-        PartialAssignment ret = pap.daPAs.get(pap.curIndex++);
-        ret.clear();
-        ret.robots = robots; // Should already be sorted! (look at TaskAssignment, or PlanSelector)
-        ret.plan = plan;
-        ret.utilFunc = plan.getUtilityFunction();
-        ret.epSuccessMapping = sucCol;
+        PartialAssignment partialAssignment = partialAssignmentPool.partialAssignments.get(partialAssignmentPool.curentIndex++);
+        partialAssignment.clear();
+        partialAssignment.agents = agents; // Should already be sorted! (look at TaskAssignment, or PlanSelector)
+        partialAssignment.plan = plan;
+        partialAssignment.utilFunc = plan.getUtilityFunction();
+        partialAssignment.epSuccessMapping = successCollection;
         // Create EP-Array
 
         if (AssignmentCollection.allowIdling) {
-            ret.epRobotsMapping.setSize(plan.getEntryPoints().size() + 1);
+            partialAssignment.epAgentsMapping.setSize(plan.getEntryPoints().size() + 1);
             // Insert IDLE-EntryPoint
-            ret.epRobotsMapping.setEp(ret.epRobotsMapping.getSize() - 1, pap.idleEP);
+            partialAssignment.epAgentsMapping.setEp(partialAssignment.epAgentsMapping.getSize() - 1, partialAssignmentPool.idleEntryPoint);
         }
         else {
-            ret.epRobotsMapping.setSize(plan.getEntryPoints().size());
+            partialAssignment.epAgentsMapping.setSize(plan.getEntryPoints().size());
         }
         // Insert plan entrypoints
         int j = 0;
 
         for ( Long key : plan.getEntryPoints().keySet()) {
-            ret.epRobotsMapping.setEp(j++, plan.getEntryPoints().get(key));
+            partialAssignment.epAgentsMapping.setEp(j++, plan.getEntryPoints().get(key));
         }
         // Sort the entrypoint array
-        ret.epRobotsMapping.sortEps();
+        partialAssignment.epAgentsMapping.sortEps();
 
-        for (int i = 0; i < ret.epRobotsMapping.getSize(); i++) {
-            ret.dynCardinalities.get(i).setMin(ret.epRobotsMapping.getEp(i).getMinCardinality());
-            ret.dynCardinalities.get(i).setMax(ret.epRobotsMapping.getEp(i).getMaxCardinality());
-            ArrayList<Integer> suc = sucCol.getRobots(ret.epRobotsMapping.getEp(i));
+        for (int i = 0; i < partialAssignment.epAgentsMapping.getSize(); i++) {
+            partialAssignment.dynCardinalities.get(i).setMin(partialAssignment.epAgentsMapping.getEp(i).getMinCardinality());
+            partialAssignment.dynCardinalities.get(i).setMax(partialAssignment.epAgentsMapping.getEp(i).getMaxCardinality());
+            ArrayList<Integer> suc = successCollection.getAgents(partialAssignment.epAgentsMapping.getEp(i));
 
             if (suc != null) {
-                ret.dynCardinalities.get(i).setMin(ret.dynCardinalities.get(i).getMin() - suc.size());
-                ret.dynCardinalities.get(i).setMax(ret.dynCardinalities.get(i).getMax() - suc.size());
+                partialAssignment.dynCardinalities.get(i).setMin(partialAssignment.dynCardinalities.get(i).getMin() - suc.size());
+                partialAssignment.dynCardinalities.get(i).setMax(partialAssignment.dynCardinalities.get(i).getMax() - suc.size());
 
-                if (ret.dynCardinalities.get(i).getMin() < 0) {
-                    ret.dynCardinalities.get(i).setMin(0);
+                if (partialAssignment.dynCardinalities.get(i).getMin() < 0) {
+                    partialAssignment.dynCardinalities.get(i).setMin(0);
                 }
 
-                if (ret.dynCardinalities.get(i).getMax() < 0) {
-                    ret.dynCardinalities.get(i).setMax(0);
+                if (partialAssignment.dynCardinalities.get(i).getMax() < 0) {
+                    partialAssignment.dynCardinalities.get(i).setMax(0);
                 }
 
 //#ifdef SUCDEBUG
                 if (CommonUtils.SUCDEBUG_debug)  System.out.println("PA: SuccessCollection" );
-                if (CommonUtils.SUCDEBUG_debug)System.out.println( "PA: EntryPoint: " + ret.epRobotsMapping.getEntryPoints().get(i).toString() );
-                if (CommonUtils.SUCDEBUG_debug)System.out.println( "PA: DynMax: " + ret.dynCardinalities.get(i).getMax() );
-                if (CommonUtils.SUCDEBUG_debug)System.out.println( "PA: DynMin: " + ret.dynCardinalities.get(i).getMin() );
+                if (CommonUtils.SUCDEBUG_debug)System.out.println( "PA: EntryPoint: " + partialAssignment.epAgentsMapping.getEntryPoints().get(i).toString() );
+                if (CommonUtils.SUCDEBUG_debug)System.out.println( "PA: DynMax: " + partialAssignment.dynCardinalities.get(i).getMax() );
+                if (CommonUtils.SUCDEBUG_debug)System.out.println( "PA: DynMin: " + partialAssignment.dynCardinalities.get(i).getMin() );
                 if (CommonUtils.SUCDEBUG_debug)System.out.print("PA: SucCol: ");
 
                 for (int k : (suc)) {
@@ -92,24 +139,66 @@ public class PartialAssignment implements IAssignment{
             }
         }
 
-        // At the beginning all robots are unassigned
-        for (int i : robots)
+        // At the beginning all agents are unassigned
+        for (int i : agents)
         {
-            ret.unassignedRobots.add(i);
+            partialAssignment.unassignedAgents.add(i);
         }
-        return ret;
+        return partialAssignment;
     }
 
     private void clear() {
         this.min = 0.0;
         this.max = 1.0;
         this.compareVal = PRECISION;
-        this.unassignedRobots.clear();
+        this.unassignedAgents.clear();
 
-        for (int i = 0; i < this.epRobotsMapping.getSize(); i++) {
-            this.epRobotsMapping.getRobots(i).clear();
+        for (int i = 0; i < this.epAgentsMapping.getSize(); i++) {
+           this.epAgentsMapping.getAgents(i).clear();
         }
         this.hashCalculated = false;
+    }
+
+    public boolean isGoal() {
+        // There should be no unassigned robots anymore
+        if (this.unassignedAgents.size() > 0) {
+            return false;
+        }
+        // Every EntryPoint should be satisfied according to his minCar
+        for (int i = 0; i < this.epAgentsMapping.getSize(); ++i) {
+
+            if (this.dynCardinalities.get(i).getMin() != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public ArrayList<PartialAssignment> expand() {
+        ArrayList<PartialAssignment> newPas = new ArrayList<PartialAssignment>();
+
+        if (this.unassignedAgents.size() == 0) {
+            // No robot left to expand
+            return newPas;
+        }
+        // Robot which should be assigned next
+        int robot = this.unassignedAgents.get(0);
+
+//        this.unassignedAgents.erase(this.unassignedAgents.begin());
+        this.unassignedAgents.remove(0);
+
+        PartialAssignment newPa;
+
+        for (int i = 0; i < this.epAgentsMapping.getSize(); ++i) {
+
+            if (this.dynCardinalities.get(i).getMax() > 0) {
+                // Update the cardinalities and assign the robot
+                newPa = PartialAssignment.getNew(pap, this);
+                newPa.assignAgent(robot, i);
+                newPas.add(newPa);
+            }
+        }
+        return newPas;
     }
 
     @Override
@@ -118,92 +207,92 @@ public class PartialAssignment implements IAssignment{
     }
 
     @Override
-    public ArrayList<Integer> getRobotsWorkingAndFinished(EntryPoint ep) {
+    public ArrayList<Integer> getAgentsWorkingAndFinished(EntryPoint ep) {
         CommonUtils.aboutNoImpl();
         return null;
     }
 
     @Override
-    public ArrayList<Integer> getUniqueRobotsWorkingAndFinished(EntryPoint ep) {
+    public ArrayList<Integer> getUniqueAgentsWorkingAndFinished(EntryPoint ep) {
         CommonUtils.aboutNoImpl();
         return null;
     }
 
-    @Override
-    public void setMin(double min) {
-        CommonUtils.aboutNoImpl();
-    }
+//    @Override
+//    public void setMin(double min) {
+//        CommonUtils.aboutNoImpl();
+//    }
+//
+//    @Override
+//    public void setMax(double max) {
+//        CommonUtils.aboutNoImpl();
+//    }
+//
+//    @Override
+//    public Vector<Integer> getUnassignedAgents() {
+//        CommonUtils.aboutNoImpl();
+//        return null;
+//    }
 
     @Override
-    public void setMax(double max) {
-        CommonUtils.aboutNoImpl();
-    }
-
-    @Override
-    public Vector<Integer> getUnassignedRobots() {
+    public AssignmentCollection getEpAgentsMapping() {
         CommonUtils.aboutNoImpl();
         return null;
     }
 
-    @Override
-    public AssignmentCollection getEpRobotsMapping() {
-        CommonUtils.aboutNoImpl();
-        return null;
-    }
-
-    public boolean addIfAlreadyAssigned(SimplePlanTree spt, int robot) {
+    public boolean addIfAlreadyAssigned(SimplePlanTree spt, int agent) {
 
         if (spt.getEntryPoint().getPlan() == this.plan) {
             EntryPoint curEp;
-            int max = this.epRobotsMapping.getSize();
+            int max = this.epAgentsMapping.getSize();
 
             if (AssignmentCollection.allowIdling) {
                 max--;
             }
 
             for (int i = 0; i < max; ++i) {
-                curEp = this.epRobotsMapping.getEp(i);
+                curEp = this.epAgentsMapping.getEp(i);
 
                 if (spt.getEntryPoint().getId() == curEp.getId()) {
 
-                    if (!this.assignRobot(robot, i)) {
+                    if (!this.assignAgent(agent, i)) {
                         break;
                     }
-                    //remove robot from "To-Add-List"
-                    Integer iter = CommonUtils.find(this.unassignedRobots, 0, this.unassignedRobots.size() - 1, robot);
+                    //remove agent from "To-Add-List"
+                    Integer iter = CommonUtils.find(this.unassignedAgents, 0, this.unassignedAgents.size() - 1, agent);
 
-                    if (this.unassignedRobots.remove(this.unassignedRobots.indexOf(iter)) == this.unassignedRobots.lastElement()) {
-                        System.err.println( "PA: Tried to assign robot " + robot + ", but it was NOT UNassigned!");
+                    if (this.unassignedAgents.remove(this.unassignedAgents.indexOf(iter)) == this.unassignedAgents.lastElement()) {
+                        System.err.println( "PA: Tried to assign agent " + agent + ", but it was NOT UNassigned!");
                         try {
                             throw new Exception();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }
-                    //return true, because we are ready, when we found the robot here
+                    //return true, because we are ready, when we found the agent here
                     return true;
                 }
             }
             return false;
         }
-        // If there are children and we didnt find the robot until now, then go on recursive
+        // If there are children and we didnt find the agent until now, then go on recursive
 		else if (spt.getChildren().size() > 0) {
 
             for (SimplePlanTree sptChild : spt.getChildren()) {
 
-                if (this.addIfAlreadyAssigned(sptChild, robot)) {
+                if (this.addIfAlreadyAssigned(sptChild, agent)) {
                     return true;
                 }
             }
         }
-        // Did not find the robot in any relevant entry point
+        // Did not find the agent in any relevant entry point
         return false;
     }
 
-    private boolean assignRobot(int robot, int index) {
+    private boolean assignAgent(int agentID, int index) {
 
         if (this.dynCardinalities.get(index).getMax() > 0) {
-            this.epRobotsMapping.getRobots(index).add(robot);
+            this.epAgentsMapping.getAgents(index).add(agentID);
 
             if (this.dynCardinalities.get(index).getMin() > 0) {
                 this.dynCardinalities.get(index).setMin(this.dynCardinalities.get(index).getMin() - 1);
@@ -215,5 +304,109 @@ public class PartialAssignment implements IAssignment{
             return true;
         }
         return false;
+    }
+
+    public UtilityFunction getUtilFunc() { return utilFunc; }
+
+    public Plan getPlan() { return this.plan; }
+
+    public SuccessCollection getEpSuccessMapping() { return epSuccessMapping; }
+
+    @Override
+    public int compareTo(PartialAssignment newPa) {
+        //TODO has perhaps to be changed
+        // 0 , -1 = false
+        // 1 true
+        if (this == newPa) { // Same reference . same object
+            return 0;
+        }
+        if (newPa.compareVal < this.compareVal) {
+            // other has higher possible utility
+            return 0;
+        }
+        else if (newPa.compareVal > this.compareVal) {
+            // this has higher possible utility
+            return 1;
+        }
+        // Now we are sure that both partial assignments have the same utility
+        else if (newPa.plan.getId() > this.plan.getId()){
+            return -1;
+        }else if (newPa.plan.getId() < this.plan.getId()) {
+            return 0;
+        }
+        // Now we are sure that both partial assignments have the same utility and the same plan id
+        if (this.unassignedAgents.size() < newPa.unassignedAgents.size()) {
+            return 0;
+        }
+        else if (this.unassignedAgents.size() > newPa.unassignedAgents.size()) {
+            return 1;
+        }
+        if (newPa.min < this.min) {
+            // other has higher actual utility
+            return 0;
+        }
+        else if (newPa.min > this.min){
+            // this has higher actual utility
+            return -1;
+        }
+
+        for (int i = 0; i < this.epAgentsMapping.getSize(); ++i) {
+
+            if (this.epAgentsMapping.getAgents(i).size() < newPa.epAgentsMapping.getAgents(i).size()) {
+                return 0;
+            }
+			else if (this.epAgentsMapping.getAgents(i).size() < newPa.epAgentsMapping.getAgents(i).size()) {
+                return -1;
+            }
+        }
+        for (int i = 0; i <= this.epAgentsMapping.getSize(); ++i) {
+
+            for (int j = 0; j < this.epAgentsMapping.getAgents(i).size(); ++j) {
+
+                if (this.epAgentsMapping.getAgents(i).get(j) > newPa.epAgentsMapping.getAgents(i).get(j)) {
+                    return 0;
+                }
+				else if (this.epAgentsMapping.getAgents(i).get(j) > newPa.epAgentsMapping.getAgents(i).get(j)) {
+                    return 1;
+                }
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public void setMax(double max) {
+        this.max = max;
+        this.compareVal = (long)CommonUtils.round(max * PRECISION);
+    }
+    @Override
+    public String toString() {
+        String string = "Plan: " + this.plan.getName() + "\n";
+        string += "Utility: " + this.min + ".." + this.max + "\n";
+        string += "unassignedRobots: ";
+        for (int robot : this.unassignedAgents)
+        {
+            string += robot + " ";
+        }
+        string += "\n";
+        //shared_ptr<vector<EntryPoint*> > ownEps = this.epRobotsMapping.getEntryPoints();
+        Vector<Integer> robots;
+
+        for (int i = 0; i < this.epAgentsMapping.getSize(); ++i)
+        {
+            robots = (this.epAgentsMapping.getAgents(i));
+            string += "EPid: " + this.epAgentsMapping.getEp(i).getId() + " Task: " + this.epAgentsMapping.getEp(i).getTask().getName() + " minCar: "
+                + this.dynCardinalities.get(i).getMin() + " maxCar: "
+                + (this.dynCardinalities.get(i).getMax() == INFINIT ? "*" : String.valueOf(this.dynCardinalities.get(i).getMax())) + " Assigned Robots: ";
+
+            for (int robot : robots) {
+                string += robot + " ";
+            }
+            string += "\n";
+        }
+
+        string += this.epAgentsMapping.toString();
+        string += "HashCode: " + this.hashCode() + "\n";
+        return string;
     }
 }

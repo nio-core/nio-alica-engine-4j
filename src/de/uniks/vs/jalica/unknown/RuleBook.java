@@ -4,7 +4,6 @@ import de.uniks.vs.jalica.common.Logger;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.teamobserver.ITeamObserver;
-import de.uniks.vs.jalica.teamobserver.TeamObserver;
 
 import java.util.*;
 
@@ -45,13 +44,13 @@ public class RuleBook {
         main.setAssignment( new Assignment(masterPlan));
 
         main.setAllocationNeeded(true);
-        main.setRobotsAvail(CommonUtils.move(to.getAvailableRobotIds()));
+        main.setAgentsAvail(CommonUtils.move(to.getAvailableAgentIDs()));
 
         EntryPoint defep = null;
         ArrayList<EntryPoint> l;
         defep = (EntryPoint) masterPlan.getEntryPoints().values().toArray()[0];//.begin().second;
 
-        main.getAssignment().setAllToInitialState( CommonUtils.move(to.getAvailableRobotIds()), defep);
+        main.getAssignment().setAllToInitialState( CommonUtils.move(to.getAvailableAgentIDs()), defep);
         main.activate();
         main.setOwnEntryPoint(defep);
         this.log.eventOccured("Init");
@@ -128,7 +127,6 @@ public class RuleBook {
     }
 
 
-
     private PlanChange planReplaceRule(RunningPlan r) {
         
 //#ifdef RULE_debug
@@ -136,11 +134,14 @@ public class RuleBook {
         if (CommonUtils.RULE_debug) System.out.println( "RB: PlanReplace RP \n" + r.toString() );
 //#endif
 //        if (r.getParent().expired()|| !r.getFailHandlingNeeded() || r.isBehaviour())
-        if (r.getParent()!= null|| !r.getFailHandlingNeeded() || r.isBehaviour())
+        if (r.getParent()!= null|| !r.getFailHandlingNeeded() || r.isBehaviour()) {
             return PlanChange.NoChange;
-        if (r.getFailure() != 2)
+        }
+        if (r.getFailure() != 2) {
             return PlanChange.NoChange;
+        }
 //        auto temp = r.getParent().lock();
+        if (CommonUtils.RULE_debug) System.err.println( "RB: Plan has parent :"  + r.getParent() );
         RunningPlan temp = r.getParent();
         temp.deactivateChildren();
         temp.setFailedChild(r.getPlan());
@@ -177,13 +178,13 @@ public class RuleBook {
         r.setFailHandlingNeeded(false);
         r.deactivateChildren();
         r.clearChildren();
-        Vector<Integer> robots = new Vector<>(r.getAssignment().getRobotStateMapping().getRobotsInState(r.getActiveState()).size());
+        Vector<Integer> agents = new Vector<>(r.getAssignment().getAgentStateMapping().getAgentsInState(r.getActiveState()).size());
 
-        CommonUtils.copy(r.getAssignment().getRobotStateMapping().getRobotsInState(r.getActiveState()),0,
-                r.getAssignment().getRobotStateMapping().getRobotsInState(r.getActiveState()).size()-1,
-                robots); // backinserter
+        CommonUtils.copy(r.getAssignment().getAgentStateMapping().getAgentsInState(r.getActiveState()),0,
+                r.getAssignment().getAgentStateMapping().getAgentsInState(r.getActiveState()).size()-1,
+                agents); // backinserter
 
-        r.getAssignment().getRobotStateMapping().setStates(robots, r.getOwnEntryPoint().getState());
+        r.getAssignment().getAgentStateMapping().setStates(agents, r.getOwnEntryPoint().getState());
 
         r.setActiveState(r.getOwnEntryPoint().getState());
         r.setAllocationNeeded(true);
@@ -240,11 +241,11 @@ public class RuleBook {
 
 //        temp = r.getParent().lock();
         RunningPlan temp = r.getParent();
-        Vector<Integer> robots = new  Vector<Integer>(temp.getAssignment().getRobotStateMapping().getRobotsInState(temp.getActiveState()).size());
-        CommonUtils.copy(temp.getAssignment().getRobotStateMapping().getRobotsInState(temp.getActiveState()),0,
-                temp.getAssignment().getRobotStateMapping().getRobotsInState(temp.getActiveState()).size()-1,
-                robots);
-        RunningPlan newr = ps.getBestSimilarAssignment(r, new Vector<Integer>(robots));
+        Vector<Integer> agents = new  Vector<Integer>(temp.getAssignment().getAgentStateMapping().getAgentsInState(temp.getActiveState()).size());
+        CommonUtils.copy(temp.getAssignment().getAgentStateMapping().getAgentsInState(temp.getActiveState()),0,
+                temp.getAssignment().getAgentStateMapping().getAgentsInState(temp.getActiveState()).size()-1,
+                agents);
+        RunningPlan newr = ps.getBestSimilarAssignment(r, new Vector<Integer>(agents));
         if (newr == null)
         {
             return PlanChange.NoChange;
@@ -327,18 +328,18 @@ public class RuleBook {
         }
         rp.setAllocationNeeded(false);
 
-        Vector<Integer> robots = new Vector<Integer>(rp.getAssignment().getRobotStateMapping().getRobotsInState(rp.getActiveState()).size());
+        Vector<Integer> agents = new Vector<Integer>(rp.getAssignment().getAgentStateMapping().getAgentsInState(rp.getActiveState()).size());
 
-        CommonUtils.copy(   rp.getAssignment().getRobotStateMapping().getRobotsInState(rp.getActiveState()),0,
-                rp.getAssignment().getRobotStateMapping().getRobotsInState(rp.getActiveState()).size()-1,
-                robots);
+        CommonUtils.copy(   rp.getAssignment().getAgentStateMapping().getAgentsInState(rp.getActiveState()),0,
+                rp.getAssignment().getAgentStateMapping().getAgentsInState(rp.getActiveState()).size()-1,
+                agents);
 
 //#ifdef RULE_debug
         if (CommonUtils.RULE_debug) System.out.println( "RB: There are " + rp.getActiveState().getPlans().size() + " Plans in State " + rp.getActiveState().getName() );
 //#endif
         ArrayList<RunningPlan> children = this.ps.getPlansForState(
                 rp, rp.getActiveState().getPlans(),
-                robots);
+                agents);
         if (children == null || children.size() < rp.getActiveState().getPlans().size())
         {
             rp.addFailure();
@@ -383,9 +384,9 @@ public class RuleBook {
             r.setOwnEntryPoint(array[0].getValue());
 
             r.setAllocationNeeded(true);
-            r.setRobotsAvail(CommonUtils.move(to.getAvailableRobotIds()));
+            r.setAgentsAvail(CommonUtils.move(to.getAvailableAgentIDs()));
             r.getAssignment().clear();
-            r.getAssignment().setAllToInitialState(CommonUtils.move(to.getAvailableRobotIds()), r.getOwnEntryPoint());
+            r.getAssignment().setAllToInitialState(CommonUtils.move(to.getAvailableAgentIDs()), r.getOwnEntryPoint());
             r.setActiveState(r.getOwnEntryPoint().getState());
             r.clearFailedChildren();
 //#ifdef RULE_debug
@@ -487,9 +488,9 @@ public class RuleBook {
         r.setAllocationNeeded(true);
         log.eventOccured("Transition(" + r.getPlan().getName() + " to State " + r.getActiveState().getName() + ")");
         if (r.getActiveState().isSuccessState())
-        return PlanChange.SuccesChange;
+            return PlanChange.SuccesChange;
 		else if (r.getActiveState().isFailureState())
-        return PlanChange.FailChange;
+            return PlanChange.FailChange;
         return PlanChange.InternalChange;
     }
 

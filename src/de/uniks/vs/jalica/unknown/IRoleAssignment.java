@@ -10,5 +10,5 @@ public interface IRoleAssignment {
 
     Role getOwnRole();
 
-    Role getRole(int robotID);
+    Role getRole(int agentID);
 }

@@ -21,7 +21,8 @@ public class Alica extends Thread {
 
     protected void init() {
         String roleSetName = "Roleset";
-        String masterPlanName =  "DummyPlan";
+//        String masterPlanName =  "DummyPlan";
+        String masterPlanName =  "TestCommunicationMaster";
         String roleSetDir = "roles/";
         boolean sim = true;
 

@@ -6,8 +6,34 @@ import java.util.Vector;
  * Created by alex on 13.07.17.
  */
 public class PartialAssignmentPool {
-    public int curIndex;
+
     public static int maxCount = 10100;
-    public Vector<PartialAssignment> daPAs;
-    public EntryPoint idleEP;
+
+    public int curentIndex;
+    public Task idleTask;
+    public EntryPoint idleEntryPoint;
+    public Vector<PartialAssignment> partialAssignments;
+
+    public PartialAssignmentPool() {
+        // IDLE-EntryPoint
+        idleEntryPoint = new EntryPoint();
+        idleEntryPoint.setName("IDLE-ep");
+        idleEntryPoint.setId(EntryPoint.IDLEID);
+        idleEntryPoint.setMinCardinality(0);
+//        idleEntryPoint.setMaxCardinality(numeric_limits<int>::max());
+        idleEntryPoint.setMaxCardinality(Integer.MAX_VALUE);
+
+        // Add IDLE-Task
+        idleTask = new Task(true);
+        idleTask.setName("IDLE-TASK");
+        idleTask.setId(Task.IDLEID);
+
+        idleEntryPoint.setTask(idleTask);
+        partialAssignments = new Vector<>(maxCount);
+
+        for (int i = 0; i < maxCount; i++) {
+            partialAssignments.add(i, new PartialAssignment(this));
+        }
+    }
+
 }

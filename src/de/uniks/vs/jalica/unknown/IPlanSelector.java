@@ -7,7 +7,7 @@ import java.util.Vector;
  * Created by alex on 21.07.17.
  */
 public interface IPlanSelector {
-    ArrayList<RunningPlan> getPlansForState(RunningPlan rp, ArrayList<AbstractPlan> plans, Vector<Integer> robots);
-    RunningPlan getBestSimilarAssignment(RunningPlan rp, Vector<Integer> robots);
+    ArrayList<RunningPlan> getPlansForState(RunningPlan rp, ArrayList<AbstractPlan> plans, Vector<Integer> agents);
+    RunningPlan getBestSimilarAssignment(RunningPlan rp, Vector<Integer> agents);
 
 }

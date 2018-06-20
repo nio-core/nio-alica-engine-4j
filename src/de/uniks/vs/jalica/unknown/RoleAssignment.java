@@ -1,6 +1,5 @@
 package de.uniks.vs.jalica.unknown;
 
-import de.uniks.vs.jalica.dummy_proxy.AlicaDummyCommunication;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.teamobserver.TeamObserver;
 
@@ -11,12 +10,12 @@ import java.util.*;
  */
 public class RoleAssignment implements IRoleAssignment {
 
-    private  HashMap<Integer, Role> robotRoleMapping;
-    private  Vector<RobotRoleUtility> sortedRobots;
-    private  RobotProperties ownRobotProperties;
+    private  HashMap<Integer, Role> agentRoleMapping;
+    private  Vector<RoleUtility> sortedAgents;
+    private AgentProperties ownAgentProperties;
     private  RoleSet roleSet;
     private  Role ownRole;
-    private  ArrayList<RobotProperties> availableRobots;
+    private  ArrayList<AgentProperties> availableAgents;
     private  AlicaEngine ae;
     private  TeamObserver to;
     private  HashMap<Long, Role> roles;
@@ -26,8 +25,8 @@ public class RoleAssignment implements IRoleAssignment {
     public RoleAssignment(AlicaEngine ae) {
         this.ae = ae;
         this.updateRoles = false;
-        this.robotRoleMapping = new HashMap<Integer, Role>();
-        this.sortedRobots = new Vector<RobotRoleUtility>();
+        this.agentRoleMapping = new HashMap<Integer, Role>();
+        this.sortedAgents = new Vector<RoleUtility>();
     }
 
     public void init() {
@@ -35,7 +34,7 @@ public class RoleAssignment implements IRoleAssignment {
         //TODO delegates missing
         //to.onTeamCHangedEvent += Update;
 
-        this.ownRobotProperties = to.getOwnRobotProperties();
+        this.ownAgentProperties = to.getOwnAgentProperties();
         roleUtilities();
     }
 
@@ -51,41 +50,48 @@ public class RoleAssignment implements IRoleAssignment {
                 e.printStackTrace();
             }
         }
-        this.availableRobots = ae.getTeamObserver().getAvailableRobotProperties();
+        this.availableAgents = ae.getTeamObserver().getAvailableAgentProperties();
 
-        System.out.println("RA: Available agents: " + this.availableRobots.size() );
+        System.out.println("RA: Available agents: " + this.availableAgents.size() );
         System.out.println("RA: agent Ids: ");
 
-        for (RobotProperties aRobot : this.availableRobots) {
-            System.out.println("           " + aRobot.getId() + " " +aRobot.getName());
+        for (AgentProperties agentProperties : this.availableAgents) {
+            System.out.println("           " + agentProperties.getID() + " " +agentProperties.getName());
         }
         System.out.println();
         double dutility = 0;
-        this.sortedRobots.clear();
+        this.sortedAgents.clear();
 
         for ( long key : this.roles.keySet()) {
 
-            for (RobotProperties robProperties : this.availableRobots) {
+            for (AgentProperties robProperties : this.availableAgents) {
                 int y = 0;
                 dutility = 0;
                 HashMap<String, Characteristic> characteristics = this.roles.get(key).getCharacteristics();
 
                 for ( String roleCharacKey : characteristics.keySet()) {
-                    // find the characteristics object of a robot
+                    // find the characteristics object of a agent
                     Characteristic rbChar = null;
                     String roleCharacName = characteristics.get(roleCharacKey).getName(); // roleCharacEntry.second.getName();
 
                     HashMap<String, Characteristic> robPropertiesCharacteristics = robProperties.getCharacteristics();
 
-                    for ( String robotCharacKey : robPropertiesCharacteristics.keySet()) {
+                    for ( String agentCharacKey : robPropertiesCharacteristics.keySet()) {
 
-                        if (robotCharacKey.equals(roleCharacName)) {
-                            rbChar = robPropertiesCharacteristics.get(robotCharacKey); // robotCharac.second;
+                        if (agentCharacKey.equals(roleCharacName)) {
+                            rbChar = robPropertiesCharacteristics.get(agentCharacKey); // agentCharac.second;
                             break;
                         }
                     }
 
                     if (rbChar != null) {
+//                        Characteristic characteristic = characteristics.get(roleCharacKey);
+//                        Capability capability = characteristic.getCapability();
+//                        Characteristic characteristic1 = characteristics.get(roleCharacKey);
+//                        CapValue characteristic1CapValue = characteristic1.getCapValue();
+//                        CapValue charCapValue = rbChar.getCapValue();
+//                        double v = capability.similarityValue(characteristic1CapValue, charCapValue);
+
                         double individualUtility = characteristics.get(roleCharacKey)/*roleCharacEntry.second*/.getCapability().similarityValue(
                                 characteristics.get(roleCharacKey).getCapValue(),  rbChar.getCapValue());
                         if (individualUtility == 0) {
@@ -96,68 +102,67 @@ public class RoleAssignment implements IRoleAssignment {
                         y++;
                     }
                 }
+
                 if (y != 0) {
                     dutility /= y;
-                    RobotRoleUtility rc = new RobotRoleUtility(dutility, robProperties, this.roles.get(key));
-                    this.sortedRobots.add(rc);
-                    Collections.sort (this.sortedRobots, RobotRoleUtility.compareTo());
-//                    sort(this.sortedRobots.begin(), this.sortedRobots.end(), RobotRoleUtility.compareTo);
+                    RoleUtility rc = new RoleUtility(dutility, robProperties, this.roles.get(key));
+                    this.sortedAgents.add(rc);
+                    Collections.sort (this.sortedAgents, RoleUtility.compareTo());
+//                    sort(this.sortedAgents.begin(), this.sortedAgents.end(), RoleUtility.compareTo);
                 }
             }
         }
 
-        if (this.sortedRobots.size() == 0) {
-            ae.abort("RA: Could not establish a mapping between robots and roles. Please check capability definitions!");
+        if (this.sortedAgents.size() == 0) {
+            ae.abort("RA: Could not establish a mapping between agents and roles. Please check capability definitions!");
         }
         RolePriority rp = new RolePriority(ae);
-        this.robotRoleMapping.clear();
+        this.agentRoleMapping.clear();
 
-        while (this.robotRoleMapping.size() < this.availableRobots.size()) {
-            mapRoleToRobot(rp);
+        while (this.agentRoleMapping.size() < this.availableAgents.size()) {
+            mapRoleToAgent(rp);
         }
         rp = null;
     }
 
-    private void mapRoleToRobot(RolePriority rp) {
+    private void mapRoleToAgent(RolePriority rp) {
 
-        this.sortedRobots.sort(new Comparator<RobotRoleUtility>() {
+        this.sortedAgents.sort(new Comparator<RoleUtility>() {
             @Override
-            public int compare(RobotRoleUtility thisOne, RobotRoleUtility otherOne) {
+            public int compare(RoleUtility thisOne, RoleUtility otherOne) {
                 if(otherOne.getRole().getId() != thisOne.getRole().getId())
                     return otherOne.getRole().getId() < thisOne.getRole().getId() ? -1 :1;
 
                 if(otherOne.getUtilityValue() != thisOne.getUtilityValue())
                     return otherOne.getUtilityValue() < thisOne.getUtilityValue() ? -1 :1;
 
-                if(otherOne.getRobot().getId() != thisOne.getRobot().getId())
-                    return otherOne.getRobot().getId() < thisOne.getRobot().getId() ? -1 :1;
+                if(otherOne.getAgentProperties().getID() != thisOne.getAgentProperties().getID())
+                    return otherOne.getAgentProperties().getID() < thisOne.getAgentProperties().getID() ? -1 :1;
 
                 return 0;
             }
         });
 
-        for (RoleUsage roleUsage : rp.getPriorityList())
-        {
+        for (RoleUsage roleUsage : rp.getPriorityList()) {
 
-            for (RobotRoleUtility robRoleUtil : this.sortedRobots)
-            {
+            for (RoleUtility agentRoleUtil : this.sortedAgents) {
 
-                if (roleUsage.getRole() == robRoleUtil.getRole())
+                if (roleUsage.getRole() == agentRoleUtil.getRole())
                 {
-                    if (this.robotRoleMapping.size() != 0
-                            && (this.robotRoleMapping.get(robRoleUtil.getRobot().getId()) != null
-                            || robRoleUtil.getUtilityValue() == 0))
+                    if (this.agentRoleMapping.size() != 0
+                            && (this.agentRoleMapping.get(agentRoleUtil.getAgentProperties().getID()) != null
+                            || agentRoleUtil.getUtilityValue() == 0))
                     {
                         continue;
                     }
-                    this.robotRoleMapping.put(robRoleUtil.getRobot().getId(), robRoleUtil.getRole());
+                    this.agentRoleMapping.put(agentRoleUtil.getAgentProperties().getID(), agentRoleUtil.getRole());
 
-                    if (this.ownRobotProperties.getId() == robRoleUtil.getRobot().getId())
+                    if (this.ownAgentProperties.getID() == agentRoleUtil.getAgentProperties().getID())
                     {
-                        this.ownRole = robRoleUtil.getRole();
+                        this.ownRole = agentRoleUtil.getRole();
                     }
 
-                    to.getRobotById(robRoleUtil.getRobot().getId()).setLastRole(robRoleUtil.getRole());
+                    to.getAgentById(agentRoleUtil.getAgentProperties().getID()).setLastRole(agentRoleUtil.getRole());
 
                     break;
                 }
@@ -195,8 +200,8 @@ public class RoleAssignment implements IRoleAssignment {
     }
     
     @Override
-    public Role getRole(int robotID) {
-        Role role = this.robotRoleMapping.get(robotID);
+    public Role getRole(int agentID) {
+        Role role = this.agentRoleMapping.get(agentID);
 
         if (role != null)
         {
@@ -204,12 +209,12 @@ public class RoleAssignment implements IRoleAssignment {
         }
 		else
         {
-            role = this.to.getRobotById(robotID).getLastRole();
+            role = this.to.getAgentById(agentID).getLastRole();
             if (role != null)
             {
                 return role;
             }
-            CommonUtils.aboutError( "RA: There is no role assigned for robot: " + robotID );
+            CommonUtils.aboutError( "RA: There is no role assigned for agent: " + agentID);
         }
         return null;
     }

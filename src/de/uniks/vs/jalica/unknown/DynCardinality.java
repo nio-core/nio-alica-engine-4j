@@ -7,6 +7,13 @@ public class DynCardinality {
     private int min;
     private int max;
 
+    public DynCardinality() { }
+
+    public DynCardinality(int min, int max) {
+        this.min = min;
+        this.max = max;
+    }
+
     public void setMin(int min) {
         this.min = min;
     }

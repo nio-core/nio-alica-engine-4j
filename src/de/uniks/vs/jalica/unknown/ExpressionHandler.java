@@ -53,8 +53,7 @@ public class ExpressionHandler {
                 if (t.getPreCondition() != null) {
 
                     if (t.getPreCondition().isEnabled()) {
-                        t.getPreCondition().setBasicCondition(
-                            this.conditionCreator.createConditions(t.getPreCondition().getId()));
+                        t.getPreCondition().setBasicCondition(this.conditionCreator.createConditions(t.getPreCondition().getId()));
                         attachConstraint(t.getPreCondition());
                     }
 					else {

@@ -5,7 +5,7 @@ package de.uniks.vs.jalica.unknown;
  */
 public abstract class BasicCondition {
 
-    abstract boolean evaluate(RunningPlan rp);
+    protected abstract boolean evaluate(RunningPlan rp);
 
     boolean isStateTimedOut( long timeOut, RunningPlan rp) {
 

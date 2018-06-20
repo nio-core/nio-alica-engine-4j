@@ -112,7 +112,7 @@ public class FileSystem {
         return string.endsWith(prefix);
     }
 
-    public static String findFile(String path, String file, String path_found) {
+    public static String findFile(String path, String file) {
 
         //cout << "ff: Path: " << path << " file: " << file << endl;
 
@@ -120,7 +120,9 @@ public class FileSystem {
             return null;
         }
         String workDir = extractWorkDir()+ PATH_SEPARATOR + PACKAGE + PATH_SEPARATOR;
-        path = workDir+ path;
+        // FIXME: replace workaround "if (..)"
+        if (!path.contains(workDir))
+            path = workDir + path;
 
 //        struct dirent **namelist;
         int i, n;
@@ -163,7 +165,7 @@ public class FileSystem {
                 }
 
                 // recursively call this method for regular directories
-                String found = findFile(curFullFile + "/", file, path_found);
+                String found = findFile(curFullFile + "/", file);
 
                 if (found != null)
                 {
@@ -179,8 +181,8 @@ public class FileSystem {
                 {
                     // file found, so return the full path
                     fileFound = true;
-                    path_found = curFullFile.getAbsolutePath();
-                    break;
+                    return curFullFile.getAbsolutePath();
+//                    break;
                 }
             }
             else
@@ -197,7 +199,7 @@ public class FileSystem {
 //        }
 //
 //        free(namelist);
-        return path_found;
+        return null;
 
 //
 //        masterPlanPath = ".";

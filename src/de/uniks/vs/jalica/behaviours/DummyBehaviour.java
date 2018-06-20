@@ -15,7 +15,7 @@ public class DummyBehaviour extends DomainBehaviour {
     }
 
     public DummyBehaviour(String name, AlicaEngine ae) {
-        super(name,ae);
+        super(name, ae);
     }
 
     public void run(String msg) {

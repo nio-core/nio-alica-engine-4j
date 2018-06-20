@@ -205,9 +205,7 @@ public class AlicaEngine {
         return planRepository;
     }
 
-    public String getRobotName() {
-        return sc.getHostname();
-    }
+    public String getAgentName() { return sc.getHostname(); }
 
     public RoleSet getRoleSet() {
         return roleSet;

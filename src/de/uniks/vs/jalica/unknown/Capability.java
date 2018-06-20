@@ -12,7 +12,7 @@ public class Capability extends AlicaElement {
         return capValues;
     }
 
-    public double similarityValue(CapValue roleVal, CapValue robotVal) {
+    public double similarityValue(CapValue roleVal, CapValue agentVal) {
         int nCount = capValues.size();
 
         int rlIndex = -1;
@@ -26,7 +26,7 @@ public class Capability extends AlicaElement {
             {
                 rlIndex = index;
             }
-            if (cap == robotVal)
+            if (cap == agentVal)
             {
                 rbIndex = index;
             }
@@ -39,7 +39,7 @@ public class Capability extends AlicaElement {
         }
         if (rbIndex == -1)
         {
-            CommonUtils.aboutError("Capability::similarityValue: Robot not found!");
+            CommonUtils.aboutError("Capability::similarityValue: Agent not found!");
 //            throw Exception();
         }
 

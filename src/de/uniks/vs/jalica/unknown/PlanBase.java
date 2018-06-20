@@ -5,7 +5,6 @@ import com.sun.corba.se.impl.orbutil.concurrent.Mutex;
 
 import de.uniks.vs.jalica.common.Logger;
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.teamobserver.ITeamObserver;
 
 import java.util.ArrayList;
@@ -100,7 +99,7 @@ public class PlanBase implements Runnable {
             double stfreq = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.StatusMessages.Frequency"));
             this.sendStatusInterval = new AlicaTime(Math.max(1000000.0, Math.round(1.0 / stfreq * 1000000000)));
             this.statusMessage = new AlicaEngineInfo();
-            this.statusMessage.senderID = this.teamObserver.getOwnId();
+            this.statusMessage.senderID = this.teamObserver.getOwnID();
             this.statusMessage.masterPlan = masterPlan.getName();
         }
         this.stepModeCV = null;
@@ -203,7 +202,7 @@ public class PlanBase implements Runnable {
             if (this.sendStatusMessages && (this.lastSentStatusTime.time + this.sendStatusInterval.time) < alicaClock.now().time) {
 
                 if (this.deepestNode != null) {
-                    this.statusMessage.robotIDsWithMe.clear();
+                    this.statusMessage.agentIDsWithMe.clear();
                     this.statusMessage.currentPlan = this.deepestNode.getPlan().getName();
 
                     if (this.deepestNode.getOwnEntryPoint() != null) {
@@ -215,12 +214,12 @@ public class PlanBase implements Runnable {
 
                     if (this.deepestNode.getActiveState() != null) {
                         this.statusMessage.currentState = this.deepestNode.getActiveState().getName();
-                        CommonUtils.copy(this.deepestNode.getAssignment().getRobotStateMapping().getRobotsInState(
+                        CommonUtils.copy(this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(
                             this.deepestNode.getActiveState()), 0,
-                            this.deepestNode.getAssignment().getRobotStateMapping().getRobotsInState(
+                            this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(
                                 this.deepestNode.getActiveState()
-//                            ).size()-1, back_inserter(this.statusMessage.robotIDsWithMe)
-                            ).size()-1, (this.statusMessage.robotIDsWithMe)
+//                            ).size()-1, back_inserter(this.statusMessage.agentIDsWithMe)
+                            ).size()-1, (this.statusMessage.agentIDsWithMe)
                         );
 
                     }

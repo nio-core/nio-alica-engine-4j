@@ -9,7 +9,7 @@ public class AlicaEngineInfo {
     public int senderID;
     public String masterPlan;
     public String currentPlan;
-    public Vector<Integer> robotIDsWithMe = new Vector<>();
+    public Vector<Integer> agentIDsWithMe = new Vector<>();
     public String currentTask;
     public String currentState;
     public String currentRole;

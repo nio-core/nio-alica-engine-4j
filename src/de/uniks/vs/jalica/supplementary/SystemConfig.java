@@ -56,7 +56,7 @@ public class SystemConfig {
     }
 
     private ConfigPair loadConfigFromFile(String name) {
-        String path = FileSystem.findFile(configPath, name, null);
+        String path = FileSystem.findFile(configPath, name);
         return ConfigParser.getInstance().parse(path);
     }
 

@@ -17,9 +17,7 @@ public class BehaviourConfiguration extends AbstractPlan {
     private boolean eventDriven;
     private LinkedHashMap<String,String> parameters;
 
-    public BehaviourConfiguration(AlicaEngine ae) {
-        super(ae);
-    }
+    public BehaviourConfiguration(AlicaEngine ae) { super(ae); }
 
     public int getDeferring() {
         return deferring;

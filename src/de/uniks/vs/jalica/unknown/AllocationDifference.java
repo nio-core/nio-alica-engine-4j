@@ -7,18 +7,18 @@ import java.util.Vector;
  */
 public class AllocationDifference {
     private Reason reason;
-    private Vector<EntryPointRobotPair> subtractions = new Vector<>();
-    private Vector<EntryPointRobotPair> additions = new Vector<>();
+    private Vector<EntryPointAgentPair> subtractions = new Vector<>();
+    private Vector<EntryPointAgentPair> additions = new Vector<>();
 
     public AllocationDifference() {
         this.reason = Reason.empty;
     }
 
-    public Vector<EntryPointRobotPair> getSubtractions() {
+    public Vector<EntryPointAgentPair> getSubtractions() {
         return subtractions;
     }
 
-    public Vector<EntryPointRobotPair> getAdditions() {
+    public Vector<EntryPointAgentPair> getAdditions() {
         return additions;
     }
 
@@ -30,9 +30,9 @@ public class AllocationDifference {
 
     public void applyDifference(AllocationDifference other) {
 
-        for (EntryPointRobotPair pair: other.additions) {
+        for (EntryPointAgentPair pair: other.additions) {
 
-            for (EntryPointRobotPair otherPair: this.subtractions) {
+            for (EntryPointAgentPair otherPair: this.subtractions) {
 
                 if (pair.equals(otherPair)) {
                     this.subtractions.remove(otherPair);
@@ -43,9 +43,9 @@ public class AllocationDifference {
             }
         }
 
-        for (EntryPointRobotPair pair: other.subtractions) {
+        for (EntryPointAgentPair pair: other.subtractions) {
 
-            for (EntryPointRobotPair otherPair: this.additions) {
+            for (EntryPointAgentPair otherPair: this.additions) {
 
                 if (pair.equals(otherPair)) {
                     this.additions.remove(otherPair);
@@ -71,18 +71,18 @@ public class AllocationDifference {
 
     @Override
     public String toString() {
-        String ss = "Additions: ";
+        String string = "Additions: ";
 
         for (int i = 0; i < this.additions.size(); i++) {
-            ss += "+ " + this.additions.get(i).getRobot() + " (" + this.additions.get(i).getEntryPoint().getId() + ")";
+            string += "+ " + this.additions.get(i).getAgentID() + " (" + this.additions.get(i).getEntryPoint().getId() + ")";
         }
-        ss += "\n" + "Substractions: ";
+        string += "\n" + "Substractions: ";
 
         for (int i = 0; i < this.subtractions.size(); i++) {
-            ss += "- " + this.subtractions.get(i).getRobot() + " ("
+            string += "- " + this.subtractions.get(i).getAgentID() + " ("
                 + this.subtractions.get(i).getEntryPoint().getId() + ")";
         }
-        ss += "\n" + "Reason [0=message, 1=utility, 2=empty]:" + this.reason.ordinal();
-        return ss;
+        string += "\n" + "Reason [0=message, 1=utility, 2=empty]:" + this.reason.ordinal();
+        return string;
     }
 }
