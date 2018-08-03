@@ -1,0 +1,40 @@
+package de.uniks.vs.jalica.unknown;
+
+import java.util.Vector;
+
+/**
+ * Created by alex on 31.07.17.
+ */
+public class EntryPointAgentPair {
+    private final EntryPoint entryPoint;
+    private final long agentID;
+
+    public EntryPointAgentPair(EntryPoint ep, long r) {
+        this.entryPoint = ep;
+        this.agentID = r;
+    }
+
+    public  boolean equals( EntryPointAgentPair other) {
+        if (other == null)
+        {
+            return false;
+        }
+        if (other.entryPoint.getID() != this.entryPoint.getID())
+            return false;
+        return (other.getAgentID() == this.agentID);
+    }
+
+    public long getAgentID() {return agentID;}
+
+    public boolean containedIn(Vector<EntryPointAgentPair> entryPointAgents) {
+
+        for (EntryPointAgentPair entryPointAgentPair: entryPointAgents) {
+
+            if (this.equals(entryPointAgentPair))
+                return true;
+        }
+        return false;
+    }
+
+    public EntryPoint getEntryPoint() {return entryPoint;}
+}
