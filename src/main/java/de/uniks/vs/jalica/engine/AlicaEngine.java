@@ -158,8 +158,9 @@ public class AlicaEngine {
 
     public void stepNotify() {
         this.setStepCalled(true);
-//        this.getPlanBase().getStepModeCV().notifyAllThreads();
-        this.getPlanBase().getStepModeCV().notifyOneThread();
+        System.out.println("AE: stepNotify");
+//        this.getPlanBase().getStepModeCV().notifyOneThread();
+        this.getPlanBase().getStepModeCV().notifyAllThreads();
     }
 
 

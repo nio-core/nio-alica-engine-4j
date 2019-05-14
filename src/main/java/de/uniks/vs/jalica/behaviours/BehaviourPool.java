@@ -103,7 +103,8 @@ public class BehaviourPool implements IBehaviourPool {
                 basicBeh.setParameters(configuration.getParameters());
                 basicBeh.setVariables(configuration.getVariables());
                 basicBeh.setDelayedStart(configuration.getDeferring());
-                basicBeh.setInterval(1000 / configuration.getFrequency());
+                //TODO: HACK
+                basicBeh.setInterval(1000 / 1000 + configuration.getFrequency());
 
                 this.availableBehaviours.put(configuration, basicBeh);
             }

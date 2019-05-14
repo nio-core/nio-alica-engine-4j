@@ -583,13 +583,13 @@ public class PlanParser {
     this.parser.fetchId(jsonObject.get("id").toString(), id); */
 
     public Long extractID(String idString) {
-        System.err.println("PP: extract ID " + idString);
+        System.out.println("PP: extract ID " + idString);
         int hashPos = idString.indexOf("#");
         return Long.valueOf(hashPos > 0 ? idString.substring(hashPos+1) : idString);
     }
 
     public long fetchId(String idString) {
-        System.err.println("PP: fetch ID " + idString);
+        System.out.println("PP: fetch ID " + idString);
         int hashPos = idString.indexOf("#");
         long id = -1;
 		String temp = null;

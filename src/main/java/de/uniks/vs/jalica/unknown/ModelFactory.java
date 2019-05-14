@@ -1590,8 +1590,8 @@ public class ModelFactory {
 //            attr = frequency.getTextContent();
 //            b.setFrequency(stoi(attr));
 //        }
-//        setAlicaElementAttributes(b, element);
-//        this.elements.put(b.getID(), b);
+        setAlicaElementAttributes(behaviourConfiguration, jsonObject);
+        this.elements.put(behaviourConfiguration.getID(), behaviourConfiguration);
 //        Node elementFirstChild = element.getFirstChild();
 //
 //        if (elementFirstChild == null)

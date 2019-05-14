@@ -176,6 +176,7 @@ public class PlanBase implements Runnable {
                         e.printStackTrace();
                     }
                 }
+                System.out.println("PB: step engine awakened");
                 this.ae.setStepCalled(false);
                 if (!running) {
                     return;

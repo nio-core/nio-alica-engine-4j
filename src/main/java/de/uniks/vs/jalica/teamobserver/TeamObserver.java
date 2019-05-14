@@ -37,7 +37,8 @@ public class TeamObserver implements ITeamObserver {
     public void init() {
 //        SystemConfig systemConfig = SystemConfig.getInstance();
         this.log = ae.getLog();
-
+        this.myId = 0;
+        this.me = null;
         String ownPlayerName = ae.getAgentName();
         System.out.println( "TO: Initing Robot " + ownPlayerName );
         this.teamTimeOut = Long.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.TeamTimeOut")) * 1000000;
@@ -61,12 +62,12 @@ public class TeamObserver implements ITeamObserver {
 
                     if (red.getProperties().getID() == rp.getID()) {
                         String ss;
-                        ss = "TO: Found twice Robot ID " + rp.getID() + "in globals team section" + "\n";
+                        ss = "TO: Found twice Robot ID " + rp.getID() + " in globals team section" + "\n";
                         ae.abort(ss);
                     }
                     if (rp.getID() == myId) {
                         String ss2;
-                        ss2 = "TO: Found myself twice Robot ID " + rp.getID() + "in globals team section" + "\n";
+                        ss2 = "TO: Found myself twice Robot ID " + rp.getID() + " in globals team section" + "\n";
                         ae.abort(ss2);
                     }
                 }
