@@ -69,9 +69,20 @@ public class RoleAssignment implements IRoleAssignment {
             for (AgentProperties robProperties : this.availableAgents) {
                 int y = 0;
                 dutility = 0;
+
+
+                // TODO: MOTIVATION HACK
+                if (this.roles.get(key).getName().endsWith(robProperties.getDefaultRole())) {
+                    dutility = 1.0;
+                    y = 1;
+                }
+
+
+
+
                 HashMap<String, Characteristic> characteristics = this.roles.get(key).getCharacteristics();
 
-                System.out.println("RA: " + this.roles.get(key).getName());
+                if (CommonUtils.RA_DEBUG_debug) System.out.println("RA: " + this.roles.get(key).getName());
 
                 for ( String roleCharacKey : characteristics.keySet()) {
                     // find the characteristics object of a agent
@@ -94,7 +105,7 @@ public class RoleAssignment implements IRoleAssignment {
                         CapValue characteristic1CapValue    = characteristic.getCapValue();
                         CapValue charCapValue               = rbChar.getCapValue();
                         double v                            = capability.similarityValue(characteristic1CapValue, charCapValue);
-                        System.out.println("RA: " + roleCharacName + "   " + charCapValue.getName() + "  " + characteristic1CapValue.getName());
+                        if (CommonUtils.RA_DEBUG_debug) System.out.println("RA: " + roleCharacName + "   " + charCapValue.getName() + "  " + characteristic1CapValue.getName());
 
                         double individualUtility = characteristics.get(roleCharacKey)/*roleCharacEntry.second*/.getCapability().similarityValue(
                                 characteristics.get(roleCharacKey).getCapValue(),  rbChar.getCapValue());
@@ -107,7 +118,7 @@ public class RoleAssignment implements IRoleAssignment {
                     }
                 }
 
-                System.out.println("RA: " + robProperties.getCharacteristics().size() + " count " + y);
+                if (CommonUtils.RA_DEBUG_debug)  System.out.println("RA: " + robProperties.getCharacteristics().size() + " count " + y);
 
                 if (y != 0) {
                     dutility /= y;
@@ -153,7 +164,7 @@ public class RoleAssignment implements IRoleAssignment {
 
             for (RoleUtility agentRoleUtil : this.sortedAgents) {
 
-                System.out.println("RA: "+roleUsage.getRole().getName() +"  "+ agentRoleUtil.getRole().getName());
+                if (CommonUtils.RA_DEBUG_debug) System.out.println("RA: "+roleUsage.getRole().getName() +"  "+ agentRoleUtil.getRole().getName());
 
                 if (roleUsage.getRole() == agentRoleUtil.getRole()) {
 

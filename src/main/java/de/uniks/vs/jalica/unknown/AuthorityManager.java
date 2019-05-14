@@ -57,8 +57,8 @@ public class AuthorityManager {
                 i--;
             }
         }
-        for (RunningPlan c : rp.getChildren())
-        {
+
+        for (RunningPlan c : rp.getChildren()) {
             processPlan(c);
         }
 

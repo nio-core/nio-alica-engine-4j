@@ -147,7 +147,6 @@ public class BehaviourPool implements IBehaviourPool {
 
     @Override
     public HashMap<BehaviourConfiguration, BasicBehaviour> getAvailableBehaviours() {
-        CommonUtils.aboutNoImpl();
-        return null;
+        return availableBehaviours;
     }
 }

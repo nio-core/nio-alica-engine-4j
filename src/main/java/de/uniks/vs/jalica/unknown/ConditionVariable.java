@@ -14,15 +14,14 @@ public class ConditionVariable {
 
     public void notifyAllThreads() {
         synchronized (thread) {
-            CommonUtils.aboutCallNotification();
+            if (CommonUtils.CV_DEBUG_debug) CommonUtils.aboutCallNotification("CV: notify all threads");
             thread.notifyAll();
         }
     }
 
     public void notifyOneThread() {
         synchronized (thread) {
-            CommonUtils.aboutCallNotification();
-            System.out.println("CV: notify");
+            if (CommonUtils.CV_DEBUG_debug) CommonUtils.aboutCallNotification("CV: notify one thread");
             thread.notify();
         }
     }

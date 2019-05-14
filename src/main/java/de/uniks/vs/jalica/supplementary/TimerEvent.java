@@ -83,8 +83,8 @@ public class TimerEvent extends Trigger implements Runnable {
                         while (true) {
 
                             if(!started || (running && registeredCVs.size() > 0)) {
-                                synchronized (runThread) {
-                                    runThread.notify();
+                                synchronized (this) {
+                                    this.notify();
                                 }
                                 return;
                             }
@@ -92,11 +92,11 @@ public class TimerEvent extends Trigger implements Runnable {
                     }
                 };
                 cv.start();
-                synchronized (runThread) {
-                    runThread.wait();
+                synchronized (this) {
+                    this.wait();
                 }
                 if (CommonUtils.TE_DEBUG_debug) System.out.println("TimerEvent:  awakened " + parent);
-                CommonUtils.aboutCallNotification();
+                if (CommonUtils.TE_DEBUG_debug) CommonUtils.aboutCallNotification();
 
 //            this.cv.wait(lck, [&] {
 //                    return !this.started || (this.running && this.registeredCVs.size() > 0);
@@ -111,16 +111,18 @@ public class TimerEvent extends Trigger implements Runnable {
                     return;
 
                 long start = getCurrentTimeInNanoSec();
+                System.out.println("TE: notify all !!!!!");
                 this.notifyAll(notifyAll);
+//                this.notify();
 //                this.notifyAll();
                 long dura = (getCurrentTimeInNanoSec()) - start;
-                if (CommonUtils.TE_DEBUG_debug) System.out.println("T1: Duration is " + dura + " nanoseconds");
+                if (CommonUtils.TE_DEBUG_debug) System.out.println("TE 1: Duration is " + dura + " nanoseconds");
 
                 if (msInterval > dura) {
-                    if (CommonUtils.TE_DEBUG_debug)  System.out.println("T2: Duration is " + (msInterval - start) + " nanoseconds");
+                    if (CommonUtils.TE_DEBUG_debug)  System.out.println("TE 2: Duration is " + (msInterval - start) + " nanoseconds");
                     Thread.sleep(Math.abs(msInterval - dura));
                 }
-                if (CommonUtils.TE_DEBUG_debug) System.out.println("T3: Duration is " + ((getCurrentTimeInNanoSec()) - start) + " nanoseconds");
+                if (CommonUtils.TE_DEBUG_debug) System.out.println("TE 3: Duration is " + ((getCurrentTimeInNanoSec()) - start) + " nanoseconds");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

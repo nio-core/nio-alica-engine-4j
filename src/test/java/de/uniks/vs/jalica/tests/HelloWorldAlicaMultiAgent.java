@@ -33,7 +33,7 @@ public class HelloWorldAlicaMultiAgent {
 //        sc->setRootPath(path);
 //        sc->setConfigPath(path + "/etc");
 
-        FileSystem.PACKAGE = "src/test/java/de/uniks/vs/jalica";
+        FileSystem.PACKAGE_SRC = "src/test/java/de/uniks/vs/jalica";
         // setup the engine
         bc = new BehaviourCreator();
         cc = new ConditionCreator();

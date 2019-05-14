@@ -55,7 +55,7 @@ public class Authority {
     @Test
      public void testMulitAgents() throws InterruptedException {
 
-        FileSystem.PACKAGE = "src/test/java/de/uniks/vs/jalica";
+        FileSystem.PACKAGE_SRC = "src/test/java/de/uniks/vs/jalica";
 
         SystemConfig sc = new SystemConfig("nase");
         AlicaEngine alicaEngine1 = new AlicaEngine();

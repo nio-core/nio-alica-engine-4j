@@ -21,7 +21,7 @@ public class AlicaEngineInfoPublisher extends ZMQPublisher {
         jsonObject.put("masterPlan", statInfo.masterPlan);
         jsonObject.put("senderID", statInfo.senderID);
         jsonObject.put("agentIDsWithMe", statInfo.agentIDsWithMe.toArray());
-        System.out.println("AEI-Pub: publish " + jsonObject.toJSONString());
+        if (CommonUtils.COMM_debug) System.out.println("AEI-Pub: publish " + jsonObject.toJSONString());
         publisher.send(topic + " " + jsonObject.toJSONString(), 0);
     }
 }

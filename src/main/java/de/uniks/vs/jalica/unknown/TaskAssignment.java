@@ -91,21 +91,21 @@ public class TaskAssignment implements ITaskAssignment {
         return haveToRevalute;
     }
 
-    public Assignment getNextBestAssignment(IAssignment oldAss) {
+    public Assignment getNextBestAssignment(IAssignment oldPartialAssignment) {
 //#ifdef TA_DEBUG
         if (CommonUtils.TA_DEBUG_debug) System.out.println("TA: Calculating next best PartialAssignment...");
 //#endif
-        PartialAssignment calculatedPa = this.calcNextBestPartialAssignment(oldAss);
+        PartialAssignment calculatedPartialAssignment = this.calcNextBestPartialAssignment(oldPartialAssignment);
 
-        if (calculatedPa == null) {
+        if (calculatedPartialAssignment == null) {
             return null;
         }
 
 //#ifdef TA_DEBUG
-        if (CommonUtils.TA_DEBUG_debug) System.out.println("TA: ... calculated this PartialAssignment:\n" + calculatedPa.toString());
+        if (CommonUtils.TA_DEBUG_debug) System.out.println("TA: ... calculated this PartialAssignment:\n" + calculatedPartialAssignment.toString());
 //#endif
 
-        Assignment newAss = new Assignment(calculatedPa);
+        Assignment newAss = new Assignment(calculatedPartialAssignment);
 //#ifdef TA_DEBUG
         if (CommonUtils.TA_DEBUG_debug) System.out.println("TA: Return this Assignment to PS:" + newAss.toString());
 //#endif
@@ -122,9 +122,11 @@ public class TaskAssignment implements ITaskAssignment {
 //            this->fringe.erase(this->fringe.begin());
             this.fringe.remove(0);
 //#ifdef TA_DEBUG
-            if (CommonUtils.TA_DEBUG_debug) System.out.println("<---");
-            if (CommonUtils.TA_DEBUG_debug) System.out.println("TA: NEXT PA from fringe:" );
-            if (CommonUtils.TA_DEBUG_debug) System.out.println(currentPartialAssignment.toString() + "--->" );
+            if (CommonUtils.TA_DEBUG_debug) {
+                System.out.println("<---");
+                System.out.println("TA: NEXT PA from fringe:");
+                System.out.println(currentPartialAssignment.toString() + "--->");
+            }
 //#endif
             // Check if it is a goal
             if (currentPartialAssignment.isGoal()) {
@@ -143,39 +145,41 @@ public class TaskAssignment implements ITaskAssignment {
             if (CommonUtils.TA_DEBUG_debug) System.out.println( "--->");
 //#endif
             // Expand for the next search (maybe necessary later)
-            ArrayList<PartialAssignment> newPas = currentPartialAssignment.expand();
+            ArrayList<PartialAssignment> newPartialAssignment = currentPartialAssignment.expand();
 
 //#ifdef EXPANSIONEVAL
             expansionCount++;
 //#endif
             // Every just expanded partial assignment must get an updated utility
 
-            for (int i = 0; i < newPas.size(); i++)
+            for (int i = 0; i < newPartialAssignment.size(); i++)
             {
                 // Update the utility values
-//                auto iter = newPas->begin();
-//                PartialAssignment iter = newPas.get(0);
-//                CommonUtils.advance(iter, i);
-                PartialAssignment iter = newPas.get(i);
-                iter.getUtilFunc().updateAssignment(iter, oldAss);
+//                auto partialAssignment = newPartialAssignment->begin();
+//                PartialAssignment partialAssignment = newPartialAssignment.get(0);
+//                CommonUtils.advance(partialAssignment, i);
+                PartialAssignment partialAssignment = newPartialAssignment.get(i);
+                partialAssignment.getUtilFunc().updateAssignment(partialAssignment, oldAss);
 
-                if (iter.getMax() != -1) // add this partial assignment only, if all assigned robots does not have a priority of -1 for any task
+                if (partialAssignment.getMax() != -1) // add this partial assignment only, if all assigned robots does not have a priority of -1 for any task
                 {
                     // Add to search fringe
-                    this.fringe.add(iter);
+                    this.fringe.add(partialAssignment);
                 }
             }
             CommonUtils.stable_sort(fringe, 0, fringe.size()-1);
 
 //#ifdef TA_DEBUG
-//            cout << "<---" << endl;
-//            cout << "TA: AFTER fringe exp:" << endl;
-//            cout << "TA: fringe size " << this->fringe.size() << endl;
-//            for(int i = 0; i < this->fringe.size(); i++)
-//            {
-//                cout << this->fringe[i]->toString();
-//            }
-//            cout << "--->" << endl;
+            if (CommonUtils.TA_DEBUG_debug) {
+                System.out.println("<---");
+                System.out.println("TA: AFTER fringe exp:");
+                System.out.println("TA: fringe size " + this.fringe.size());
+
+                for(int i = 0; i < this.fringe.size(); i++) {
+                    System.out.print("TA:      " + this.fringe.get(i).toString());
+                }
+                System.out.println("--->");
+            }
 //#endif
         }
         return goal;

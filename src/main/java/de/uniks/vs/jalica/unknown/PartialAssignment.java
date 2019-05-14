@@ -124,17 +124,18 @@ public class PartialAssignment extends IAssignment  implements Comparable<Partia
                 }
 
 //#ifdef SUCDEBUG
-                if (CommonUtils.SUCDEBUG_debug)  System.out.println("PA: SuccessCollection" );
-                if (CommonUtils.SUCDEBUG_debug)System.out.println( "PA: EntryPoint: " + partialAssignment.epAgentsMapping.getEntryPoints()[i].name );
-                if (CommonUtils.SUCDEBUG_debug)System.out.println( "PA: DynMax: " + partialAssignment.dynCardinalities[i].getMax() );
-                if (CommonUtils.SUCDEBUG_debug)System.out.println( "PA: DynMin: " + partialAssignment.dynCardinalities[i].getMin() );
-                if (CommonUtils.SUCDEBUG_debug)System.out.print("PA: SucCol: ");
+                if (CommonUtils.SUCDEBUG_debug) {
+                    System.out.println("PA: SuccessCollection");
+                    System.out.println("PA: EntryPoint: " + partialAssignment.epAgentsMapping.getEntryPoints()[i].name);
+                    System.out.println("PA: DynMax: " + partialAssignment.dynCardinalities[i].getMax());
+                    System.out.println("PA: DynMin: " + partialAssignment.dynCardinalities[i].getMin());
+                    System.out.print("PA: SucCol: ");
 
-                for (long k : (suc)) {
-                    if (CommonUtils.SUCDEBUG_debug)System.out.print( k + ", ");
+                    for (long k : (suc)) {
+                        System.out.print(k + ", ");
+                    }
+                    System.out.println("-----------");
                 }
-
-                if (CommonUtils.SUCDEBUG_debug)System.out.println( "-----------" );
 //#endif
             }
         }
@@ -166,12 +167,12 @@ public class PartialAssignment extends IAssignment  implements Comparable<Partia
             return false;
         }
         // Every EntryPoint should be satisfied according to his minCar
-        // TODO: ++i == i++ ????? Java Syntax changed?
-//        for (int i = 0; i < this.epAgentsMapping.getSize(); ++i) {
         for (int i = 0; i < this.epAgentsMapping.getSize(); i++) {
 
+            if (CommonUtils.PA_DEBUG_debug) System.out.println("PA:  Nr "+ i +" - " + this.dynCardinalities[i].getMin());
+
             if (this.dynCardinalities[i].getMin() != 0) {
-                System.out.println("PA:  PartialAssignment is not a complete Assignment" + this.dynCardinalities[i].getMin());
+                System.out.println("PA:  PartialAssignment is not a complete Assignment " + this.dynCardinalities[i].getMin());
                 return false;
             }
         }

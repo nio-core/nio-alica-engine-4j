@@ -10,12 +10,11 @@ import java.util.LinkedHashMap;
  */
 public class Plan extends AbstractPlan {
 
-    private Plan name;
-    private PostCondition postCondition;
-    private LinkedHashMap<Long, EntryPoint> entryPoints = new LinkedHashMap<>();
     private int minCardinality;
     private int maxCardinality;
     private String destinationPath;
+    private PostCondition postCondition;
+    private LinkedHashMap<Long, EntryPoint> entryPoints = new LinkedHashMap<>();
     private ArrayList<State> states = new ArrayList<>();
     private ArrayList<FailureState> failureStates = new ArrayList<>();
     private ArrayList<SuccessState> successStates = new ArrayList<>();

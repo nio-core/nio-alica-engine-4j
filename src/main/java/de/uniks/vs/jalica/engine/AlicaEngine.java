@@ -158,7 +158,8 @@ public class AlicaEngine {
 
     public void stepNotify() {
         this.setStepCalled(true);
-        this.getPlanBase().getStepModeCV().notifyAllThreads();
+//        this.getPlanBase().getStepModeCV().notifyAllThreads();
+        this.getPlanBase().getStepModeCV().notifyOneThread();
     }
 
 
@@ -176,7 +177,7 @@ public class AlicaEngine {
      */
     public void iterationComplete() {
         //TODO: implement the trigger function for iteration complete
-        CommonUtils.aboutNoImpl();
+        if (CommonUtils.AE_DEBUG_debug)  CommonUtils.aboutCallNotification("implement the trigger function for iteration complete");
     }
 
     public Logger getLog() {

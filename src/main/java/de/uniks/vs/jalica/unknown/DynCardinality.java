@@ -7,7 +7,10 @@ public class DynCardinality {
     private int min;
     private int max;
 
-    public DynCardinality() { }
+    public DynCardinality() {
+        min = -1;
+        max = -1;
+    }
 
     public DynCardinality(int min, int max) {
         this.min = min;
@@ -15,6 +18,7 @@ public class DynCardinality {
     }
 
     public void setMin(int min) {
+        if (CommonUtils.DC_debug) CommonUtils.aboutCalledFrom("Min Card: " + this.min + " -> " + min);
         this.min = min;
     }
 

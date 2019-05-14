@@ -1,11 +1,15 @@
 package de.uniks.vs.jalica.parser;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.parser.handler.*;
+import de.uniks.vs.jalica.parser.handler.json.*;
+import de.uniks.vs.jalica.parser.handler.xml.*;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.supplementary.FileSystem;
 import de.uniks.vs.jalica.unknown.*;
 import de.uniks.vs.jalica.teamobserver.PlanRepository;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
@@ -14,6 +18,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -30,15 +35,19 @@ public class PlanParser {
     Plan masterPlan;
     String planDir;
     String roleDir;
+    String taskDir;
     String basePlanPath;
     String baseRolePath;
+    String baseTaskPath;
     String currentDirectory;
     String domainConfigFolder;
+    String domainSourceFolder;
     String currentFile;
 
     ArrayList<String> filesToParse = new ArrayList<>();
     ArrayList<String> filesParsed = new ArrayList<>();
     private ArrayList<XMLHandler> xmlTagHandlers;
+    private ArrayList<JSONHandler> jsonEntryHandlers;
 
 
     public PlanParser(AlicaEngine ae, PlanRepository planRepository) {
@@ -46,14 +55,17 @@ public class PlanParser {
         this.rep = planRepository;
 
         initTagHandler();
+        initJSONEntryHandler();
 
         this.masterPlan = null;
         this.mf = new ModelFactory(ae, this, rep);
         this.sc = ae.getSystemConfig();
         this.domainConfigFolder = this.sc.getRootPath() + this.sc.getConfigPath();
+        this.domainSourceFolder = this.sc.getRootPath();
 
         this.planDir = (String) this.sc.get("Alica").get("Alica.PlanDir");
         this.roleDir = (String) this.sc.get("Alica").get("Alica.RoleDir");
+        this.taskDir = (String) this.sc.get("Alica").get("Alica.TaskDir");
 
 
         if (domainConfigFolder.lastIndexOf(FileSystem.PATH_SEPARATOR) != domainConfigFolder.length() - 1)
@@ -68,9 +80,13 @@ public class PlanParser {
         {
             roleDir = roleDir + FileSystem.PATH_SEPARATOR;
         }
+        if (taskDir.lastIndexOf(FileSystem.PATH_SEPARATOR) != taskDir.length() - 1)
+        {
+            taskDir = taskDir + FileSystem.PATH_SEPARATOR;
+        }
         if (!(FileSystem.isPathRooted(this.planDir)))
         {
-            basePlanPath = domainConfigFolder + planDir;
+            basePlanPath = domainSourceFolder + planDir;
         }
 		else
         {
@@ -78,15 +94,24 @@ public class PlanParser {
         }
         if (!(FileSystem.isPathRooted(this.roleDir)))
         {
-            baseRolePath = domainConfigFolder + roleDir;
+            baseRolePath = domainSourceFolder + roleDir;
         }
 		else
         {
             baseRolePath = roleDir;
         }
+        if (!(FileSystem.isPathRooted(this.taskDir)))
+        {
+            baseTaskPath = domainSourceFolder + taskDir;
+        }
+		else
+        {
+            baseTaskPath = taskDir;
+        }
 //#ifdef PP_DEBUG
         if (CommonUtils.PP_DEBUG_debug) System.out.println( "PP: basePlanPath: " + basePlanPath );
         if (CommonUtils.PP_DEBUG_debug) System.out.println(  "PP: baseRolePath: " + baseRolePath );
+        if (CommonUtils.PP_DEBUG_debug) System.out.println(  "PP: baseTaskPath: " + baseTaskPath );
 //#endif
         if (!(FileSystem.pathExists(basePlanPath)))
         {
@@ -96,7 +121,11 @@ public class PlanParser {
         {
             ae.abort("PP: BaseRolePath does not exists " + baseRolePath);
         }
-        
+        if (!(FileSystem.pathExists(baseTaskPath)))
+        {
+            ae.abort("PP: BaseRolePath does not exists " + baseTaskPath);
+        }
+
     }
 
     private void initTagHandler() {
@@ -113,22 +142,31 @@ public class PlanParser {
         xmlTagHandlers.add(new ErrorHandler());
     }
 
+    private void initJSONEntryHandler() {
+        jsonEntryHandlers = new ArrayList<>();
+
+        jsonEntryHandlers.add(new JSONAttributeHandler());
+        jsonEntryHandlers.add(new JSONEntryPointHandler());
+        jsonEntryHandlers.add(new JSONStatesHandler());
+        jsonEntryHandlers.add(new JSONTransitionsHandler());
+        jsonEntryHandlers.add(new JSONConditionsHandler());
+        jsonEntryHandlers.add(new JSONVarsHandler());
+        jsonEntryHandlers.add(new JSONSynchonisationsHandler());
+        jsonEntryHandlers.add(new JSONIgnoreHandler());
+//        jsonEntryHandlers.add(new JSONErrorHandler());
+    }
+
     public Plan parsePlanTree(String masterplan) {
 
         String masterPlanPath  = FileSystem.findFile(this.basePlanPath, masterplan + ".pml");
         boolean found = masterplan != null;
-//#ifdef PP_DEBUG
         if (CommonUtils.PP_DEBUG_debug) System.out.println( "PP: masterPlanPath: " + masterPlanPath );
-//#endif
-        if (!found)
-        {
+        if (!found) {
             ae.abort("PP: Cannot find MasterPlan '" + masterplan + "'");
         }
         this.currentFile = masterPlanPath;
         this.currentDirectory = FileSystem.getParent(masterPlanPath);
-//#ifdef PP_DEBUG
         if (CommonUtils.PP_DEBUG_debug) System.out.println( "PP: CurFile: " + this.currentFile + " CurDir: " + this.currentDirectory );
-//#endif
 
         this.masterPlan = parsePlanFile(masterPlanPath);
         this.filesParsed.add(masterPlanPath);
@@ -140,39 +178,50 @@ public class PlanParser {
 
     public RoleSet parseRoleSet(String roleSetName, String roleSetDir) {
 
-        if (roleSetName.isEmpty())
-        {
+        if (roleSetName.isEmpty()) {
             roleSetName = findDefaultRoleSet(roleSetDir);
         }
-        else
-        {
+        else {
+
             if (roleSetDir.lastIndexOf(FileSystem.PATH_SEPARATOR) != roleSetDir.length() - 1
-                    && roleSetDir.length() > 0)
-            {
+                    && roleSetDir.length() > 0) {
                 roleSetDir = roleSetDir + FileSystem.PATH_SEPARATOR;
             }
-            if (!FileSystem.isPathRooted(roleSetDir))
-            {
+
+            if (!FileSystem.isPathRooted(roleSetDir)) {
                 roleSetName = FileSystem.combinePaths(FileSystem.combinePaths(baseRolePath, roleSetDir), roleSetName);
-                if (!FileSystem.endsWith(roleSetName, ".rset"))
-                {
+
+                if (!FileSystem.endsWith(roleSetName, ".rset")) {
                     roleSetName = roleSetName + ".rset";
                 }
-                roleSetName = FileSystem.getAbsolutePath(roleSetName);
-            }
-			else
+                String tempRoleSetName = FileSystem.getAbsolutePath(roleSetName);
+
+                if (tempRoleSetName == null || !FileSystem.pathExists(roleSetName)) {
+                    roleSetName = roleSetName.substring(0, roleSetName.length()-5) + ".rst";
+
+                    if (!FileSystem.pathExists(roleSetName)) {
+                        ae.abort("PP: Cannot find roleset: " + roleSetName);
+                    }
+                } else
+                    roleSetName = tempRoleSetName;
+            } else
             {
                 roleSetName = FileSystem.combinePaths(roleSetDir, roleSetName);
             }
         }
 
-        if (!FileSystem.endsWith(roleSetName, ".rset"))
+        if (!FileSystem.endsWith(roleSetName, ".rset") && !FileSystem.endsWith(roleSetName, ".rst"))
         {
             roleSetName = roleSetName + ".rset";
         }
+
         if (!FileSystem.pathExists(roleSetName))
         {
-            ae.abort("PP: Cannot find roleset: " + roleSetName);
+            roleSetName = roleSetName.substring(0, roleSetName.length()-5) + ".rst";
+
+            if (!FileSystem.pathExists(roleSetName)) {
+                ae.abort("PP: Cannot find roleset: " + roleSetName);
+            }
         }
 
 //#ifdef PP_DEBUG
@@ -180,7 +229,8 @@ public class PlanParser {
 //#endif
 
         this.currentDirectory = FileSystem.getParent(roleSetName);
-        File file = new File(roleSetName);
+        String absolutePath = FileSystem.getAbsolutePath(roleSetName);
+        File file = new File(absolutePath);
 
         if (!file.exists()) {
             ae.abort("PP: " + file +" not exists!!!");
@@ -210,8 +260,17 @@ public class PlanParser {
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
         } catch (SAXException e) {
-            System.err.println("PP: doc.ErrorCode: ");
-            e.printStackTrace();
+//            System.err.println("PP: doc.ErrorCode: ");
+//            e.printStackTrace();
+            JSONObject jsonDoc = null;
+            try {
+                jsonDoc = (JSONObject) new JSONParser().parse(new FileReader(file));
+                r = this.mf.createRoleSet(jsonDoc, this.masterPlan);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } catch (ParseException ex) {
+                ex.printStackTrace();
+            }
         } catch (IOException e) {
             System.err.println("PP: doc.ErrorCode: ");
             e.printStackTrace();
@@ -313,8 +372,19 @@ public class PlanParser {
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
         } catch (SAXException e) {
-            System.err.println("PP: doc.ErrorCode: ");
-            e.printStackTrace();
+//            System.err.println("PP: doc.ErrorCode: ");
+//            e.printStackTrace();
+
+            JSONObject jsonDoc = null;
+            try {
+                jsonDoc = (JSONObject) new JSONParser().parse(new FileReader(file));
+                this.mf.createTasks(jsonDoc);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } catch (ParseException ex) {
+                ex.printStackTrace();
+            }
+
         } catch (IOException e) {
             System.err.println("PP: doc.ErrorCode: ");
             e.printStackTrace();
@@ -419,10 +489,21 @@ public class PlanParser {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             doc = dBuilder.parse(file);
-
+            this.mf.createBehaviour(doc);
         }  catch (SAXException e) {
-            System.err.println("PP: doc.ErrorCode: ");
-            e.printStackTrace();
+//            System.err.println("PP: doc.ErrorCode: ");
+//            e.printStackTrace();
+
+            JSONObject jsonDoc = null;
+            try {
+                jsonDoc = (JSONObject) new JSONParser().parse(new FileReader(file));
+                this.mf.createBehaviour(jsonDoc);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } catch (ParseException ex) {
+                ex.printStackTrace();
+            }
+
         } catch (IOException e) {
             System.err.println("PP: doc.ErrorCode: ");
             e.printStackTrace();
@@ -430,7 +511,7 @@ public class PlanParser {
             System.err.println("PP: doc.ErrorCode: ");
             e.printStackTrace();
         }
-        this.mf.createBehaviour(doc);
+
     }
 
     private void parsePlanningProblem(String currentFile){
@@ -470,8 +551,7 @@ public class PlanParser {
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(file);
 
-            if (doc == null)
-            {
+            if (doc == null) {
                 ae.abort("PP: " + "can not parse " + file);
             }
             doc.getDocumentElement().normalize();
@@ -481,8 +561,16 @@ public class PlanParser {
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
         } catch (SAXException e) {
-            System.err.println("PP: doc.ErrorCode: ");
-            e.printStackTrace();
+            //System.err.println("PP: doc.ErrorCode: ");
+//            e.printStackTrace();
+            try {
+                JSONObject jsonDoc = (JSONObject) new JSONParser().parse(new FileReader(file));
+                p = this.mf.createPlan(jsonDoc);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            } catch (ParseException ex) {
+                ex.printStackTrace();
+            }
         } catch (IOException e) {
             System.err.println("PP: doc.ErrorCode: ");
             e.printStackTrace();
@@ -491,11 +579,22 @@ public class PlanParser {
         return p;
     }
 
-    private long fetchId(String idString, long id){
+/*  long id = (Long) jsonObject.get("id");
+    this.parser.fetchId(jsonObject.get("id").toString(), id); */
+
+    public Long extractID(String idString) {
+        System.err.println("PP: extract ID " + idString);
         int hashPos = idString.indexOf("#");
+        return Long.valueOf(hashPos > 0 ? idString.substring(hashPos+1) : idString);
+    }
+
+    public long fetchId(String idString) {
+        System.err.println("PP: fetch ID " + idString);
+        int hashPos = idString.indexOf("#");
+        long id = -1;
 		String temp = null;
         String temp2 = null;
-        String locator = idString.substring(0, hashPos);
+        String locator = hashPos > 0 ? idString.substring(0, hashPos) : "";
 
         if (!locator.isEmpty())
         {
@@ -504,6 +603,10 @@ public class PlanParser {
                 this.currentDirectory = this.currentDirectory + "/";
             }
             String path = this.currentDirectory + locator;
+
+            if (locator.endsWith(".tsk")) {
+                path = path.replace(this.planDir,this.taskDir);
+            }
             //not working no clue why
             //char s[2048];
             //char s2[2048];
@@ -542,7 +645,7 @@ public class PlanParser {
             if (!found)
             {
 //#ifdef PP_DEBUG
-//                cout << "PP: Adding " + path + " to parse queue " << endl;
+                System.out.println("PP: Adding " + path + " to parse queue ");
 //#endif
                 filesToParse.add(path);
             }
@@ -591,7 +694,7 @@ public class PlanParser {
                 idString2 = idChar.getTextContent();
             if (idString2.length() > 0)
             {
-                id = fetchId(idString2, id);
+                id = fetchId(idString2);
                 return id;
             }
             else
@@ -602,7 +705,7 @@ public class PlanParser {
                     String textContent = currNode.getTextContent();
                     if (textContent.length() > 0)
                     {
-                        id = fetchId(textContent, id);
+                        id = fetchId(textContent);
                         return id;
                     }
 
@@ -637,6 +740,17 @@ public class PlanParser {
         }
 
         ae.abort("PP: Cannot handle XML Tag: " + node.getNodeName());
+    }
+
+    public void handleEntry(Object entry, Plan plan, ModelFactory modelFactory) {
+        System.out.println("PP: handleEntry " + entry );
+        for (JSONHandler handler : jsonEntryHandlers) {
+
+            if (handler.handle(entry, plan, modelFactory))
+                return;
+        }
+
+        ae.abort("PP: Cannot handle JSON Entry: " + entry.toString());
     }
 
     public LinkedHashMap<Long, AlicaElement> getParsedElements() {

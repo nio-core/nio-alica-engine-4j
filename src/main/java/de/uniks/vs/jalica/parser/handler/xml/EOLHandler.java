@@ -1,4 +1,4 @@
-package de.uniks.vs.jalica.parser.handler;
+package de.uniks.vs.jalica.parser.handler.xml;
 
 import de.uniks.vs.jalica.unknown.ModelFactory;
 import de.uniks.vs.jalica.unknown.Plan;
@@ -20,6 +20,4 @@ public class EOLHandler extends XMLHandler {
         }
         return false;
     }
-
-
 }

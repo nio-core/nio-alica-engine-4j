@@ -1,6 +1,5 @@
 package de.uniks.vs.jalica.behaviours;
 
-import de.uniks.vs.jalica.behaviours.DummyUtilityFunction;
 import de.uniks.vs.jalica.behaviours.tests.UtilityFunction1402488437260;
 import de.uniks.vs.jalica.behaviours.helloworld.testcommunication1528124991817.UtilityFunction1528124991817;
 import de.uniks.vs.jalica.behaviours.helloworld.testcommunicationmaster1528124971225.UtilityFunction1528124971225;

@@ -3,6 +3,9 @@ package de.uniks.vs.jalica.supplementary;
 import de.uniks.vs.jalica.unknown.CommonUtils;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -13,14 +16,23 @@ public class FileSystem {
     public static final String PATH_SEPARATOR = "/";
     public static final String CURDIR = ".";
     public static final String PARENTDIR = "..";
-    public static String PACKAGE = "src/main/java/de/uniks/vs/jalica";
+
+    public static String PACKAGE_ROOT = ".";
+    public static String PACKAGE_SRC = "src/main/java/de/uniks/vs/jalica";
 
     public static boolean pathExists(String basePlanPath) {
         return (getAbsolutePath(basePlanPath)!= null);
     }
 
     public static String getAbsolutePath(String basePlanPath) {
-        String workDir = extractWorkDir()+ PATH_SEPARATOR + PACKAGE + PATH_SEPARATOR;
+        File basePlanFile = new File(PACKAGE_ROOT + basePlanPath);
+
+        if(basePlanFile.exists())
+            return basePlanFile.getAbsolutePath();
+
+        String workDir = extractWorkDir()+ PATH_SEPARATOR + PACKAGE_SRC + PATH_SEPARATOR;
+
+        if (CommonUtils.FS_DEBUG_debug) System.out.println("FS: getAbsolutePath workpath=" + workDir);
 
         if (!basePlanPath.startsWith(workDir)) {
             workDir = workDir + basePlanPath;
@@ -29,10 +41,14 @@ public class FileSystem {
 
         if (CommonUtils.FS_DEBUG_debug)  System.out.println("FS: " +path.exists() +" " +path.getAbsolutePath());
 
-        if (path.exists())
+        if (path.exists()) {
+            if (CommonUtils.FS_DEBUG_debug)  System.out.println("FS: getAbsolutePath existing path=" + path);
             return path.getAbsolutePath();
+        }
 
         path = new File(basePlanPath);
+        if (CommonUtils.FS_DEBUG_debug)  System.out.println("FS: getAbsolutePath path=" + path);
+
         return path.exists() ? path.getAbsolutePath(): null;
     }
 
@@ -56,13 +72,23 @@ public class FileSystem {
     }
 
     public static File getParentAsFile(String pathString) {
-        String workDir = extractWorkDir()+ PATH_SEPARATOR + PACKAGE + PATH_SEPARATOR;
+        File path = new File(pathString);
+
+        if (path.exists()) {
+            return path.getParentFile();
+        }
+        String workDir = extractWorkDir()+ PATH_SEPARATOR + PACKAGE_SRC + PATH_SEPARATOR;
 
         if (!pathString.startsWith(workDir)) {
-            pathString = workDir + pathString;
+            File file = new File(workDir + pathString);
+
+            if (file.exists())
+                pathString = workDir + pathString;
+            else
+                pathString = PACKAGE_ROOT + pathString;
         }
-        File path = new File(pathString);
-//        String workDir = extractWorkDir()+ PATH_SEPARATOR + PACKAGE + PATH_SEPARATOR;
+        path = new File(pathString);
+//        String workDir = extractWorkDir()+ PATH_SEPARATOR + PACKAGE_SRC + PATH_SEPARATOR;
 //        File _path = new File(workDir);
 //
 //        if (!_path.exists()){
@@ -116,13 +142,21 @@ public class FileSystem {
 
         System.out.println("FS: Path: " + path + " file: " + file);
 
-        if (!pathExists(path)) {
+        File expectedPath = new File(path);
+
+        if (!expectedPath.exists() || !pathExists(path)) {
+
+            if(!path.startsWith(PACKAGE_ROOT))
+                return findFile(PACKAGE_ROOT + path, file);
             return null;
         }
-        String workDir = extractWorkDir()+ PATH_SEPARATOR + PACKAGE + PATH_SEPARATOR;
+        String workDir = extractWorkDir()+ PATH_SEPARATOR + PACKAGE_SRC + PATH_SEPARATOR;
         // FIXME: replace workaround "if (..)"
-        if (!path.contains(workDir))
-            path = workDir + path;
+
+        if (!path.contains(workDir)) {
+//            path = workDir + path;
+            workDir = path;
+        }
 
 //        struct dirent **namelist;
         int i, n;

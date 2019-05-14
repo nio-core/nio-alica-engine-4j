@@ -58,7 +58,7 @@ public class SystemConfig {
 //        logPath = logPath; //"log/";
 
         System.out.println("SC: Root:           \"" + rootPath + "\"" );
-        System.out.println("SC: ConfigRoot:     \"" + configPath + "\"" );
+        System.out.println("SC: Config Path:     \"" + configPath + "\"" );
         System.out.println("SC: Hostname:       \"" + id + "\"" );
         System.out.println("SC: Logging Folder: \"" + logPath + "\"" );
     }

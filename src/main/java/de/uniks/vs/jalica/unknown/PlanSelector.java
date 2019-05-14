@@ -83,21 +83,20 @@ public class PlanSelector implements IPlanSelector {
 //#ifdef PSDEBUG
                 if (CommonUtils.PS_DEBUG_debug) System.out.println("PS: Added Behaviour " + bc.getBehaviour().getName() );
 //#endif
-            } else
-            {
+            } else {
                 // PLAN
 //                p = (Plan)(ap);
 //                if (p != null)
-                if ((ap instanceof Plan))
-                {
+
+                if ((ap instanceof Plan)) {
                     p = (Plan)ap;
                     planList = new ArrayList<>();
                     planList.add(p);
                     rp = this.createRunningPlan(planningParent, planList, agentIDs, null, null);
-                    if (rp == null)
-                    {
+
+                    if (rp == null) {
 //#ifdef PSDEBUG
-                        if (CommonUtils.PS_DEBUG_debug) System.out.println("PS: It was not possible teamObserver create a RunningPlan for the Plan " + p.getName() + "!");
+                        if (CommonUtils.PS_DEBUG_debug) System.out.println("PS: It was not possible teamObserver create a RunningPlan for the Plan " + p.getName() + " !");
 //#endif
                         return null;
                     }
@@ -115,7 +114,7 @@ public class PlanSelector implements IPlanSelector {
                         if (rp == null)
                         {
 //#ifdef PSDEBUG
-                            if (CommonUtils.PS_DEBUG_debug) System.out.println( "PS: It was not possible teamObserver create a RunningPlan for the Plan " + pt.getName()
+                            if (CommonUtils.PS_DEBUG_debug) System.out.println( "PS: It was not possible teamObserver create a RunningPlan for the Plan (Plantype) " + pt.getName()
                                     + "!" );
 //#endif
                             return null;

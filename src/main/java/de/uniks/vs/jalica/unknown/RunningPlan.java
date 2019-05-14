@@ -11,51 +11,59 @@ import java.util.*;
  * Created by alex on 13.07.17.
  */
 public class RunningPlan {
-    private PlanType planType;
-    private AbstractPlan plan;
-    private BasicBehaviour basicBehaviour;
+
+    private int failCount;
+    private long ownID;
+    //    private long id;
     private boolean active;
-    private State activeState;
     private boolean behaviour;
-//    private EntryPoint ownEntryPoint;
-    private EntryPoint activeEntryPoint;
-    private RunningPlan parent;
+    private boolean failHandlingNeeded;
     private boolean allocationNeeded;
-    private ITeamObserver to;
-    private IBehaviourPool bp;
-    private ConditionStore constraintStore;
-    private Assignment assignment;
-    private AlicaEngine ae;
-    private BehaviourConfiguration bc;
+
+    private AbstractPlan plan;
+    private AlicaEngine alicaEngine;
     private AlicaTime planStartTime;
     private AlicaTime stateStartTime;
-    private PlanStatus status;
-    private long ownId;
-    private boolean failHandlingNeeded;
-    private int failCount;
+    private Assignment assignment;
+    private BasicBehaviour basicBehaviour;
+    private BehaviourConfiguration behaviourConfiguration;
+    private ConditionStore constraintStore;
     private CycleManager cycleManagement;
-    private long id;
+    private EntryPoint activeEntryPoint;
+    private IBehaviourPool behaviourPool;
+    private ITeamObserver teamObserver;
+    private PlanStatus status;
+    private PlanType planType;
+    private RunningPlan parent;
+    private State activeState;
+    //    private EntryPoint ownEntryPoint;
+
+    private ArrayList<RunningPlan> children;
+    private ArrayList<Long> agentsAvail;
+    private LinkedHashMap<AbstractPlan, Integer> failedSubPlans;
+
     protected AlicaTime assignmentProtectionTime;
 
-    private LinkedHashMap<AbstractPlan, Integer> failedSubPlans = new LinkedHashMap<>();
-    private ArrayList<Long> agentsAvail = new ArrayList<>();
-    private ArrayList<RunningPlan> children = new ArrayList<>();
+    RunningPlan(AlicaEngine alicaEngine) {
 
-    RunningPlan(AlicaEngine ae) {
-        this.assignmentProtectionTime = new AlicaTime(Long.valueOf((String) ae.getSystemConfig().get("Alica").get("Alica.AssignmentProtectionTime")) * 1000000);
-        this.ae = ae;
+        failedSubPlans = new LinkedHashMap<>();
+        agentsAvail = new ArrayList<>();
+        children = new VerboseArrayList<>();
+
+        this.assignmentProtectionTime = new AlicaTime(Long.valueOf((String) alicaEngine.getSystemConfig().get("Alica").get("Alica.AssignmentProtectionTime")) * 1000000);
+        this.alicaEngine = alicaEngine;
         this.behaviour = false;
         this.planStartTime = new AlicaTime(0);
         this.stateStartTime = new AlicaTime(0);
-        this.to = ae.getTeamObserver();
-        this.ownId = to.getOwnID();
+        this.teamObserver = alicaEngine.getTeamObserver();
+        this.ownID = teamObserver.getOwnID();
         this.status = PlanStatus.Running;
         this.failCount = 0;
         this.active = false;
         this.allocationNeeded = false;
         this.failHandlingNeeded = false;
         this.constraintStore = new ConditionStore();
-        this.cycleManagement = new CycleManager(ae, this);
+        this.cycleManagement = new CycleManager(alicaEngine, this);
         this.agentsAvail = new ArrayList<>();
     }
 
@@ -67,16 +75,15 @@ public class RunningPlan {
 
     public RunningPlan(AlicaEngine ae, BehaviourConfiguration bc) {
         this(ae);
-        this.bc = bc;
+        this.behaviourConfiguration = bc;
         this.plan = bc;
-        this.bp = ae.getBehaviourPool();
+        this.behaviourPool = ae.getBehaviourPool();
         this.behaviour = true;
     }
 
     public RunningPlan(AlicaEngine ae, Plan plan) {
         this(ae);
         this.plan = plan;
-
         // TODO: there is now usage -> remove it (java, c++)
 //        transform(plan.getEntryPoints().begin(), plan.getEntryPoints().end(), back_inserter(epCol),
 //                [](map<long, EntryPoint>::value_type& val)
@@ -93,8 +100,6 @@ public class RunningPlan {
 //
 //        Collections.sort(epCol);
 //        this.assignment = new Assignment(0,eps,robots,plan);
-
-
         this.behaviour = false;
     }
 
@@ -105,7 +110,6 @@ public class RunningPlan {
     public void setBasicBehaviour(BasicBehaviour basicBehaviour) {
         this.basicBehaviour = basicBehaviour;
     }
-
 
     void toMessage(ArrayList<Long> message, RunningPlan deepestNode, int depth, int curDepth) {
 
@@ -178,8 +182,7 @@ public class RunningPlan {
         this.allocationNeeded = allocationNeeded;
     }
 
-    public void moveState(State nextState)
-    {
+    public void moveState(State nextState) {
         deactivateChildren();
         clearChildren();
         this.assignment.moveAgents(this.activeState, nextState);
@@ -191,7 +194,7 @@ public class RunningPlan {
 
         if (this.activeState != state) {
             this.activeState = state;
-            this.stateStartTime.time = ae.getIAlicaClock().now().time;
+            this.stateStartTime.time = alicaEngine.getIAlicaClock().now().time;
 
             if (this.activeState != null) {
 
@@ -199,8 +202,8 @@ public class RunningPlan {
                     this.status = PlanStatus.Failed;
                 }
 				else if (this.activeState.isSuccessState()) {
-                    this.assignment.getEpSuccessMapping().getAgents(this.activeEntryPoint).add(this.ownId);
-                    this.to.getOwnEngineData().getSuccessMarks().markSuccessfull(this.plan,
+                    this.assignment.getEpSuccessMapping().getAgents(this.activeEntryPoint).add(this.ownID);
+                    this.teamObserver.getOwnEngineData().getSuccessMarks().markSuccessfull(this.plan,
                         this.activeEntryPoint);
                 }
             }
@@ -222,13 +225,13 @@ public class RunningPlan {
         this.active = false;
         if (this.isBehaviour())
         {
-//            bp.stopBehaviour(this.plan);
-            bp.stopBehaviour(this);
-//            bp.stopBehaviour(shared_from_this());
+//            behaviourPool.stopBehaviour(this.plan);
+            behaviourPool.stopBehaviour(this);
+//            behaviourPool.stopBehaviour(shared_from_this());
         }
 		else
         {
-            this.to.notifyAgentLeftPlan(this.plan);
+            this.teamObserver.notifyAgentLeftPlan(this.plan);
         }
         revokeAllConstraints();
         deactivateChildren();
@@ -258,12 +261,12 @@ public class RunningPlan {
     {
         if (this.activeEntryPoint != value)
         {
-            this.assignment.removeAgent(ownId);
+            this.assignment.removeAgent(ownID);
             this.activeEntryPoint = value;
             if (this.activeEntryPoint != null)
             {
                 this.setActiveState(this.activeEntryPoint.getState());
-                this.assignment.addAgent(ownId, this.activeEntryPoint, this.activeState);
+                this.assignment.addAgent(ownID, this.activeEntryPoint, this.activeState);
             }
         }
     }
@@ -372,7 +375,7 @@ public class RunningPlan {
         this.active = true;
 
         if (this.isBehaviour()) {
-            bp.startBehaviour(this);
+            behaviourPool.startBehaviour(this);
         }
 
         this.attachPlanConstraints();
@@ -428,7 +431,7 @@ public class RunningPlan {
     }
 
     public void adaptAssignment(RunningPlan r) {
-        State newState = r.getAssignment().getAgentStateMapping().getState(this.ownId);
+        State newState = r.getAssignment().getAgentStateMapping().getState(this.ownID);
         r.getAssignment().getAgentStateMapping().reconsiderOldAssignment(this.assignment, r.getAssignment());
         boolean reactivate = false;
 
@@ -516,13 +519,13 @@ public class RunningPlan {
             this.failedSubPlans.put(child, 1);
         }
     }
-
-    public long getId() {
-        return id;
-    }
+//
+//    public long getId() {
+//        return id;
+//    }
 
     public AlicaEngine getAlicaEngine() {
-        return ae;
+        return alicaEngine;
     }
 
     public boolean recursiveUpdateAssignment(ArrayList<SimplePlanTree> spts, Vector<Long> availableAgents,
@@ -564,7 +567,7 @@ public class RunningPlan {
                             this.getAssignment().getAgentStateMapping().setState(spt.getAgentID(), spt.getState());
                         }
                     }
-                    else { //robot was not expected to be here during protected assignment time, add it.
+                    else { //robot was not expected teamObserver be here during protected assignment time, add it.
                         this.getAssignment().addAgent(spt.getAgentID(), spt.getEntryPoint(), spt.getState());
                         aldif.getAdditions().add(
                                         new EntryPointAgentPair(spt.getEntryPoint(), spt.getAgentID()));
@@ -599,7 +602,7 @@ public class RunningPlan {
 
                 for (long rob : (robs)) {
 
-                    if (rob == ownId)
+                    if (rob == ownID)
                         continue;
                     boolean found = false;
 
@@ -640,7 +643,7 @@ public class RunningPlan {
                 Vector<Long> robs = this.getAssignment().getAgentsWorking(ep);
 
                 for (long rob : (robs)) {
-                    //if (rob==ownId) continue;
+                    //if (rob==ownID) continue;
 
                     if (!availableAgents.contains(rob)) {
                         rem.add(rob);
@@ -659,9 +662,9 @@ public class RunningPlan {
         aldif.setReason(AllocationDifference.Reason.message);
         this.cycleManagement.setNewAllocDiff(aldif);
 //Update Success Collection:
-        this.to.updateSuccessCollection((Plan)this.getPlan(), this.getAssignment().getEpSuccessMapping());
+        this.teamObserver.updateSuccessCollection((Plan)this.getPlan(), this.getAssignment().getEpSuccessMapping());
 
-//If Assignment Protection Time for newly started plans is over, limit available agents to those in this active state.
+//If Assignment Protection Time for newly started plans is over, limit available agents teamObserver those in this active state.
         if (this.stateStartTime.time + assignmentProtectionTime.time > now.time) {
             Set<Long> agentsJoined = this.getAssignment().getAgentStateMapping().getAgentsInState(this.getActiveState());
 
@@ -675,7 +678,7 @@ public class RunningPlan {
             }
         }
 		else if (auth)
-    { // in case of authority, remove all that are not assigned to same task
+    { // in case of authority, remove all that are not assigned teamObserver same task
         Vector<Long> agentsJoined = this.getAssignment().getAgentsWorking(this.getOwnEntryPoint());
 
         if (agentsJoined != null) {
@@ -689,7 +692,7 @@ public class RunningPlan {
             }
         }
     }
-        //Give Plans to children
+        //Give Plans teamObserver children
         for (RunningPlan r : this.children) {
 
             if (r.isBehaviour()) {
@@ -715,7 +718,7 @@ public class RunningPlan {
         return ret;
     }
 
-    public long getOwnID() {return ownId;}
+    public long getOwnID() {return ownID;}
 
     @Override
     public String toString() {

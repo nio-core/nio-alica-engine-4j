@@ -35,7 +35,7 @@ public class RolePriority extends AlicaElement {
             {
                 if (this.roles.get(key).getName().equals(priority))
                 {
-                    System.out.println("RP: Priority  <- " +priority);
+                    if (CommonUtils.RP_DEBUG_debug) System.out.println("RP: Priority  <- " +priority);
                     this.role = this.roles.get(key);
                     break;
                 }

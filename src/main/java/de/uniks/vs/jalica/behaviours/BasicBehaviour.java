@@ -32,6 +32,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
     private String name;
 
     public BasicBehaviour(String name) {
+//        System.out.println("BB: constructor called " + name);
         this.name = name;
         this.failure =  false;
         this.success =  false;
@@ -179,7 +180,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
             // TODO: pass something like an eventarg (to be implemented) class-member, which could be set for an event triggered (to be implemented) behaviour.
             try {
                 if (behaviourTrigger == null) {
-                    CommonUtils.aboutCallNotification();
+                    if (CommonUtils.B_DEBUG_debug)  CommonUtils.aboutCallNotification();
                     this.run(timer.getClass().getSimpleName());
                 }
                 else {

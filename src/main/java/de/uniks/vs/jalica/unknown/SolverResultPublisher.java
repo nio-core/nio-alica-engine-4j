@@ -29,8 +29,7 @@ public class SolverResultPublisher extends ZMQPublisher {
 
         jsonObject.put("vars", jsonArray);
 
-
-        System.out.println("PTI-Pub: publish " + jsonObject.toJSONString());
+        if (CommonUtils.COMM_debug) System.out.println("PTI-Pub: publish " + jsonObject.toJSONString());
         publisher.send(topic + " " + jsonObject.toJSONString(), 0);
     }
 }
