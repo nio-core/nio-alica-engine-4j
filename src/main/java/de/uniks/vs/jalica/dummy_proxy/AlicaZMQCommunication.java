@@ -16,7 +16,8 @@ import java.util.ArrayList;
  */
 public class AlicaZMQCommunication extends AlicaCommunication {
 
-//    private  String alicaEngineInfoTopic;
+    private String configFile;
+    //    private  String alicaEngineInfoTopic;
 //    private  String allocationAuthorityInfoTopic;
 //    private  String ownRoleTopic;
 //    private  String planTreeInfoTopic;
@@ -40,6 +41,13 @@ public class AlicaZMQCommunication extends AlicaCommunication {
 
     public AlicaZMQCommunication(AlicaEngine ae) {
         super(ae);
+        this.configFile = "AlicaRosProxy";
+        this.isRunning = false;
+    }
+
+    public AlicaZMQCommunication(AlicaEngine ae, String configFile) {
+        super(ae);
+        this.configFile = configFile;
         this.isRunning = false;
     }
 
@@ -68,25 +76,25 @@ public class AlicaZMQCommunication extends AlicaCommunication {
 
 //        AllocationAuthorityInfoPublisher = rosNode.advertise<alica_ros_proxy::AllocationAuthorityInfo>(this.allocationAuthorityInfoTopic, 2);
 //        AllocationAuthorityInfoSubscriber = rosNode.subscribe(this.allocationAuthorityInfoTopic, 10, &AlicaRosCommunication::handleAllocationAuthorityRos, (AlicaRosCommunication*)this);
-        String allocationAuthorityInfoTopic = (String) ae.getSystemConfig().get("AlicaRosProxy").get("Topics.allocationAuthorityInfoTopic");
+        String allocationAuthorityInfoTopic = (String) ae.getSystemConfig().get(configFile).get("Topics.allocationAuthorityInfoTopic");
         allocationAuthorityInfoPublisher = new AllocationAuthorityInfoPublisher(allocationAuthorityInfoTopic, publisher);
         allocationAuthorityInfoSubscriber = new AllocationAuthorityInfoSubscriber(allocationAuthorityInfoTopic, subscriber, this);
 
 
 //        AlicaEngineInfoPublisher = rosNode.advertise<alica_ros_proxy::AlicaEngineInfo>(this.alicaEngineInfoTopic, 2);
-        String alicaEngineInfoTopic = (String) ae.getSystemConfig().get("AlicaRosProxy").get("Topics.alicaEngineInfoTopic");
+        String alicaEngineInfoTopic = (String) ae.getSystemConfig().get(configFile).get("Topics.alicaEngineInfoTopic");
         alicaEngineInfoPublisher = new AlicaEngineInfoPublisher(alicaEngineInfoTopic, publisher);
         subscriber.subscribe(alicaEngineInfoTopic.getBytes(ZMQ.CHARSET));
 
 //        RoleSwitchPublisher = rosNode.advertise<alica_ros_proxy::RoleSwitch>(this.ownRoleTopic,  10);
-        String ownRoleTopic = (String) ae.getSystemConfig().get("AlicaRosProxy").get("Topics.ownRoleTopic");
+        String ownRoleTopic = (String) ae.getSystemConfig().get(configFile).get("Topics.ownRoleTopic");
         roleSwitchPublisher = new RoleSwitchPublisher(ownRoleTopic, publisher);
         subscriber.subscribe(ownRoleTopic.getBytes(ZMQ.CHARSET));
 
 
 //        PlanTreeInfoPublisher = rosNode.advertise<alica_ros_proxy::PlanTreeInfo>(this.planTreeInfoTopic, 10);
 //        PlanTreeInfoSubscriber = ro sNode.subscribe(this.planTreeInfoTopic, 1, &AlicaRosCommunication::handlePlanTreeInfoRos,  (AlicaRosCommunication*)this);
-        String planTreeInfoTopic = (String) ae.getSystemConfig().get("AlicaRosProxy").get("Topics.planTreeInfoTopic");
+        String planTreeInfoTopic = (String) ae.getSystemConfig().get(configFile).get("Topics.planTreeInfoTopic");
         planTreeInfoPublisher = new PlanTreeInfoPublisher(planTreeInfoTopic, publisher);
         planTreeInfoSubscriber = new PlanTreeInfoSubscriber(planTreeInfoTopic, subscriber, this);
 //
@@ -98,7 +106,7 @@ public class AlicaZMQCommunication extends AlicaCommunication {
 //
 //        SolverResultPublisher = rosNode.advertise<alica_ros_proxy::SolverResult>(this.solverResultTopic, 10);
 //        SolverResultSubscriber = rosNode.subscribe(this.solverResultTopic, 5, &AlicaRosCommunication::handleSolverResult, (AlicaRosCommunication*)this);
-        String solverResultTopic = (String) ae.getSystemConfig().get("AlicaRosProxy").get("Topics.solverResultTopic");
+        String solverResultTopic = (String) ae.getSystemConfig().get(configFile).get("Topics.solverResultTopic");
         solverResultPublisher = new SolverResultPublisher(solverResultTopic, publisher);
         solverResultSubscriber = new SolverResultSubscriber(solverResultTopic, subscriber, this);
 

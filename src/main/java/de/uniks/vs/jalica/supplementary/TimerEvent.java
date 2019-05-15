@@ -26,7 +26,7 @@ public class TimerEvent extends Trigger implements Runnable {
         this.msInterval = msInterval;
         this.msDelayedStart = msDelayedStart;
         this.runThread = new Thread(this);
-        this.notifyAll = true;
+        this.notifyAll = false;
         this.cv = new ConditionVariable(runThread);
 //        this.clock = Instant.now();
     }
@@ -42,7 +42,7 @@ public class TimerEvent extends Trigger implements Runnable {
             CommonUtils.aboutCallNotification();
             this.started = true;
             runThread.start();
-            CommonUtils.aboutError("TimerEvent: Thread id " + runThread.getId());
+            CommonUtils.aboutCallNotification("TimerEvent: Thread id " + runThread.getId() + " started");
         }
 
         if (this.started && !this.running) {
@@ -60,10 +60,13 @@ public class TimerEvent extends Trigger implements Runnable {
         return this.started && this.running;
     }
 
+    private void testMe(){
+
+    }
 
     @Override
     public void run() {
-        CommonUtils.aboutCallNotification();
+        if (CommonUtils.TE_DEBUG_debug) CommonUtils.aboutCallNotification();
 
         if (msDelayedStart > 0) {
             try {
@@ -83,8 +86,9 @@ public class TimerEvent extends Trigger implements Runnable {
                         while (true) {
 
                             if(!started || (running && registeredCVs.size() > 0)) {
-                                synchronized (this) {
-                                    this.notify();
+                                if (CommonUtils.TE_DEBUG_debug) CommonUtils.aboutCallNotification("Timer notified");
+                                synchronized (TimerEvent.this) {
+                                    TimerEvent.this.notify();
                                 }
                                 return;
                             }
@@ -92,9 +96,11 @@ public class TimerEvent extends Trigger implements Runnable {
                     }
                 };
                 cv.start();
+
                 synchronized (this) {
                     this.wait();
                 }
+
                 if (CommonUtils.TE_DEBUG_debug) System.out.println("TimerEvent:  awakened " + parent);
                 if (CommonUtils.TE_DEBUG_debug) CommonUtils.aboutCallNotification();
 
@@ -111,7 +117,7 @@ public class TimerEvent extends Trigger implements Runnable {
                     return;
 
                 long start = getCurrentTimeInNanoSec();
-                System.out.println("TE: notify all !!!!!");
+                if (CommonUtils.TE_DEBUG_debug) CommonUtils.aboutCallNotification("TE: notify all !!!!!");
                 this.notifyAll(notifyAll);
 //                this.notify();
 //                this.notifyAll();

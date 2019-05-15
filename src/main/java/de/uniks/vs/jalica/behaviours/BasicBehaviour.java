@@ -32,7 +32,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
     private String name;
 
     public BasicBehaviour(String name) {
-//        System.out.println("BB: constructor called " + name);
+        if (CommonUtils.B_DEBUG_debug) System.out.println("BB: constructor called " + name);
         this.name = name;
         this.failure =  false;
         this.success =  false;
@@ -58,12 +58,14 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
 
         if (behaviourTrigger == null) {
             if (CommonUtils.B_DEBUG_debug) System.out.println("BB: start behaviour type -> " + this.getClass().getSimpleName());
-//            CommonUtils.aboutCallNotification();
+            CommonUtils.aboutCallNotification();
             return this.timer.start();
         }
         else {
+            CommonUtils.aboutCallNotification();
             this.running = true;
         }
+        CommonUtils.aboutCallNotification();
         return true;
     }
 
@@ -74,7 +76,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
         if (behaviourTrigger == null) {
 
             if (CommonUtils.B_DEBUG_debug) System.out.println("BB: stop behaviour type -> " + this.getClass().getSimpleName());
-//            CommonUtils.aboutImplIncomplete();
+            CommonUtils.aboutImplIncomplete();
             return this.timer.stop();
         }
         else {
@@ -116,6 +118,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
 
     void runInternal() {
 //        unique_lock<mutex> lck(runCV_mtx);
+        CommonUtils.aboutCallNotification();
         while (this.started) {
 
             if (CommonUtils.B_DEBUG_debug) CommonUtils.aboutCallNotification(this.getClass().getSimpleName());
@@ -135,15 +138,18 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
 
                     @Override
                     public void run() {
-                        while (true) {
+                        CommonUtils.aboutCallNotification("thread started");
 
+                        while (true) {
                             if(behaviourTrigger == null && (!started || timer.isNotifyCalled(runCV))) {
+                                if (CommonUtils.B_DEBUG_debug) CommonUtils.aboutCallNotification("notify");
                                 synchronized (runThread) {
                                     runThread.notify();
                                 }
                                 return;
                             }
                             else if (!started || (behaviourTrigger != null && behaviourTrigger.isNotifyCalled(runCV) && running)) {
+                                if (CommonUtils.B_DEBUG_debug) CommonUtils.aboutCallNotification( "notify");
                                 synchronized (runThread) {
                                     runThread.notify();
                                 }
@@ -179,12 +185,14 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
 //#endif
             // TODO: pass something like an eventarg (to be implemented) class-member, which could be set for an event triggered (to be implemented) behaviour.
             try {
+                if (CommonUtils.B_DEBUG_debug) CommonUtils.aboutCallNotification();
+
                 if (behaviourTrigger == null) {
                     if (CommonUtils.B_DEBUG_debug)  CommonUtils.aboutCallNotification();
                     this.run(timer.getClass().getSimpleName());
                 }
                 else {
-                    CommonUtils.aboutCallNotification();
+                    if (CommonUtils.B_DEBUG_debug) CommonUtils.aboutCallNotification();
                     this.run(behaviourTrigger.getClass().getSimpleName());
                 }
             }
@@ -211,15 +219,18 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
             }
 //#endif
             if (behaviourTrigger == null) {
+                if (CommonUtils.B_DEBUG_debug) CommonUtils.aboutCallNotification("setNotifyCalled false");
                 this.timer.setNotifyCalled(false, runCV);
             }
             else {
+                if (CommonUtils.B_DEBUG_debug) CommonUtils.aboutCallNotification("setNotifyCalled false");
                 this.behaviourTrigger.setNotifyCalled(false, runCV);
             }
         }
     }
 
     private void initInternal() {
+        CommonUtils.aboutCallNotification();
         this.success = false;
         this.failure = false;
         this.callInit = false;
@@ -270,10 +281,12 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
     }
 
     public void setRunningPlan(RunningPlan runningPlan) {
+        if (CommonUtils.B_DEBUG_debug)  CommonUtils.aboutCallNotification();
         this.runningPlan = runningPlan;
     }
 
     public void setTrigger(Trigger behaviourTrigger) {
+        CommonUtils.aboutCallNotification();
         this.behaviourTrigger = behaviourTrigger;
         this.behaviourTrigger.addConditionVariable(this.runCV);
     }

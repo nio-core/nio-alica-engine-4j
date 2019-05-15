@@ -69,7 +69,6 @@ public class PlanBase implements Runnable {
         this.alicaClock = ae.getIAlicaClock();
         this.fpEvents = new PriorityQueue<>();
 
-
         this.ruleBook = new RuleBook(ae);
 //        SystemConfig systemConfig = SystemConfig.getInstance();
 
@@ -161,7 +160,7 @@ public class PlanBase implements Runnable {
                                 }
 
                                 if (ae.getStepCalled()) {
-                                    System.out.println("PB: called");
+                                    if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: called");
                                     stepModeCV.notifyOneThread();
                                 }
                             }
@@ -176,7 +175,7 @@ public class PlanBase implements Runnable {
                         e.printStackTrace();
                     }
                 }
-                System.out.println("PB: step engine awakened");
+                if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: step engine awakened");
                 this.ae.setStepCalled(false);
                 if (!running) {
                     return;

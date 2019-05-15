@@ -157,10 +157,13 @@ public class AlicaEngine {
 
 
     public void stepNotify() {
+
+        if (!this.stepEngine)
+            return;
         this.setStepCalled(true);
-        System.out.println("AE: stepNotify");
-//        this.getPlanBase().getStepModeCV().notifyOneThread();
-        this.getPlanBase().getStepModeCV().notifyAllThreads();
+        if (CommonUtils.AE_DEBUG_debug) System.out.println("AE: stepNotify");
+        this.getPlanBase().getStepModeCV().notifyOneThread();
+//        this.getPlanBase().getStepModeCV().notifyAllThreads();
     }
 
 
@@ -170,7 +173,7 @@ public class AlicaEngine {
 
     public void start() {
         this.planBase.start();
-        System.out.println("AE: Engine started");
+        if (CommonUtils.AE_DEBUG_debug)  System.out.println("AE: Engine started");
     }
 
     /**

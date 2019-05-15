@@ -8,6 +8,7 @@ import de.uniks.vs.jalica.supplementary.SystemConfig;
  */
 public abstract class DomainBehaviour extends BasicBehaviour {
 
+    protected String agentName;
     protected SystemConfig systemConfig;
     protected double maxTranslation;
     protected int ownID;
@@ -15,6 +16,11 @@ public abstract class DomainBehaviour extends BasicBehaviour {
     public DomainBehaviour(String name, AlicaEngine ae) {
         super(name);
         this.systemConfig = ae.getSystemConfig();
+        this.agentName = ae.getAgentName();
         this.ownID = systemConfig.getOwnRobotID();
+    }
+
+    public String getAgentName() {
+        return agentName;
     }
 }
