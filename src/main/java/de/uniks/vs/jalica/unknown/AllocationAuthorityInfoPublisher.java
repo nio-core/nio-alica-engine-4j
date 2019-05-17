@@ -15,7 +15,8 @@ public class AllocationAuthorityInfoPublisher extends ZMQPublisher {
         AllocationAuthorityInfo authorityInfo = (AllocationAuthorityInfo) message;
 
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("planID", authorityInfo.planId);
+        jsonObject.put("senderID", authorityInfo.senderID);
+        jsonObject.put("planID", authorityInfo.planID);
         jsonObject.put("parentState", authorityInfo.parentState);
         jsonObject.put("planType", authorityInfo.planType);
         jsonObject.put("authority", authorityInfo.authority);

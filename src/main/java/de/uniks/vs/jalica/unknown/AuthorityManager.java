@@ -15,7 +15,7 @@ public class AuthorityManager {
 
     public AuthorityManager(AlicaEngine ae) {
         this.ae = ae;
-        this.ownID = 0;
+        this.ownID = -1;
     }
 
     public void init() {
@@ -23,35 +23,29 @@ public class AuthorityManager {
     }
 
     public void tick(RunningPlan rp) {
-//        #ifdef AM_DEBUG
-        if (CommonUtils.AM_DEBUG_debug) System.out.println("AM: Tick called! <<<<<<" );
-//#endif
+        if (CommonUtils.AM_DEBUG_debug) System.out.println("AM: Tick called!" );
 //        lock_guard<mutex> lock(mu);
         processPlan(rp);
         this.queue.clear();
     }
 
-    private void processPlan(RunningPlan rp)
-    {
+    private void processPlan(RunningPlan rp) {
+
         if (rp == null || rp.isBehaviour())
-        {
             return;
-        }
-        if (rp.getCycleManagement().needsSending())
-        {
+
+        if (rp.getCycleManagement().needsSending()) {
             sendAllocation(rp);
             rp.getCycleManagement().sent();
         }
-//#ifdef AM_DEBUG
+
         if (CommonUtils.AM_DEBUG_debug) System.out.println("AM: Queue size of AuthorityInfos is " + this.queue.size() );
-//#endif
-        for (int i = 0; i < this.queue.size(); i++)
-        {
-            if (authorityMatchesPlan(this.queue.get(i), rp))
-            {
-//#ifdef AM_DEBUG
+
+        for (int i = 0; i < this.queue.size(); i++) {
+
+            if (authorityMatchesPlan(this.queue.get(i), rp)) {
+
                 if (CommonUtils.AM_DEBUG_debug)  System.out.println( "AM: Found AuthorityInfo, which matches the plan " + rp.getPlan().getName() );
-//#endif
                 rp.getCycleManagement().handleAuthorityInfo(this.queue.get(i));
                 this.queue.remove(this.queue.get(i));
                 i--;
@@ -64,29 +58,49 @@ public class AuthorityManager {
 
     }
 
+//    private boolean authorityMatchesPlan2(AllocationAuthorityInfo allocationAuthorityInfo, RunningPlan runningPlan) {
+////        assert(!p.isRetired());
+////        // If a plan is not retired and does not have a parent, it must be masterplan
+////        if (p.isRetired()) {
+////            return false;
+////        }
+//        RunningPlan parent = runningPlan.getParent();
+//
+//        if ((parent == null && allocationAuthorityInfo.parentState == -1) ||
+//                (parent != null && parent.getActiveState() != null && parent.getActiveState().getID() == allocationAuthorityInfo.parentState)) {
+//
+////        if (runningPlan.getActivePlan().getID() == allocationAuthorityInfo.planID) {
+//            if (runningPlan.getPlan().getID() == allocationAuthorityInfo.planID) {
+//                return true;
+//            } else if (allocationAuthorityInfo.planType != -1 && runningPlan.getPlanType() != null && runningPlan.getPlanType().getID() == allocationAuthorityInfo.planType) {
+//                return true;
+//            }
+//        }
+//        return false;
+//    }
+
     private boolean authorityMatchesPlan(AllocationAuthorityInfo allocationAuthorityInfo, RunningPlan runningPlan) {
-        RunningPlan shared = runningPlan.getParent();
+        RunningPlan parent = runningPlan.getParent();
 //        auto shared = runningPlan.getParent().lock();
-//#ifdef AM_DEBUG
+
 		if (runningPlan.getParent() != null) {
-            if (CommonUtils.AM_DEBUG_debug) System.out.println( "AM: Parent-WeakPtr is NOT expired!");
-            if (CommonUtils.AM_DEBUG_debug) System.out.println( "AM: Parent-ActiveState is: " + (shared.getActiveState() != null ? shared.getActiveState().getID() : null));
+            if (CommonUtils.AM_DEBUG_debug) System.out.println( "AM: Parent-Weak is NOT expired!");
+            if (CommonUtils.AM_DEBUG_debug) System.out.println( "AM: Parent-ActiveState is: " + (parent.getActiveState() != null ? parent.getActiveState().getID() : null));
             if (CommonUtils.AM_DEBUG_debug) System.out.println( "AM: AAI-ParentState is: " + allocationAuthorityInfo.parentState);
 		}
 		else {
-            if (CommonUtils.AM_DEBUG_debug) System.out.println(  "AM: Parent-WeakPtr is expired!");
+            if (CommonUtils.AM_DEBUG_debug) System.out.println(  "AM: Parent-Weak is expired!");
             if (CommonUtils.AM_DEBUG_debug) System.out.println(  "AM: Current-ActiveState is: " + runningPlan.getActiveState().getID());
             if (CommonUtils.AM_DEBUG_debug) System.out.println( "AM: AAI-ParentState is: " + allocationAuthorityInfo.parentState);
 		}
-//#endif
 
-        if ((runningPlan.getParent() != null && allocationAuthorityInfo.parentState == -1)
-                || (runningPlan.getParent() == null && shared.getActiveState() != null && shared.getActiveState().getID() == allocationAuthorityInfo.parentState)) {
+        if ((parent == null && allocationAuthorityInfo.parentState == -1)
+                || (parent != null && parent.getActiveState() != null
+                && parent.getActiveState().getID() == allocationAuthorityInfo.parentState)) {
 
-            if (runningPlan.getPlan().getID() == allocationAuthorityInfo.planId) {
+            if (runningPlan.getPlan().getID() == allocationAuthorityInfo.planID) {
                 return true;
-            }
-			else if (allocationAuthorityInfo.planType != -1 && runningPlan.getPlanType() != null && runningPlan.getPlanType().getID() == allocationAuthorityInfo.planType) {
+            }  else if (allocationAuthorityInfo.planType != -1 && runningPlan.getPlanType() != null && runningPlan.getPlanType().getID() == allocationAuthorityInfo.planType) {
                 return true;
             }
         }
@@ -95,7 +109,7 @@ public class AuthorityManager {
 
     public void handleIncomingAuthorityMessage(AllocationAuthorityInfo aai) {
 
-        if (ae.getTeamObserver().isRobotIgnored(aai.senderID)) {
+        if (ae.getTeamObserver().isAgentIgnored(aai.senderID)) {
             return;
         }
 
@@ -116,20 +130,20 @@ public class AuthorityManager {
                 }
             }
         }
-//#ifdef AM_DEBUG
+
         if (CommonUtils.AM_DEBUG_debug) {
             String ss = "";
             ss += "AM: Received AAI Assignment from " + aai.senderID + " is: ";
-            for (EntryPointAgents epRobots : aai.entryPointAgents) {
-                ss += "EP: " + epRobots.entrypoint + " Robots: ";
-                for (long robot : epRobots.agents) {
-                    ss += robot + ", ";
+            for (EntryPointAgents entryPointAgents : aai.entryPointAgents) {
+                ss += "EP: " + entryPointAgents.entrypoint + " Agents: ";
+                for (long agentID : entryPointAgents.agents) {
+                    ss += agentID + ", ";
                 }
                 ss += "\n";
             }
             System.out.println(ss);
         }
-//#endif
+
         {
 //                lock_guard<mutex> lock(mu);
             this.queue.add(aai);
@@ -147,19 +161,19 @@ public class AuthorityManager {
         Assignment ass = p.getAssignment();
 
         for (int i = 0; i < ass.getEntryPointCount(); i++) {
-            EntryPointAgents epRobots = new EntryPointAgents();
-            epRobots.entrypoint = ass.getEpAgentsMapping().getEp(i).getID();
+            EntryPointAgents entryPointAgents = new EntryPointAgents();
+            entryPointAgents.entrypoint = ass.getEpAgentsMapping().getEp(i).getID();
 
-            for (long robot : ass.getAgentsWorking(epRobots.entrypoint)) {
-                epRobots.agents.add(robot);
+            for (long robot : ass.getAgentsWorking(entryPointAgents.entrypoint)) {
+                entryPointAgents.agents.add(robot);
             }
-            aai.entryPointAgents.add(epRobots);
+            aai.entryPointAgents.add(entryPointAgents);
         }
 
         RunningPlan shared = p.getParent();
         aai.parentState = ((shared == null || shared.getActiveState() == null) ? -1 : shared.getActiveState().getID());
-        aai.planId = p.getPlan().getID();
-        aai.authority = this.ownID;
+        aai.planID = p.getPlan().getID();
+        aai.authority = this.ownID; // OOOOOOOH
         aai.senderID = this.ownID;
         aai.planType = (p.getPlanType() == null ? -1 : p.getPlanType().getID());
 
@@ -167,10 +181,10 @@ public class AuthorityManager {
             String ss = "";
             ss += "AM: Sending AAI Assignment from " + aai.senderID + " is: " + "\n";
 
-            for (EntryPointAgents epRobots : aai.entryPointAgents) {
-                ss += "EP: " + epRobots.entrypoint + " Robots: ";
-                for (long robot : epRobots.agents) {
-                    ss += robot + ", ";
+            for (EntryPointAgents entryPointAgents : aai.entryPointAgents) {
+                ss += "EP: " + entryPointAgents.entrypoint + " Agents: ";
+                for (long agentID : entryPointAgents.agents) {
+                    ss += agentID + ", ";
                 }
                 ss += "\n";
             }

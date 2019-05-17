@@ -12,13 +12,13 @@ import java.util.Vector;
  */
 public class PlanSelector implements IPlanSelector {
     private PartialAssignmentPool partialAssignmentPool;
-    private AlicaEngine ae;
+    private AlicaEngine alicaEngine;
     private ITeamObserver teamObserver;
 
-    public PlanSelector(AlicaEngine alicaEngine, PartialAssignmentPool pap) {
-        this.ae = alicaEngine;
-        this.teamObserver = ae.getTeamObserver();
-        this.partialAssignmentPool = pap;
+    public PlanSelector(AlicaEngine alicaEngine, PartialAssignmentPool assignmentPool) {
+        this.alicaEngine = alicaEngine;
+        this.teamObserver = this.alicaEngine.getTeamObserver();
+        this.partialAssignmentPool = assignmentPool;
     }
 
     @Override
@@ -30,33 +30,29 @@ public class PlanSelector implements IPlanSelector {
     }
 
     @Override
-    public RunningPlan getBestSimilarAssignment(RunningPlan rp, Vector<Long> agents) {
+    public RunningPlan getBestSimilarAssignment(RunningPlan runningPlan, Vector<Long> agents) {
         // Reset set index of the partial assignment multiton
         PartialAssignment.reset(partialAssignmentPool);
         // CREATE NEW PLAN LIST
         ArrayList<Plan> newPlanList;
 
-        if (rp.getPlanType() == null) {
+        if (runningPlan.getPlanType() == null) {
             newPlanList = new ArrayList<Plan>();
-            newPlanList.add((Plan) rp.getPlan());
-        }
-        else
-        {
-            newPlanList = rp.getPlanType().getPlans();
+            newPlanList.add((Plan) runningPlan.getPlan());
+        } else {
+            newPlanList = runningPlan.getPlanType().getPlans();
         }
         // GET ROBOTS TO ASSIGN
-        Vector<Long> selectedAgents = rp.getAssignment().getAllAgents();
-        return this.createRunningPlan(rp.getParent(), newPlanList, selectedAgents, rp, rp.getPlanType());
+        Vector<Long> selectedAgents = runningPlan.getAssignment().getAllAgents();
+        return this.createRunningPlan(runningPlan.getParent(), newPlanList, selectedAgents, runningPlan, runningPlan.getPlanType());
     }
 
     private ArrayList<RunningPlan> getPlansForStateInternal(RunningPlan planningParent, ArrayList<AbstractPlan> plans, Vector<Long> agentIDs) {
         ArrayList<RunningPlan> rps = new ArrayList<RunningPlan>();
-//#ifdef PSDEBUG
         if (CommonUtils.PS_DEBUG_debug) System.out.println("###### PS: GetPlansForState: Parent:"
                 + (planningParent != null ? planningParent.getPlan().getName() : "null") + " plan count: "
                 + plans.size() + " agent count: "
                 + agentIDs.size() + " ######" );
-//#endif
         RunningPlan rp;
         ArrayList<Plan> planList;
         BehaviourConfiguration bc;
@@ -75,14 +71,12 @@ public class PlanSelector implements IPlanSelector {
 
             if (ap instanceof BehaviourConfiguration) {
                 bc = (BehaviourConfiguration) ap;
-                rp = new RunningPlan(ae, bc);
+                rp = new RunningPlan(alicaEngine, bc);
                 // A BehaviourConfiguration is a Plan too (in this context)
                 rp.setPlan(bc);
                 rps.add(rp);
                 rp.setParent(planningParent);
-//#ifdef PSDEBUG
                 if (CommonUtils.PS_DEBUG_debug) System.out.println("PS: Added Behaviour " + bc.getBehaviour().getName() );
-//#endif
             } else {
                 // PLAN
 //                p = (Plan)(ap);
@@ -95,9 +89,7 @@ public class PlanSelector implements IPlanSelector {
                     rp = this.createRunningPlan(planningParent, planList, agentIDs, null, null);
 
                     if (rp == null) {
-//#ifdef PSDEBUG
                         if (CommonUtils.PS_DEBUG_debug) System.out.println("PS: It was not possible teamObserver create a RunningPlan for the Plan " + p.getName() + " !");
-//#endif
                         return null;
                     }
                     rps.add(rp);
@@ -113,10 +105,8 @@ public class PlanSelector implements IPlanSelector {
                         rp = this.createRunningPlan(planningParent, pt.getPlans(), agentIDs, null, pt);
                         if (rp == null)
                         {
-//#ifdef PSDEBUG
                             if (CommonUtils.PS_DEBUG_debug) System.out.println( "PS: It was not possible teamObserver create a RunningPlan for the Plan (Plantype) " + pt.getName()
                                     + "!" );
-//#endif
                             return null;
                         }
                         rps.add(rp);
@@ -139,15 +129,13 @@ public class PlanSelector implements IPlanSelector {
                             pp = (PlanningProblem)ap;
 
                         //TODO implement method in planner
-                        Plan myP = ae.getPlanner().requestPlan(pp);
+                        Plan myP = alicaEngine.getPlanner().requestPlan(pp);
                         planList = new ArrayList<Plan>();
                         planList.add(myP);
                         rp = this.createRunningPlan(planningParent, planList, agentIDs, null, null);
                         if (rp == null)
                         {
-//#ifdef PSDEBUG
                             if (CommonUtils.PS_DEBUG_debug) System.out.println( "PS: Unable teamObserver execute planning result" );
-//#endif
                             return null;
                         }
                         rps.add(rp);
@@ -199,14 +187,14 @@ public class PlanSelector implements IPlanSelector {
         if (oldRp == null)
         {
             // preassign other agents, because we dont need a similar assignment
-            rp = new RunningPlan(ae, relevantPlanType);
-            ta = new TaskAssignment(this.ae.getPartialAssignmentPool(), this.ae.getTeamObserver(), newPlanList, agentIDs, true);
+            rp = new RunningPlan(alicaEngine, relevantPlanType);
+            ta = new TaskAssignment(this.alicaEngine.getPartialAssignmentPool(), this.alicaEngine.getTeamObserver(), newPlanList, agentIDs, true);
         }
         else
         {
             // dont preassign other agents, because we need a similar assignment (not the same)
-            rp = new RunningPlan(ae, oldRp.getPlanType());
-            ta = new TaskAssignment(this.ae.getPartialAssignmentPool(), this.ae.getTeamObserver(), newPlanList, agentIDs, false);
+            rp = new RunningPlan(alicaEngine, oldRp.getPlanType());
+            ta = new TaskAssignment(this.alicaEngine.getPartialAssignmentPool(), this.alicaEngine.getTeamObserver(), newPlanList, agentIDs, false);
             oldAss = oldRp.getAssignment();
         }
 

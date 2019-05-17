@@ -5,7 +5,11 @@ package de.uniks.vs.jalica.unknown;
  */
 public interface IRoleAssignment {
 
-    public void tick();
+    void init();
+    void tick();
+    void update();
+
     Role getOwnRole();
     Role getRole(long agentID);
+    void setCommunication(AlicaCommunication communication);
 }

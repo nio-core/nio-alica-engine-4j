@@ -74,10 +74,10 @@ public class CycleManager {
 
     public boolean setAssignment() {
 //#ifdef CM_DEBUG
-        if (CommonUtils.CM_DEBUG_debug) System.out.println( "CM: Setting authorative assignment for plan " + runningPlan.getPlan().getName() );
+        if (CommonUtils.CM_DEBUG_debug) System.out.println( "CM("+this.myID+"): Setting authorative assignment for plan " + runningPlan.getPlan().getName() );
 
         if (runningPlan.getPlan().getName() == "AuthorityTest") {
-            if (CommonUtils.CM_DEBUG_debug) System.out.println( "CM: Changing AuthorityTest ");
+            if (CommonUtils.CM_DEBUG_debug) System.out.println( "CM("+this.myID+"): Changing AuthorityTest ");
         }
     //#endif
         EntryPoint myEntryPoint = null;
@@ -87,7 +87,7 @@ public class CycleManager {
         }
         boolean modifiedSelf = false;
         boolean modified = false;
-        if (this.fixedAllocation.planId != runningPlan.getPlan().getID())
+        if (this.fixedAllocation.planID != runningPlan.getPlan().getID())
         {//Plantype case
             if (runningPlan.getPlanType().getID() != this.fixedAllocation.planType)
             {
@@ -96,7 +96,7 @@ public class CycleManager {
             Plan newPlan = null;
             for (Plan p : runningPlan.getPlanType().getPlans())
             {
-                if (p.getID() == this.fixedAllocation.planId)
+                if (p.getID() == this.fixedAllocation.planID)
                 {
                     newPlan = p;
                     runningPlan.setPlan(p);
@@ -173,7 +173,7 @@ public class CycleManager {
         this.allocationHistory.set(this.newestAllocationDifference, aldif);
 
 //#ifdef CM_DEBUG
-        if (CommonUtils.CM_DEBUG_debug) System.out.println("CM: SetNewAllDiff(a): \n   " + aldif.toString()  + "     OWN AGENT ID " + this.runningPlan.getOwnID());
+        if (CommonUtils.CM_DEBUG_debug) System.out.println("CM("+this.myID+"): SetNewAllDiff(a): \n   " + aldif.toString()  + "     OWN AGENT ID " + this.runningPlan.getOwnID());
 //#endif
 
     }
@@ -225,7 +225,7 @@ public class CycleManager {
 //#endif
         }
         catch (Exception e) {
-            System.err.print( "CM: Exception in Alloc Difference Calculation: " );
+            System.err.print( "CM("+this.myID+"): Exception in Alloc Difference Calculation: " );
             System.err.println( e.getMessage());
 
         }
@@ -236,10 +236,11 @@ public class CycleManager {
     }
 
     public boolean needsSending() {
-        if (CommonUtils.CM_DEBUG_debug) System.out.println("CM: " + this.overrideShoutTime.time + overrideShoutInterval.time + "<" +alicaEngine.getIAlicaClock().now().time + "  "+ (this.overrideShoutTime.time + overrideShoutInterval.time < alicaEngine.getIAlicaClock().now().time) +"  " +
-                "" + ((this.state == CycleState.overriding) && (this.overrideShoutTime.time + overrideShoutInterval.time < alicaEngine.getIAlicaClock().now().time) ));
+        if (CommonUtils.CM_DEBUG_debug) System.out.println("CM: " + this.overrideShoutTime.time + overrideShoutInterval.time + "<" +alicaEngine.getIAlicaClock().now().time + " = "+ (this.overrideShoutTime.time + overrideShoutInterval.time < alicaEngine.getIAlicaClock().now().time) +"  " +
+                " " + ((this.state == CycleState.overriding) ));
+
         return (this.state == CycleState.overriding )
-                && (this.overrideShoutTime.time + overrideShoutInterval.time < alicaEngine.getIAlicaClock().now().time);
+                && ((this.overrideShoutTime.time + overrideShoutInterval.time) < alicaEngine.getIAlicaClock().now().time);
     }
 
     public void sent() {
@@ -298,14 +299,14 @@ public class CycleManager {
         if (this.state == CycleState.observing) {
             if (detectAllocationCycle())
             {
-                System.err.println("CM: Cycle Detected!");
+                System.err.println("CM("+this.myID+"): Cycle Detected!");
 
                 this.setState(CycleState.overriding);
                 plan.setAuthorityTimeInterval( new AlicaTime(
                         Math.min(maximalOverrideTimeInterval.time, (plan.getAuthorityTimeInterval().time * intervalIncFactor))));
                 this.overrideShoutTime.time = 0;
 //#ifdef CM_DEBUG
-                if (CommonUtils.CM_DEBUG_debug) System.out.println("Assuming Authority for " + plan.getAuthorityTimeInterval().time / 1000000000.0
+                if (CommonUtils.CM_DEBUG_debug) System.out.println("CM("+this.myID+"): Assuming Authority for " + plan.getAuthorityTimeInterval().time / 1000000000.0
                         + "sec!" );
 //#endif
                 this.overrideTimestamp = alicaEngine.getIAlicaClock().now();
@@ -323,7 +324,7 @@ public class CycleManager {
                 < alicaEngine.getIAlicaClock().now().time)
             {
 //#ifdef CM_DEBUG
-                if (CommonUtils.CM_DEBUG_debug) System.out.println("Resume Observing!" );
+                if (CommonUtils.CM_DEBUG_debug) System.out.println("CM("+this.myID+"): Resume Observing!" );
 //#endif
                 this.setState(CycleState.observing);
                 this.fixedAllocation = null;
@@ -333,7 +334,7 @@ public class CycleManager {
                 < alicaEngine.getIAlicaClock().now().time)
             {
 //#ifdef CM_DEBUG
-                if (CommonUtils.CM_DEBUG_debug)  System.out.println("Resume Observing!" );
+                if (CommonUtils.CM_DEBUG_debug)  System.out.println("CM("+this.myID+"): Resume Observing!" );
 //#endif
                 this.setState(CycleState.observing);
                 this.fixedAllocation = null;
@@ -343,10 +344,11 @@ public class CycleManager {
     }
 
     private void setState(CycleState state) {
-        if (CommonUtils.CM_DEBUG_debug) System.out.println("CM:  set state -> " + state.name());
+        if (CommonUtils.CM_DEBUG_debug) System.out.println("CM("+this.myID+"): set state -> " + state.name());
 
-        if(state != CycleState.observing)
-            System.err.println("CM:  !!!!!!!!!!!!!!!!!!!!!!");
+//        if(state != CycleState.observing)
+//            System.err.println("CM:  !!!!!!!!!!!!!!!!!!!!!!");
+
         this.state = state;
     }
 
@@ -365,7 +367,7 @@ public class CycleManager {
             if (i < 0) {
                 i = this.allocationHistory.size() - 1;
             }
-            if (CommonUtils.CM_REASON_DEBUG_debug)  System.out.println("CM: REASON " + this.allocationHistory.get(i).getReason().name() + " : " + AllocationDifference.Reason.message );
+            if (CommonUtils.CM_REASON_DEBUG_debug)  System.out.println("CM("+this.myID+"): REASON " + this.allocationHistory.get(i).getReason().name() + " : " + AllocationDifference.Reason.message );
 
             if (this.allocationHistory.get(i).getReason() == AllocationDifference.Reason.utility) {
 

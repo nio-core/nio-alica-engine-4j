@@ -7,8 +7,6 @@ import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 import org.zeromq.ZMQ;
 
-import java.util.ArrayList;
-
 public class PlanTreeInfoSubscriber extends ZMQSubscriber {
 
     private final AlicaZMQCommunication alicaZMQCommunication;
@@ -21,6 +19,7 @@ public class PlanTreeInfoSubscriber extends ZMQSubscriber {
 
             @Override
             public void run() {
+                if (CommonUtils.COMM_debug) System.out.println("PTI-Sub("+alicaZMQCommunication.ae.getAgentName()+"): Thread started" );
                 while (true) {
 
                     String string = subscriber.recvStr(0).trim();
@@ -28,26 +27,25 @@ public class PlanTreeInfoSubscriber extends ZMQSubscriber {
                     if (!string.startsWith(topic))
                         continue;
 
-                    System.out.println("PTI-Sub: " +string);
+                    if (CommonUtils.COMM_debug) System.out.println("PTI-Sub(" + alicaZMQCommunication.ae.getAgentName() +") " + string);
 
                     try {
                         JSONObject jsonObject = (JSONObject)JSONValue.parseWithException(string.replace(topic, ""));
-                        PlanTreeInfo ptiPtr = new PlanTreeInfo();
-                        ptiPtr.senderID = (Long) jsonObject.get("senderID");
+                        PlanTreeInfo pti = new PlanTreeInfo();
+                        pti.senderID = (Long) jsonObject.get("senderID");
 
                         for ( Object i : (JSONArray) jsonObject.get("stateIDs")) {
-                            ptiPtr.stateIDs.add((Long) i);
+                            pti.stateIDs.add((Long) i);
                         }
 
                         for (Object i : (JSONArray) jsonObject.get("succeededEPs")) {
-                            ptiPtr.succeededEPs.add((Long) i);
+                            pti.succeededEPs.add((Long) i);
                         }
-
-                        alicaZMQCommunication.handlePlanTreeInfoRos(ptiPtr);
+//                        if (CommonUtils.COMM_debug) System.out.println("PTI-Sub: pti" + pti);
+                        alicaZMQCommunication.handlePlanTreeInfo(pti);
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
-
                 }
             }
         };

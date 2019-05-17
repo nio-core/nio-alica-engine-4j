@@ -26,7 +26,7 @@ public class StateCollection {
     }
 
     public Set<Long> getAgentsInState(State s) {
-
+        System.out.println("SC: agent size:" + agents.size());
         Set<Long> ret = new HashSet<>();
         for (int i = 0; i < this.agents.size(); i++)
         {
@@ -35,6 +35,7 @@ public class StateCollection {
                 ret.add(this.agents.get(i));
             }
         }
+        System.out.println("SC: agents in state:" + ret.size());
         return ret;
     }
 

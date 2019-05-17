@@ -84,7 +84,7 @@ public class VariableSyncModule {
             return;
         }
 
-        if (ae.getTeamObserver().isRobotIgnored(msg.senderID)) {
+        if (ae.getTeamObserver().isAgentIgnored(msg.senderID)) {
             return;
         }
         boolean found = false;

@@ -18,7 +18,7 @@ public class PlanTreeInfoPublisher extends ZMQPublisher {
         jsonObject.put("senderID", statInfo.senderID);
         jsonObject.put("stateIDs", statInfo.stateIDs.toArray());
         jsonObject.put("succeededEPs", statInfo.succeededEPs.toArray());
-        if (CommonUtils.COMM_debug) System.out.println("PTI-Pub: publish " + jsonObject.toJSONString());
+        if (CommonUtils.COMM_debug) System.out.println("PTI-Pub("+statInfo.senderID+"): publish " + jsonObject.toJSONString());
         publisher.send(topic + " " + jsonObject.toJSONString(), 0);
     }
 }

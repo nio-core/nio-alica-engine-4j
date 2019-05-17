@@ -8,7 +8,7 @@ import java.util.LinkedHashMap;
 /**
  * Created by alex on 14.07.17.
  */
-public class RobotEngineData {
+public class AgentEngineData {
 
     private AlicaEngine ae;
     /**
@@ -32,7 +32,7 @@ public class RobotEngineData {
     Role lastRole;
 
 
-    public RobotEngineData(AlicaEngine ae, AgentProperties properties) {
+    public AgentEngineData(AlicaEngine ae, AgentProperties properties) {
         this.ae = ae;
         this.active = false;
         this.lastMessageTime = 0;
@@ -43,10 +43,12 @@ public class RobotEngineData {
     }
 
     public boolean isActive() {
+        if(CommonUtils.AED_DEBUG_debug) System.out.println("AED: " + this.properties.getName() +" is " +this.active);
         return active;
     }
 
     public void setActive(boolean active) {
+        if(CommonUtils.AED_DEBUG_debug) System.out.println("AED: " + this.properties.getName() +"("+this.active+") "+" set " + active);
         this.active = active;
     }
 
@@ -63,7 +65,8 @@ public class RobotEngineData {
     }
 
     public void setLastMessageTime(double lastMessageTime) {
-//        this.lastMessageTime = lastMessageTime;
+        if(CommonUtils.AED_DEBUG_debug) System.out.println(this.lastMessageTime +" "+ lastMessageTime);
+        this.lastMessageTime = lastMessageTime;
     }
 
     public void initDomainVariables()
@@ -92,7 +95,7 @@ public class RobotEngineData {
 //        }
 //		else
 //        {
-////			cout << "RobotEngineData: DomainVarible not found returning nullptr" << endl;
+////			cout << "AgentEngineData: DomainVarible not found returning nullptr" << endl;
 //            return nullptr;
 //        }
     }

@@ -9,4 +9,13 @@ public class PlanTreeInfo implements Message {
     public long senderID;
     public ArrayList<Long> stateIDs = new ArrayList<>();
     public ArrayList<Long> succeededEPs = new ArrayList<>();
+
+    @Override
+    public String toString() {
+        String info = "\n Sender               :" +senderID + " \n";
+        info += " States               :"+stateIDs+ " \n";
+        info += " succeeded EntryPoints:"+succeededEPs;
+        return info;
+    }
 }
+

@@ -17,7 +17,7 @@ public class CommonUtils {
     public static final boolean UFDEBUG_debug = false;
     public static final boolean PB_DEBUG_debug = false;
     public static final boolean CM_REASON_DEBUG_debug = false;
-    public static final boolean CM_DEBUG_debug = false;
+    public static final boolean CM_DEBUG_debug = true;
     public static final boolean SUCDEBUG_debug = false;
     public static final boolean CS_DEBUG_debug = false;
     public static final boolean MF_DEBUG_debug = true;
@@ -27,14 +27,15 @@ public class CommonUtils {
     public static final boolean RP_DEBUG_debug = false;
     public static final boolean PS_DEBUG_debug = true;
     public static final boolean TA_DEBUG_debug = true;
-    public static final boolean AM_DEBUG_debug = false;
+    public static final boolean AM_DEBUG_debug = true;
     public static final boolean AC_DEBUG_debug = false;
     public static final boolean TE_DEBUG_debug = false;
     public static final boolean B_DEBUG_debug = false;
     public static final boolean PA_DEBUG_debug = true;
     public static final boolean CV_DEBUG_debug = false;
     public static final boolean AE_DEBUG_debug = false;
-    public static final boolean COMM_debug = false;
+    public static final boolean AED_DEBUG_debug = false;
+    public static final boolean COMM_debug = true;
     public static final boolean XTH_DEBUG_debug = false;
     public static final boolean DC_debug = false;
 

@@ -15,15 +15,13 @@ public class PartialAssignmentPool {
     public Vector<PartialAssignment> partialAssignments;
 
     public PartialAssignmentPool() {
-        // IDLE-EntryPoint
+
         idleEntryPoint = new EntryPoint();
         idleEntryPoint.setName("IDLE-ep");
         idleEntryPoint.setID(EntryPoint.IDLEID);
         idleEntryPoint.setMinCardinality(0);
-//        idleEntryPoint.setMaxCardinality(numeric_limits<int>::max());
         idleEntryPoint.setMaxCardinality(Integer.MAX_VALUE);
 
-        // Add IDLE-Task
         idleTask = new Task(true);
         idleTask.setName("IDLE-TASK");
         idleTask.setID(Task.IDLEID);

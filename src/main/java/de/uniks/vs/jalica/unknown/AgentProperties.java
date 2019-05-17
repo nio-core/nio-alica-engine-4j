@@ -75,7 +75,6 @@ public class AgentProperties {
         return name;
     }
 
-    public long getId() { return id; }
 
     public String getDefaultRole() { return defaultRole; }
 }

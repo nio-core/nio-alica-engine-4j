@@ -58,7 +58,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
 
         if (behaviourTrigger == null) {
             if (CommonUtils.B_DEBUG_debug) System.out.println("BB: start behaviour type -> " + this.getClass().getSimpleName());
-            CommonUtils.aboutCallNotification();
+            if (CommonUtils.B_DEBUG_debug) CommonUtils.aboutCallNotification();
             return this.timer.start();
         }
         else {

@@ -16,7 +16,7 @@ public interface ITeamObserver {
 
     void doBroadCast(ArrayList<Long> msg);
 
-    RobotEngineData getOwnEngineData();
+    AgentEngineData getOwnEngineData();
 
     void notifyAgentLeftPlan(AbstractPlan plan);
 

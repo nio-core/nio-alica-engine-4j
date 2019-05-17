@@ -6,14 +6,13 @@ import java.util.Comparator;
  * Created by alex on 14.07.17.
  */
 public class RoleUtility {
-    private final double dutility;
     private final AgentProperties agentProperties;
     private final Role role;
-    private double utilityValue;
+    private final double utilityValue;
 
-    public RoleUtility(double dutility, AgentProperties agentProperties, Role role) {
+    public RoleUtility(double utilityValue, AgentProperties agentProperties, Role role) {
 
-        this.dutility = dutility;
+        this.utilityValue = utilityValue;
         this.agentProperties = agentProperties;
         this.role = role;
     }
@@ -56,16 +55,4 @@ public class RoleUtility {
     public double getUtilityValue() {
         return utilityValue;
     }
-
-//        if(otherOne->getRole()->getID() != thisOne->getRole()->getID())
-//        return otherOne->getRole()->getID() < thisOne->getRole()->getID();
-//
-//        if(otherOne->getUtilityValue() != thisOne->getUtilityValue())
-//            return otherOne->getUtilityValue() < thisOne->getUtilityValue();
-//
-//        if(otherOne->getAgentProperties()->getID() != thisOne->getAgentProperties()->getID())
-//        return otherOne->getAgentProperties()->getID() < thisOne->getAgentProperties()->getID();
-//
-//        return false;
-
 }

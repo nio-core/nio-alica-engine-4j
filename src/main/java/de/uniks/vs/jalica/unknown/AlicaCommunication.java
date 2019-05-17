@@ -37,7 +37,7 @@ public abstract class AlicaCommunication {
     }
 
     protected void onAuthorityInfoReceived(AllocationAuthorityInfo aai) {
-        ae.getAuth().handleIncomingAuthorityMessage(aai);
+        ae.getAuthorityManager().handleIncomingAuthorityMessage(aai);
     }
 
     protected void onPlanTreeInfoReceived(PlanTreeInfo pti) {

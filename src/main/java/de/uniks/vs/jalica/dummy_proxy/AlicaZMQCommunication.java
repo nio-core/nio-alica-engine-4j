@@ -63,10 +63,10 @@ public class AlicaZMQCommunication extends AlicaCommunication {
         ZContext context = new ZContext();
         ZMQ.Socket subscriber = context.createSocket(SocketType.SUB);
 //        subscriber.connect("tcp://localhost:5556");
-        if ( ae.getSystemConfig().getOwnRobotID() == 42)
-            subscriber.connect("ipc://" +  17);
+        if ( ae.getSystemConfig().getOwnRobotID() == 1) //42)
+            subscriber.connect("ipc://" +  2); //17);
         else
-            subscriber.connect("ipc://" +  42);
+            subscriber.connect("ipc://" +  1); //42);
 
         ZMQ.Socket publisher = context.createSocket(SocketType.PUB);
 //        publisher.bind("tcp://*:5556");
@@ -75,7 +75,7 @@ public class AlicaZMQCommunication extends AlicaCommunication {
         System.out.println("ZMQ-C: AGENT CHANNEL "+ "ipc://" +  ae.getSystemConfig().getOwnRobotID());
 
 //        AllocationAuthorityInfoPublisher = rosNode.advertise<alica_ros_proxy::AllocationAuthorityInfo>(this.allocationAuthorityInfoTopic, 2);
-//        AllocationAuthorityInfoSubscriber = rosNode.subscribe(this.allocationAuthorityInfoTopic, 10, &AlicaRosCommunication::handleAllocationAuthorityRos, (AlicaRosCommunication*)this);
+//        AllocationAuthorityInfoSubscriber = rosNode.subscribe(this.allocationAuthorityInfoTopic, 10, &AlicaRosCommunication::handleAllocationAuthority, (AlicaRosCommunication*)this);
         String allocationAuthorityInfoTopic = (String) ae.getSystemConfig().get(configFile).get("Topics.allocationAuthorityInfoTopic");
         allocationAuthorityInfoPublisher = new AllocationAuthorityInfoPublisher(allocationAuthorityInfoTopic, publisher);
         allocationAuthorityInfoSubscriber = new AllocationAuthorityInfoSubscriber(allocationAuthorityInfoTopic, subscriber, this);
@@ -93,7 +93,7 @@ public class AlicaZMQCommunication extends AlicaCommunication {
 
 
 //        PlanTreeInfoPublisher = rosNode.advertise<alica_ros_proxy::PlanTreeInfo>(this.planTreeInfoTopic, 10);
-//        PlanTreeInfoSubscriber = ro sNode.subscribe(this.planTreeInfoTopic, 1, &AlicaRosCommunication::handlePlanTreeInfoRos,  (AlicaRosCommunication*)this);
+//        PlanTreeInfoSubscriber = ro sNode.subscribe(this.planTreeInfoTopic, 1, &AlicaRosCommunication::handlePlanTreeInfo,  (AlicaRosCommunication*)this);
         String planTreeInfoTopic = (String) ae.getSystemConfig().get(configFile).get("Topics.planTreeInfoTopic");
         planTreeInfoPublisher = new PlanTreeInfoPublisher(planTreeInfoTopic, publisher);
         planTreeInfoSubscriber = new PlanTreeInfoSubscriber(planTreeInfoTopic, subscriber, this);
@@ -167,6 +167,7 @@ public class AlicaZMQCommunication extends AlicaCommunication {
 
     @Override
     public void sendSyncReady(SyncReady sr) {
+        CommonUtils.aboutNoImpl();
         if (this.isRunning){
 //            this.SyncReadyPublisher.publish(sr);
         }
@@ -174,7 +175,7 @@ public class AlicaZMQCommunication extends AlicaCommunication {
 
     @Override
     public void sendSyncTalk(SyncTalk st) {
-
+        CommonUtils.aboutNoImpl();
         if (this.isRunning){
 //            this.SyncTalkPublisher.publish(st);
         }
@@ -190,14 +191,14 @@ public class AlicaZMQCommunication extends AlicaCommunication {
 
 
 
-    public void handleAllocationAuthorityRos(AllocationAuthorityInfo aai) {
+    public void handleAllocationAuthority(AllocationAuthorityInfo aai) {
 
         if (this.isRunning) {
             this.onAuthorityInfoReceived(aai);
         }
     }
 
-    public void handlePlanTreeInfoRos(PlanTreeInfo pti) {
+    public void handlePlanTreeInfo(PlanTreeInfo pti) {
 
         if (this.isRunning) {
             this.onPlanTreeInfoReceived(pti);

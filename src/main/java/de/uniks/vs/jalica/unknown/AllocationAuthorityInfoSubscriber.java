@@ -15,36 +15,48 @@ public class AllocationAuthorityInfoSubscriber extends ZMQSubscriber {
         super(topic, subscriber);
         this.alicaZMQCommunication = alicaZMQCommunication;
 
-        System.out.println("AAI-S: start");
+        System.out.println("AAI-Sub("+this.alicaZMQCommunication.ae.getAgentName()+"): start");
 
         Thread thread = new Thread() {
 
             @Override
             public void run() {
-                while (true) {
+                    while (true) {
 
-                    String string = subscriber.recvStr(0).trim();
+                        String string = subscriber.recvStr(0).trim();
 
-                    if (!string.startsWith(topic))
-                        continue;
+                        if (!string.startsWith(topic)) {
+                            continue;
+                        }
 
-                    System.out.println("AAI-S: " +string);
+                        if (CommonUtils.COMM_debug) System.out.println("AAI-Sub("+alicaZMQCommunication.ae.getAgentName()+"): " +string);
 
-                    try {
-                        JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(string.replace(topic, ""));
-                        AllocationAuthorityInfo ptiPtr = new AllocationAuthorityInfo();
+                        try {
+                            JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(string.replace(topic, ""));
+                            AllocationAuthorityInfo allocationAuthorityInfo = new AllocationAuthorityInfo();
 
-//                        ptiPtr.senderID = (Long) jsonObject.get("senderID");
-//
-//                        for ( Object i : (JSONArray) jsonObject.get("stateIDs")) {
-//                            ptiPtr.stateIDs.add((Long) i);
-//                        }
-//
+                            allocationAuthorityInfo.senderID = (Long) jsonObject.get("senderID");
+                            allocationAuthorityInfo.planType = (Long) jsonObject.get("planType");
+                            allocationAuthorityInfo.authority = (Long) jsonObject.get("planType");
+                            allocationAuthorityInfo.planID = (Long) jsonObject.get("planID");
+                            allocationAuthorityInfo.parentState = (Long) jsonObject.get("parentState");
+
+                            for (Object i : (JSONArray) jsonObject.get("entrypoints")) {
+                                JSONObject obj = (JSONObject) i;
+                                EntryPointAgents entryPointAgents = new EntryPointAgents();
+                                entryPointAgents.entrypoint = (long) obj.get("entryPoint");
+
+                                for (Object _i : (JSONArray) obj.get("robots")) {
+                                    entryPointAgents.agents.add((long) _i);
+                                }
+                                allocationAuthorityInfo.entryPointAgents.add(entryPointAgents);
+                            }
+
 //                        for (Object i : (JSONArray) jsonObject.get("succeededEPs")) {
-//                            ptiPtr.succeededEPs.add((Long) i);
+//                            allocationAuthorityInfo.succeededEPs.add((Long) i);
 //                        }
 
-                        alicaZMQCommunication.handleAllocationAuthorityRos(ptiPtr);
+                            alicaZMQCommunication.handleAllocationAuthority(allocationAuthorityInfo);
 
                     } catch (ParseException e) {
                         e.printStackTrace();

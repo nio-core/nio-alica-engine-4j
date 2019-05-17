@@ -25,16 +25,15 @@ public class RuleBook {
         this.teamObserver = ae.getTeamObserver();
         this.planSelector = ae.getPlanSelector();
         this.syncModul = ae.getSyncModul();
-        this.log = ae.getLog();
+        this.log = ae.getLogger();
         SystemConfig sc = ae.getSystemConfig();
         this.maxConsecutiveChanges = Integer.valueOf((String) sc.get("Alica").get("Alica.MaxRuleApplications"));
         this.changeOccured = true;
     }
 
     public RunningPlan initialisationRule(Plan masterPlan) {
-//        #ifdef RULE_debug
         if (CommonUtils.RULE_debug) System.out.println("RB: Init-Rule called." );
-//#endif
+
         if (masterPlan.getEntryPoints().size() != 1) {
             ae.abort("RB: Masterplan does not have exactly one task!");
         }
@@ -45,8 +44,6 @@ public class RuleBook {
         master.setAllocationNeeded(true);
         master.setAgentsAvail(CommonUtils.move(teamObserver.getAvailableAgentIDs()));
 
-        // TODO: Remove from c++ code
-//        ArrayList<EntryPoint> l;
         EntryPoint firstEntryPoint = (EntryPoint) masterPlan.getEntryPoints().values().toArray()[0];
 
         master.getAssignment().setAllToInitialState( CommonUtils.move(teamObserver.getAvailableAgentIDs()), firstEntryPoint);
@@ -186,9 +183,7 @@ public class RuleBook {
 
         r.setActiveState(r.getOwnEntryPoint().getState());
         r.setAllocationNeeded(true);
-//#ifdef RULE_debug
         if (CommonUtils.RULE_debug) System.out.println( "RB: PlanRedoRule executed for " + r.getPlan().getName() );
-//#endif
         log.eventOccured("PRede(" + r.getPlan().getName() + ")");
         return PlanChange.InternalChange;
     }
@@ -206,11 +201,10 @@ public class RuleBook {
         if ((r.getActiveState() != null && r.getActiveState().isFailureState()) || !r.getAssignment().isValid()
                 || !r.evalRuntimeCondition())
         {
-//#ifdef RULE_debug
             if (CommonUtils.RULE_debug) System.out.println("RB: PlanAbort-Rule called." );
             if (CommonUtils.RULE_debug) System.out.println( "RB: PlanAbort RP \n" + r.toString() );
             if (CommonUtils.RULE_debug) System.out.println("RB: PlanAbort " + r.getPlan().getName() );
-//#endif
+
             r.addFailure();
             log.eventOccured("PAbort(" + r.getPlan().getName() + ")");
             return PlanChange.FailChange;
@@ -219,10 +213,9 @@ public class RuleBook {
     }
 
     private PlanChange dynamicAllocationRule(RunningPlan r) {
-//        #ifdef RULE_debug
         if (CommonUtils.RULE_debug) System.out.println("RB: dynAlloc-Rule called.");
         if (CommonUtils.RULE_debug) System.out.println("RB: dynAlloc RP \n" + r.toString() );
-//#endif
+
         if (r.isAllocationNeeded() || r.isBehaviour())
         {
             return PlanChange.NoChange;
@@ -236,7 +229,6 @@ public class RuleBook {
         {
             return PlanChange.NoChange;
         }
-//        temp = r.getParent().lock();
 
         RunningPlan temp = r.getParent();
         Vector<Long> agents = new  Vector<>(/*temp.getAssignment().getAgentStateMapping().getAgentsInState(temp.getActiveState()).size()*/);

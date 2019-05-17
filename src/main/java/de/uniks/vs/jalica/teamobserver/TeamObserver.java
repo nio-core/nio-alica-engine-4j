@@ -5,7 +5,6 @@ import de.uniks.vs.jalica.common.Logger;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.unknown.*;
 
-import java.net.InetSocketAddress;
 import java.util.*;
 
 /**
@@ -15,36 +14,33 @@ public class TeamObserver implements ITeamObserver {
 
     private Logger log;
     private HashMap<Long, SimplePlanTree> simplePlanTrees;
-    private RobotEngineData me;
+    private AgentEngineData me;
     private AlicaEngine ae;
-    private ArrayList<RobotEngineData> allOtherRobots;
+    private ArrayList<AgentEngineData> allOtherAgents;
     private long teamTimeOut;
     private long myId;
-    private Set<Long> ignoredRobots = new HashSet<>();
-    private AgentProperties ownRobotProperties;
-    private ArrayList<AgentProperties> availableRobotProperties = new ArrayList<>();
+    private Set<Long> ignoredAgents = new HashSet<>();
+    private AgentProperties ownAgentProperties;
+    private ArrayList<AgentProperties> availableAgentProperties = new ArrayList<>();
 
     public TeamObserver(AlicaEngine ae) {
+        this.ae = ae;
         this.teamTimeOut = 0;
         this.myId = 0;
-        this.simplePlanTrees = new HashMap<>();
         this.me = null;
         this.log = null;
-        this.ae = ae;
-        this.allOtherRobots = new ArrayList<>();
+        this.simplePlanTrees = new HashMap<>();
+        this.allOtherAgents = new ArrayList<>();
     }
 
     public void init() {
-//        SystemConfig systemConfig = SystemConfig.getInstance();
-        this.log = ae.getLog();
+        this.log = ae.getLogger();
         this.myId = 0;
         this.me = null;
         String ownPlayerName = ae.getAgentName();
-        System.out.println( "TO: Initing Robot " + ownPlayerName );
+        System.out.println( "TO: Initing Agent:" + ownPlayerName );
         this.teamTimeOut = Long.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.TeamTimeOut")) * 1000000;
-//        Vector<String> playerNames = new Vector<>(systemConfig.getG("Globals").get("Team").keySet());
         Vector<String> playerNames =((ConfigPair)this.ae.getSystemConfig().get("Globals").get("Team")).getKeys();
-//        Vector<String> playerNames = new Vector<>(systemConfig.get("Globals").get("Team"));
         boolean foundSelf = false;
 
         for (int i = 0; i < playerNames.size(); i++) {
@@ -52,37 +48,37 @@ public class TeamObserver implements ITeamObserver {
 
             if (!foundSelf && playerNames.get(i).equals(ownPlayerName)) {
                 foundSelf = true;
-                this.me = new RobotEngineData(ae, rp);
+                this.me = new AgentEngineData(ae, rp);
                 this.me.setActive(true);
                 this.myId = rp.getID();
             }
             else {
 
-                for (RobotEngineData red : this.allOtherRobots) {
+                for (AgentEngineData red : this.allOtherAgents) {
 
                     if (red.getProperties().getID() == rp.getID()) {
                         String ss;
-                        ss = "TO: Found twice Robot ID " + rp.getID() + " in globals team section" + "\n";
+                        ss = "TO: Found twice Agent ID " + rp.getID() + " in globals team section" + "\n";
                         ae.abort(ss);
                     }
                     if (rp.getID() == myId) {
                         String ss2;
-                        ss2 = "TO: Found myself twice Robot ID " + rp.getID() + " in globals team section" + "\n";
+                        ss2 = "TO: Found myself twice Agent ID " + rp.getID() + " in globals team section" + "\n";
                         ae.abort(ss2);
                     }
                 }
-                this.allOtherRobots.add(new RobotEngineData(ae, rp));
+                this.allOtherAgents.add(new AgentEngineData(ae, rp));
             }
         }
 
         if (!foundSelf) {
-            ae.abort("TO: Could not find own robot name in Globals Id = " + ownPlayerName);
+            ae.abort("TO: Could not find own agent name in Globals Id = " + ownPlayerName);
         }
 
         if (Boolean.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.TeamBlackList.InitiallyFull"))) {
 
-            for (RobotEngineData r : this.allOtherRobots) {
-                this.ignoredRobots.add(r.getProperties().getID());
+            for (AgentEngineData r : this.allOtherAgents) {
+                this.ignoredAgents.add(r.getProperties().getID());
             }
         }
     }
@@ -95,7 +91,7 @@ public class TeamObserver implements ITeamObserver {
     public int teamSize() {
         int count = 1;
 
-        for (RobotEngineData r : this.allOtherRobots){
+        for (AgentEngineData r : this.allOtherAgents){
 
             if (r.isActive()) {
                 count++;
@@ -109,7 +105,8 @@ public class TeamObserver implements ITeamObserver {
 
         if (incoming.senderID != myId) {
 
-            if (isRobotIgnored(incoming.senderID)) {
+            if (isAgentIgnored(incoming.senderID)) {
+                System.out.println("TO("+this.getOwnID()+"): agent " + incoming.senderID + " ignored" );
                 return;
             }
 
@@ -117,13 +114,14 @@ public class TeamObserver implements ITeamObserver {
 
             if (spt != null) {
 
-                for (RobotEngineData red : allOtherRobots) {
+                for (AgentEngineData agentEngineData : allOtherAgents) {
+                    System.out.println("TO("+this.getOwnID()+"): agent " + agentEngineData.getProperties().getID());
+                    if (agentEngineData.getProperties().getID() == incoming.senderID) {
 
-                    if (red.getProperties().getId() == incoming.senderID) {
-
-                        synchronized (red) {
-                            red.setLastMessageTime(ae.getIAlicaClock().now().time);
-                            red.setSuccessMarks(new SuccessMarks(ae, incoming.succeededEPs));
+                        synchronized (agentEngineData) {
+                            agentEngineData.setLastMessageTime(ae.getIAlicaClock().now().time);
+                            agentEngineData.setSuccessMarks(new SuccessMarks(ae, incoming.succeededEPs));
+                            System.out.println("TO("+this.getOwnID()+"): agent " + incoming.senderID + "  succeeded EPs " + incoming.succeededEPs );
                         }
                     }
                     break;
@@ -131,7 +129,7 @@ public class TeamObserver implements ITeamObserver {
             }
             synchronized (this.simplePlanTrees) {
                 this.simplePlanTrees.put(incoming.senderID, spt);
-                if (CommonUtils.TO_DEBUG_debug) System.out.println("TO: plantree size: " +this.simplePlanTrees.size());
+                if (CommonUtils.TO_DEBUG_debug) System.out.println("TO("+this.getOwnID()+"): Plan tree size: " +this.simplePlanTrees.size());
             }
         }
     }
@@ -146,7 +144,7 @@ public class TeamObserver implements ITeamObserver {
     private SimplePlanTree sptFromMessage(long agentID, ArrayList<Long> ids) {
 
         if (CommonUtils.TO_DEBUG_debug) {
-            System.out.println("TO: Spt from robot " + agentID);
+            System.out.println("TO("+this.getOwnID()+"): Spt from robot " + agentID);
 
             for (long i : ids) {
                 System.out.println(i + "\t");
@@ -157,7 +155,7 @@ public class TeamObserver implements ITeamObserver {
         // TODO: Refactor the complete following code
         if (ids.size() == 0) {
             //warning
-            System.err.println("TO: Empty state list for robot " + agentID);
+            System.err.println("TO("+this.getOwnID()+"): Empty state list for robot " + agentID);
             return null;
         }
         LinkedHashMap<Long, State> states = ae.getPlanRepository().getStates();
@@ -176,12 +174,12 @@ public class TeamObserver implements ITeamObserver {
 
             if (root.getEntryPoint() == null) {
                 //Warning
-                System.err.println("TO: Cannot find ep for State (" + ids.get(0) + ") received from " + agentID);
+                System.err.println("TO("+this.getOwnID()+"): Cannot find ep for State (" + ids.get(0) + ") received from " + agentID);
                 return null;
             }
         }
 		else {
-            System.err.println("TO: Unknown State (" + ids.get(0) + ") received from " + agentID);
+            System.err.println("TO("+this.getOwnID()+"): Unknown State (" + ids.get(0) + ") received from " + agentID);
             return null;
         }
         SimplePlanTree curParent = null;
@@ -203,7 +201,7 @@ public class TeamObserver implements ITeamObserver {
                     cur = curParent;
 
                     if (cur == null) {
-                        System.err.println( "TO: Malformed SptMessage from " + agentID);
+                        System.err.println( "TO("+this.getOwnID()+"): Malformed SptMessage from " + agentID);
                         return null;
                     }
                 }
@@ -218,12 +216,12 @@ public class TeamObserver implements ITeamObserver {
                         cur.setEntryPoint(entryPointOfState(cur.getState()));
 
                         if (cur.getEntryPoint() == null) {
-                            System.err.println("TO: Cannot find ep for State (" + ids.get(0) + ") received from " + agentID);
+                            System.err.println("TO("+this.getOwnID()+"): Cannot find ep for State (" + ids.get(0) + ") received from " + agentID);
                             return null;
                         }
                     }
 					else {
-                        System.err.println("Unknown State (" + ids.get(0) + ") received from " + agentID );
+                        System.err.println("TO("+this.getOwnID()+"): Unknown State (" + ids.get(0) + ") received from " + agentID );
                         return null;
                     }
                 }
@@ -244,8 +242,8 @@ public class TeamObserver implements ITeamObserver {
         return null;
     }
 
-    public boolean isRobotIgnored(long senderID) {
-        return ignoredRobots.contains(senderID);
+    public boolean isAgentIgnored(long senderID) {
+        return ignoredAgents.contains(senderID);
     }
 
     @Override
@@ -253,7 +251,7 @@ public class TeamObserver implements ITeamObserver {
         sc.clear();
         ArrayList<EntryPoint > suc = new ArrayList<>();
 
-        for (RobotEngineData r : this.allOtherRobots) {
+        for (AgentEngineData r : this.allOtherAgents) {
 
             if (r.isActive()) {
 //                    lock_guard<mutex> lock(this.successMark);
@@ -281,7 +279,7 @@ public class TeamObserver implements ITeamObserver {
         ArrayList<AgentProperties> ret = new ArrayList<>();
         ret.add(me.getProperties());
 
-        for (RobotEngineData r : this.allOtherRobots)
+        for (AgentEngineData r : this.allOtherAgents)
         {
             if (r.isActive())
             {
@@ -309,7 +307,7 @@ public class TeamObserver implements ITeamObserver {
     public ArrayList<Long> getAvailableAgentIDs() {
         ArrayList<Long> ret = new ArrayList<>();
         ret.add(myId);
-        for (RobotEngineData r : this.allOtherRobots)
+        for (AgentEngineData r : this.allOtherAgents)
         {
             if (r.isActive())
             {
@@ -324,7 +322,7 @@ public class TeamObserver implements ITeamObserver {
         int ret = 0;
         List<EntryPoint> suc = new ArrayList<EntryPoint>();
 
-        for (RobotEngineData r : this.allOtherRobots) {
+        for (AgentEngineData r : this.allOtherAgents) {
 
             if (r.isActive()) {
                 {
@@ -349,17 +347,17 @@ public class TeamObserver implements ITeamObserver {
     public LinkedHashMap<Long, SimplePlanTree> getTeamPlanTrees() {
         LinkedHashMap<Long, SimplePlanTree> ret = new LinkedHashMap<Long, SimplePlanTree> ();
 //        lock_guard<mutex> lock(this.simplePlanTreeMutex);
-        for (RobotEngineData r : this.allOtherRobots) {
+        for (AgentEngineData r : this.allOtherAgents) {
 
             if (r.isActive()) {
 
 //                map<int, shared_ptr<SimplePlanTree> >::iterator iter = this.simplePlanTrees.find(r.getProperties().getID());
 
-                SimplePlanTree planTree = this.simplePlanTrees.get(r.getProperties().getId());
+                SimplePlanTree planTree = this.simplePlanTrees.get(r.getProperties().getID());
 
                 if (planTree != null) {
 
-                    ret.put(r.getProperties().getId(), planTree);
+                    ret.put(r.getProperties().getID(), planTree);
                 }
             }
         }
@@ -370,7 +368,7 @@ public class TeamObserver implements ITeamObserver {
     public SuccessCollection getSuccessCollection(Plan plan) {
         SuccessCollection ret = new SuccessCollection(plan);
         ArrayList<EntryPoint> suc = new ArrayList<>();
-        for (RobotEngineData r : this.allOtherRobots)
+        for (AgentEngineData r : this.allOtherAgents)
         {
             if (r.isActive())
             {
@@ -407,10 +405,10 @@ public class TeamObserver implements ITeamObserver {
     public void tick(RunningPlan root) {
         boolean changed = false;
         AlicaTime time = ae.getIAlicaClock().now();
-        Vector<Long> robotsAvail = new Vector<>();
-        robotsAvail.add(this.myId);
+        Vector<Long> agentsAvail = new Vector<>();
+        agentsAvail.add(this.myId);
 
-        for (RobotEngineData r : this.allOtherRobots) {
+        for (AgentEngineData r : this.allOtherAgents) {
 
             if ((r.getLastMessageTime() + teamTimeOut) < time.time) {
                 changed |= r.isActive();
@@ -425,7 +423,7 @@ public class TeamObserver implements ITeamObserver {
             }
 
             if (r.isActive()) {
-                robotsAvail.add(r.getProperties().getID());
+                agentsAvail.add(r.getProperties().getID());
             }
         }
 
@@ -444,30 +442,24 @@ public class TeamObserver implements ITeamObserver {
             for (long key : this.simplePlanTrees.keySet()) {
                 SimplePlanTree second = this.simplePlanTrees.get(key);
 
-                if (robotsAvail.contains(second.getAgentID())) {
+                if (agentsAvail.contains(second.getAgentID())) {
 
                     if (second.isNewSimplePlanTree())
                     {
                         updatePlanTrees.add(second);
-//#ifdef TO_DEBUG
-                        if (CommonUtils.TO_DEBUG_debug)  System.out.println( "TO: added to update");
-//#endif
+                        if (CommonUtils.TO_DEBUG_debug)  System.out.println( "TO("+this.getOwnID()+"): added to update");
                         second.setNewSimplePlanTree(false);
                     }
                     else
                     {
-//#ifdef TO_DEBUG
                         if (CommonUtils.TO_DEBUG_debug)  System.out.println("TO: added to noupdate" );
-//#endif
                         noUpdates.add(second.getAgentID());
                     }
                 }
             }
-//#ifdef TO_DEBUG
             if (CommonUtils.TO_DEBUG_debug)  System.out.println("TO: spts size " + updatePlanTrees.size());
-//#endif
 
-            if (root.recursiveUpdateAssignment(updatePlanTrees, robotsAvail, noUpdates, time))
+            if (root.recursiveUpdateAssignment(updatePlanTrees, agentsAvail, noUpdates, time))
             {
                 this.log.eventOccured("MsgUpdate");
             }
@@ -484,13 +476,13 @@ public class TeamObserver implements ITeamObserver {
         if (!ae.isMaySendMessages()) {
             return;
         }
-        PlanTreeInfo pti = new PlanTreeInfo();
-        pti.senderID = this.myId;
-        pti.stateIDs = msg;
-        pti.succeededEPs = this.getOwnEngineData().getSuccessMarks().toList();
-        ae.getCommunicator().sendPlanTreeInfo(pti);
+        PlanTreeInfo planTreeInfo = new PlanTreeInfo();
+        planTreeInfo.senderID = this.myId;
+        planTreeInfo.stateIDs = msg;
+        planTreeInfo.succeededEPs = this.getOwnEngineData().getSuccessMarks().toList();
+        ae.getCommunicator().sendPlanTreeInfo(planTreeInfo);
 //#ifdef TO_DEBUG
-        String ss = "TO: Sending Plan Message: " +"\n";
+        String ss = "TO("+this.getOwnID()+"): Sending Plan Message: " +"\n";
 
         for (long i: msg) {
             ss+= "    " +i + "\t";
@@ -502,17 +494,17 @@ public class TeamObserver implements ITeamObserver {
     }
 
     @Override
-    public RobotEngineData getOwnEngineData() {
+    public AgentEngineData getOwnEngineData() {
         return this.me;
     }
 
-    public RobotEngineData getAgentById(long id) {
+    public AgentEngineData getAgentById(long id) {
 
         if (id == myId) {
             return this.me;
         }
 
-        for (RobotEngineData r : this.allOtherRobots) {
+        for (AgentEngineData r : this.allOtherAgents) {
 
             if (r.getProperties().getID() == id) {
                 return r;
@@ -567,7 +559,7 @@ public class TeamObserver implements ITeamObserver {
 
     public void messageRecievedFrom(long rID) {
 
-        for (RobotEngineData re : this.allOtherRobots) {
+        for (AgentEngineData re : this.allOtherAgents) {
 
             if (re.getProperties().getID() == rID) {
                 re.setLastMessageTime(ae.getIAlicaClock().now().time);

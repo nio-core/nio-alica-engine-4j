@@ -58,20 +58,18 @@ public class PlanBase implements Runnable {
         this.lastSentStatusTime = new AlicaTime(0);
         this.loopInterval = new AlicaTime(0);
         this.deepestNode = null;
-        this.log = ae.getLog();
+        this.log = ae.getLogger();
         this.rootNode = null;
         this.masterPlan = masterPlan;
         this.ae = ae;
         this.teamObserver = ae.getTeamObserver();
         this.syncModel = ae.getSyncModul();
-        this.authModul = ae.getAuth();
+        this.authModul = ae.getAuthorityManager();
         this.roleAssignment = ae.getRoleAssignment();
         this.alicaClock = ae.getIAlicaClock();
         this.fpEvents = new PriorityQueue<>();
 
         this.ruleBook = new RuleBook(ae);
-//        SystemConfig systemConfig = SystemConfig.getInstance();
-
         double freq = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.EngineFrequency"));
         double minbcfreq = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.MinBroadcastFrequency"));
         double maxbcfreq = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.MaxBroadcastFrequency"));
@@ -107,10 +105,9 @@ public class PlanBase implements Runnable {
             this.stepModeCV = new ConditionVariable(this);
         }
 
-//#ifdef PB_DEBUG
         if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: Engine loop time is " +(loopTime.time / 1000000)+ "ms, broadcast interval is "+(this.minSendInterval.time / 1000000)
                 + "ms - " + (this.maxSendInterval.time / 1000000) + "ms" );
-//#endif
+
         if (halfLoopTime.time < this.minSendInterval.time) {
             this.minSendInterval.time -= halfLoopTime.time;
             this.maxSendInterval.time -= halfLoopTime.time;
@@ -118,9 +115,7 @@ public class PlanBase implements Runnable {
     }
 
     public void run() {
-//#ifdef PB_DEBUG
         if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: Run-Method of PlanBase started. " );
-//#endif
         while (this.running) {
 
             AlicaTime beginTime = alicaClock.now();
@@ -128,7 +123,7 @@ public class PlanBase implements Runnable {
 
 // TODO: implement step engine part
             if (ae.getStepEngine()) {
-////#ifdef PB_DEBUG
+
                 if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: ===CUR TREE===");
 
                 if (this.rootNode == null) {
@@ -249,13 +244,12 @@ public class PlanBase implements Runnable {
 
                     if (this.deepestNode.getActiveState() != null) {
                         this.statusMessage.currentState = this.deepestNode.getActiveState().getName();
-                        CommonUtils.copy(this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(
-                            this.deepestNode.getActiveState()), 0,
-                            this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(
-                                this.deepestNode.getActiveState()
-//                            ).size()-1, back_inserter(this.statusMessage.agentIDsWithMe)
-                            ).size()-1, (this.statusMessage.agentIDsWithMe)
-                        );
+                        CommonUtils.copy( this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(this.deepestNode.getActiveState()),
+                                    0,
+                                     this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(this.deepestNode.getActiveState()
+//                                               ).size()-1, back_inserter(this.statusMessage.agentIDsWithMe)
+                                          ).size()-1,
+                                         (this.statusMessage.agentIDsWithMe));
 
                     }
 					else {
@@ -315,11 +309,11 @@ public class PlanBase implements Runnable {
                 }
             }
 
-//#ifdef PB_DEBUG
             if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: availTime " + availTime );
             if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: duration time  " + (now.time - beginTime.time));
-//#endif
+
             if (availTime > 0 && !ae.getStepEngine()) {
+
                 if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: sleep " + availTime);
 
                 alicaClock.sleep(availTime);
