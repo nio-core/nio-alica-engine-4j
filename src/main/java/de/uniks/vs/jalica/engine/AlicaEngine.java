@@ -171,8 +171,8 @@ public class AlicaEngine {
     }
 
     public void start() {
+        if (CommonUtils.AE_DEBUG_debug)  System.out.println("AE: ------------------ Engine started ------------------");
         this.planBase.start();
-        if (CommonUtils.AE_DEBUG_debug)  System.out.println("AE: Engine started");
     }
 
     /**

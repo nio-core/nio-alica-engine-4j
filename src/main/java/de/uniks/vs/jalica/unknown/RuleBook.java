@@ -62,7 +62,7 @@ public class RuleBook {
         this.changeOccured = changeOccured;
     }
 
-    public PlanChange visit(RunningPlan r) {
+    public PlanChange visit(RunningPlan runningPlan) {
         int changes = 0;
         boolean doDynAlloc = true;
         PlanChange changeRecord = PlanChange.NoChange;
@@ -72,26 +72,26 @@ public class RuleBook {
             msChange = updateChange(msChange, changeRecord);
 
             changeRecord = PlanChange.NoChange;
-            changeRecord = updateChange(changeRecord, synchTransitionRule(r));
-            PlanChange transChange = transitionRule(r);
+            changeRecord = updateChange(changeRecord, synchTransitionRule(runningPlan));
+            PlanChange transChange = transitionRule(runningPlan);
 
             while (transChange != PlanChange.NoChange && ++changes < this.maxConsecutiveChanges) {
                 changeRecord = updateChange(changeRecord, transChange);
-                transChange = transitionRule(r);
+                transChange = transitionRule(runningPlan);
             }
-            changeRecord = updateChange(changeRecord, transitionRule(r));
-            changeRecord = updateChange(changeRecord, topFailRule(r));
-            changeRecord = updateChange(changeRecord, allocationRule(r));
-            changeRecord = updateChange(changeRecord, authorityOverrideRule(r));
+            changeRecord = updateChange(changeRecord, transitionRule(runningPlan));
+            changeRecord = updateChange(changeRecord, topFailRule(runningPlan));
+            changeRecord = updateChange(changeRecord, allocationRule(runningPlan));
+            changeRecord = updateChange(changeRecord, authorityOverrideRule(runningPlan));
 
             if (doDynAlloc) {
-                changeRecord = updateChange(changeRecord, dynamicAllocationRule(r));
+                changeRecord = updateChange(changeRecord, dynamicAllocationRule(runningPlan));
                 doDynAlloc = false;
             }
-            changeRecord = updateChange(changeRecord, planAbortRule(r));
-            changeRecord = updateChange(changeRecord, planRedoRule(r));
-            changeRecord = updateChange(changeRecord, planReplaceRule(r));
-            PlanChange propChange = planPropagationRule(r);
+            changeRecord = updateChange(changeRecord, planAbortRule(runningPlan));
+            changeRecord = updateChange(changeRecord, planRedoRule(runningPlan));
+            changeRecord = updateChange(changeRecord, planReplaceRule(runningPlan));
+            PlanChange propChange = planPropagationRule(runningPlan);
             changeRecord = updateChange(changeRecord, propChange);
 
             if (propChange != PlanChange.NoChange) {
@@ -103,10 +103,8 @@ public class RuleBook {
     }
 
     private PlanChange planPropagationRule(RunningPlan r) {
-//        #ifdef RULE_debug
         if (CommonUtils.RULE_debug) System.out.println("RB: PlanPropagation-Rule called." );
         if (CommonUtils.RULE_debug) System.out.println("RB: PlanPropagation RP \n" + r.toString() );
-//#endif
         if (r.getParent() != null || !r.getFailHandlingNeeded() || r.isBehaviour())
             return PlanChange.NoChange;
         if (r.getFailure() < 3)
@@ -114,9 +112,7 @@ public class RuleBook {
         r.getParent().addFailure();
         r.setFailHandlingNeeded(false);
 
-//#ifdef RULE_debug
         if (CommonUtils.RULE_debug) System.out.println("RB: PlanPropagation " + r.getPlan().getName() );
-//#endif
         log.eventOccured("PProp(" + r.getPlan().getName() + ")");
         return PlanChange.FailChange;
     }
@@ -124,10 +120,8 @@ public class RuleBook {
 
     private PlanChange planReplaceRule(RunningPlan r) {
         
-//#ifdef RULE_debug
         if (CommonUtils.RULE_debug) System.out.println( "RB: PlanReplace-Rule called." );
         if (CommonUtils.RULE_debug) System.out.println( "RB: PlanReplace RP \n" + r.toString() );
-//#endif
 //        if (r.getParent().expired()|| !r.getFailHandlingNeeded() || r.isBehaviour())
         if (r.getParent()== null|| !r.getFailHandlingNeeded() || r.isBehaviour()) {
             return PlanChange.NoChange;
@@ -447,40 +441,38 @@ public class RuleBook {
     }
 
 
-    private PlanChange transitionRule(RunningPlan r) {
+    private PlanChange transitionRule(RunningPlan runningPlan) {
 //        #ifdef RULE_debug
         if (CommonUtils.RULE_debug) System.out.println("RB: Transition-Rule called.");
-        if (CommonUtils.RULE_debug) System.out.println( "RB: Transition RP \n" + r.toString());
+        if (CommonUtils.RULE_debug) System.out.println( "RB: Transition RP \n" + runningPlan.toString());
 //#endif
-        if (r.getActiveState() == null)
+        if (runningPlan.getActiveState() == null)
             return PlanChange.NoChange;
         State nextState = null;
 
-        for (Transition t : r.getActiveState().getOutTransitions())
-        {
-            if (t.getSyncTransition() != null)
+        for (Transition transition : runningPlan.getActiveState().getOutTransitions()) {
+
+            if (transition.getSyncTransition() != null)
                 continue;
-            if (t.evalCondition(r))
-            {
-                nextState = t.getOutState();
-                r.getConstraintStore().addCondition((Condition)t.getPreCondition());
+
+            if (transition.evalCondition(runningPlan)) {
+                nextState = transition.getOutState();
+                runningPlan.getConstraintStore().addCondition(transition.getPreCondition());
                 break;
             }
         }
-        if (nextState == null)
-        {
+        if (nextState == null) {
             return PlanChange.NoChange;
         }
-//#ifdef RULE_debug
-        if (CommonUtils.RULE_debug) System.out.println("RB: Transition " + r.getPlan().getName() );
-//#endif
-        r.moveState(nextState);
 
-        r.setAllocationNeeded(true);
-        log.eventOccured("Transition(" + r.getPlan().getName() + " teamObserver State " + r.getActiveState().getName() + ")");
-        if (r.getActiveState().isSuccessState())
+        if (CommonUtils.RULE_debug) System.out.println("RB: Transition " + runningPlan.getPlan().getName() );
+        runningPlan.moveState(nextState);
+
+        runningPlan.setAllocationNeeded(true);
+        log.eventOccured("Transition(" + runningPlan.getPlan().getName() + " teamObserver State " + runningPlan.getActiveState().getName() + ")");
+        if (runningPlan.getActiveState().isSuccessState())
             return PlanChange.SuccesChange;
-		else if (r.getActiveState().isFailureState())
+		else if (runningPlan.getActiveState().isFailureState())
             return PlanChange.FailChange;
         return PlanChange.InternalChange;
     }

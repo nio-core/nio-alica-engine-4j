@@ -93,11 +93,11 @@ public class BehaviourPool implements IBehaviourPool {
         this.behaviourCreator = bc;
 
         HashMap<Long, BehaviourConfiguration> behaviourConfs = ae.getPlanRepository().getBehaviourConfigurations();
-        for (long key : behaviourConfs.keySet())
-        {
-            BasicBehaviour basicBeh = this.behaviourCreator.createBehaviour(key, ae);
-            if (basicBeh != null)
-            {
+
+        for (long key : behaviourConfs.keySet()) {
+            BasicBehaviour basicBeh = this.behaviourCreator.createBehaviour(behaviourConfs.get(key).getBehaviour().getID(), ae);
+
+            if (basicBeh != null) {
                 BehaviourConfiguration configuration = behaviourConfs.get(key);
                 // set stuff from behaviour configuration in basic behaviour object
                 basicBeh.setParameters(configuration.getParameters());

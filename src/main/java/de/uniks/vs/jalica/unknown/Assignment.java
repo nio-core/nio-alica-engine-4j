@@ -213,13 +213,12 @@ public class Assignment extends IAssignment {
     }
 
     public void setAllToInitialState(ArrayList<Long> agents, EntryPoint defep) {
-        Vector<Long> rlist = this.epAgentsMapping.getAgentsByEp(defep);
-        for (long r : agents)
-        {
-            rlist.add(r);
+
+        for (long r : agents) {
+            this.epAgentsMapping.addAgentsByEp(r, defep);
         }
-        for (long r : agents)
-        {
+
+        for (long r : agents) {
             this.agentStateMapping.setState(r, defep.getState());
         }
     }

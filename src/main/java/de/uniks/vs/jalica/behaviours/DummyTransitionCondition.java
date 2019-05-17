@@ -12,9 +12,9 @@ public class DummyTransitionCondition extends BasicCondition {
 
     protected boolean evaluate(RunningPlan rp) {
         /*PROTECTED REGION ID(1528125075116) ENABLED START*/
-        System.out.println("TC: Dummy " + rp.getActiveState().getName());
+        System.out.println("TC: Dummy condition " + rp.getActiveState().getName());
         CommonUtils.aboutNoImpl();
-        return true;
+        return false;
         /*PROTECTED REGION END*/
     }
 

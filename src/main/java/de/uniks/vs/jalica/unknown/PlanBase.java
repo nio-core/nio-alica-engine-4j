@@ -117,21 +117,17 @@ public class PlanBase implements Runnable {
     public void run() {
         if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: Run-Method of PlanBase started. " );
         while (this.running) {
-
             AlicaTime beginTime = alicaClock.now();
             this.log.itertionStarts();
 
 // TODO: implement step engine part
             if (ae.getStepEngine()) {
-
                 if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: ===CUR TREE===");
 
-                if (this.rootNode == null) {
+                if (this.rootNode == null)
                     if (CommonUtils.PB_DEBUG_debug) System.out.println( "PB: NULL" );
-                }
-				else {
-                    if (CommonUtils.PB_DEBUG_debug) rootNode.printRecursive();
-                }
+				else
+				    if (CommonUtils.PB_DEBUG_debug) rootNode.printRecursive();
                 if (CommonUtils.PB_DEBUG_debug) System.out.println( "PB: ===END CUR TREE===" );
 ////#endif
 //                {

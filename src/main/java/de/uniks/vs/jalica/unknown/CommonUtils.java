@@ -33,7 +33,7 @@ public class CommonUtils {
     public static final boolean B_DEBUG_debug = false;
     public static final boolean PA_DEBUG_debug = true;
     public static final boolean CV_DEBUG_debug = false;
-    public static final boolean AE_DEBUG_debug = false;
+    public static final boolean AE_DEBUG_debug = true;
     public static final boolean AED_DEBUG_debug = false;
     public static final boolean COMM_debug = true;
     public static final boolean XTH_DEBUG_debug = false;
@@ -77,7 +77,7 @@ public class CommonUtils {
     }
 
     public static <T> ArrayList<T> move(ArrayList<T> agents) {
-        ArrayList<T> newAgents = agents;
+        ArrayList<T> newAgents = new ArrayList<>(agents);
         agents.clear();
         return newAgents;
     }

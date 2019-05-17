@@ -60,6 +60,15 @@ public class AssignmentCollection {
         }
         return null;
     }
+    public void addAgentsByEp(long agentID, EntryPoint ep) {
+
+        for (int i = 0; i < this.numEps; i++) {
+
+            if (this.entryPoints[i] == ep) {
+                this.agents[i].add(agentID);
+            }
+        }
+    }
 
     public void clear() {
         for (int i = 0; i < this.numEps; i++)

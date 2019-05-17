@@ -192,6 +192,8 @@ public class RunningPlan {
 
     public void setActiveState(State state) {
 
+        System.out.println("RP: set active state from " + (this.activeState != null? this.activeState.name: "null") +" to " +state.name);
+
         if (this.activeState != state) {
             this.activeState = state;
             this.stateStartTime.time = alicaEngine.getIAlicaClock().now().time;

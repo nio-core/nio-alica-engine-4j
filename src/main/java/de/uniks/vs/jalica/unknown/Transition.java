@@ -15,6 +15,10 @@ public class Transition extends AlicaElement {
     }
 
     public boolean evalCondition(RunningPlan r) {
+
+        if(this.preCondition == null)
+            return false;
+
         return this.preCondition.evaluate(r);
     }
 

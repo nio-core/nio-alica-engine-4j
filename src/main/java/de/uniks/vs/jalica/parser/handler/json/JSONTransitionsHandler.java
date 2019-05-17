@@ -20,8 +20,8 @@ public class JSONTransitionsHandler extends JSONHandler {
             JSONArray value = (JSONArray) entry.getValue();
 
             for (Object jsonObject : value ) {
-              Transition tran = modelFactory.createTransition((JSONObject)jsonObject, plan);
-                plan.getTransitions().add(tran);
+              Transition transition = modelFactory.createTransition((JSONObject)jsonObject, plan);
+                plan.getTransitions().add(transition);
             }
             return true;
         }

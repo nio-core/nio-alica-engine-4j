@@ -575,40 +575,29 @@ public class ModelFactory {
     }
 
     public Transition createTransition(JSONObject jsonObject, Plan plan) {
-        Transition tran = new Transition();
-        long id =  this.parser.fetchId(jsonObject.get("id").toString());
-        tran.setID(id);
-        setAlicaElementAttributes(tran, jsonObject);
-        addElement(tran);
-        this.rep.getTransitions().put(tran.getID(), tran);
+        Transition transition = new Transition();
+        long id = this.parser.fetchId(jsonObject.get("id").toString());
+        transition.setID(id);
+        setAlicaElementAttributes(transition, jsonObject);
+        addElement(transition);
+        this.rep.getTransitions().put(transition.getID(), transition);
 
-//        Vector<Element> nodes = extractToList(element, outState);
-//        nodes.addAll(extractToList(element, inState));
-//        nodes.addAll(extractToList(element, preCondition));
-//        nodes.addAll(extractToList(element, synchronisation));
-//
+        long outStateID = (long) jsonObject.get("outState");
+        this.transitionAimReferences.add(new Pair(transition.getID(), outStateID));
 
-//        while (curChild != null)
-//        for (Element curChild : nodes) {
-////			String val = curChild.getNodeValue();
-//            String val = curChild.getTagName();
-//            long cid = this.parser.parserId(curChild);
-//            if (inState.equals(val)) {
-//                //silently ignore
-//            } else if (outState.equals(val)) {
-//                this.transitionAimReferences.add(new Pair(tran.getID(), cid));
-//            } else if (preCondition.equals(val)) {
-//                PreCondition pre = createPreCondition(curChild);
-//                tran.setPreCondition(pre);
-//                pre.setAbstractPlan(plan);
-//            } else if (synchronisation.equals(val)) {
-//                this.transitionSynchReferences.add(new Pair(tran.getID(), cid));
-//            } else {
-//                ae.abort("MF: Unhandled Transition Child:", curChild.toString());
-//            }
-////            curChild = curChild.getNextSibling();
-//        }
-        return tran;
+        Object preConditionJSON = jsonObject.get("preCondition");
+
+        if ( preConditionJSON != null) {
+            PreCondition preCondition = createPreCondition((JSONObject) preConditionJSON);
+            transition.setPreCondition(preCondition);
+            preCondition.setAbstractPlan(plan);
+        }
+
+        Object synchronisation = jsonObject.get("synchronisation");
+
+        if(synchronisation != null)
+            this.transitionSynchReferences.add(new Pair(transition.getID(), (long)synchronisation));
+        return transition;
     }
 
     public PreCondition createPreCondition(Node element) {
@@ -678,9 +667,10 @@ public class ModelFactory {
         setAlicaElementAttributes(pre, jsonObject);
         addElement(pre);
         String conditionString = "";
-        String conditionPtr = jsonObject.get("conditionString").toString();
-        if (conditionPtr != null) {
-            conditionString = conditionPtr;
+        Object conditionObj = jsonObject.get("conditionString");
+
+        if (conditionObj != null) {
+            conditionString = conditionObj.toString();
             pre.setConditionString(conditionString);
         }
 
@@ -691,15 +681,18 @@ public class ModelFactory {
             //pos.ConditionFOL = null;
         }
 
-        String pluginNamePtr = jsonObject.get("pluginName").toString();
-        if (pluginNamePtr != null) {
-            pre.setPlugInName(pluginNamePtr);
+        Object pluginNameObj = jsonObject.get("pluginName");
+
+        if (pluginNameObj != null) {
+            pre.setPlugInName(pluginNameObj.toString());
         }
 
         String enabled = "";
-        String enabledPtr = jsonObject.get("enabled").toString();
-        if (enabledPtr != null) {
-            enabled = enabledPtr;
+        Object enabledObj = jsonObject.get("enabled");
+
+        if (enabledObj != null) {
+            enabled = enabledObj.toString();
+
             if ("true".equals(enabled)) {
                 pre.setEnabled(true);
             } else {
