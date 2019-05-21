@@ -1,8 +1,12 @@
 package de.uniks.vs.jalica.dummy_proxy;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.unknown.*;
+import de.uniks.vs.jalica.unknown.Communication.AlicaEngineInfo;
+import de.uniks.vs.jalica.unknown.Communication.AllocationAuthorityInfo;
+import de.uniks.vs.jalica.unknown.Communication.PlanTreeInfo;
+
+import java.util.ArrayList;
 
 /**
  * Created by alex on 29.06.18.
@@ -17,7 +21,7 @@ public class AlicaMQTTCommunication extends AlicaCommunication {
     }
 
     @Override
-    public boolean init() {
+    public boolean init(ArrayList<Long> ids) {
         CommonUtils.aboutImplIncomplete();
         return true;
     }

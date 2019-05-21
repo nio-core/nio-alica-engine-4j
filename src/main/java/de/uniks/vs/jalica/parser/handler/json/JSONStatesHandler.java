@@ -27,6 +27,16 @@ public class JSONStatesHandler extends JSONHandler {
                     plan.getStates().add(state);
                     state.setInPlan(plan);
                 }
+                else if ("SuccessState".equals(jsonObject.get("type")))                {
+                    SuccessState state = modelFactory.createSuccessState(jsonObject);
+                    plan.getSuccessStates().add(state);
+                    state.setInPlan(plan);
+                }
+                else if ("FailureState".equals(jsonObject.get("type")))                {
+                    FailureState state = modelFactory.createFailureState(jsonObject);
+                    plan.getFailureStates().add(state);
+                    state.setInPlan(plan);
+                }
 //                else if ("alica:SuccessState".equals(typeString))
 //                {
 //                    SuccessState suc = modelFactory.createSuccessState(node);
@@ -41,8 +51,7 @@ public class JSONStatesHandler extends JSONHandler {
 //                    plan.getFailureStates().add(fail);
 //                    plan.getStates().add(fail);
 //                }
-                else
-                {
+                else {
                     modelFactory.getAE().abort("SH: Unknown State type:", jsonObject.get("type").toString());
                 }
             }

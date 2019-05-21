@@ -1,4 +1,7 @@
-package de.uniks.vs.jalica.unknown;
+package de.uniks.vs.jalica.unknown.Communication;
+
+import de.uniks.vs.jalica.unknown.EntryPointAgents;
+import de.uniks.vs.jalica.unknown.Message;
 
 import java.util.LinkedList;
 import java.util.Vector;

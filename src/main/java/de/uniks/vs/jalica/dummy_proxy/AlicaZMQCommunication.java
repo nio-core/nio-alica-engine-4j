@@ -1,13 +1,13 @@
 package de.uniks.vs.jalica.dummy_proxy;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.unknown.*;
+import de.uniks.vs.jalica.unknown.Communication.AlicaEngineInfo;
+import de.uniks.vs.jalica.unknown.Communication.AllocationAuthorityInfo;
+import de.uniks.vs.jalica.unknown.Communication.PlanTreeInfo;
 import org.zeromq.SocketType;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONArray;
 
 import java.util.ArrayList;
 
@@ -51,7 +51,7 @@ public class AlicaZMQCommunication extends AlicaCommunication {
         this.isRunning = false;
     }
 
-    public boolean init() {
+    public boolean init(ArrayList<Long> ids) {
         //        this.allocationAuthorityInfoTopic = (String) this.systemConfig.get("AlicaRosProxy").get("Topics.allocationAuthorityInfoTopic");
 //        this.ownRoleTopic = (String) this.systemConfig.get("AlicaRosProxy").get("Topics.ownRoleTopic");
 //        this.alicaEngineInfoTopic = (String) ae.getSystemConfig().get("AlicaRosProxy").get("Topics.alicaEngineInfoTopic");
@@ -63,16 +63,23 @@ public class AlicaZMQCommunication extends AlicaCommunication {
         ZContext context = new ZContext();
         ZMQ.Socket subscriber = context.createSocket(SocketType.SUB);
 //        subscriber.connect("tcp://localhost:5556");
-        if ( ae.getSystemConfig().getOwnRobotID() == 1) //42)
-            subscriber.connect("ipc://" +  2); //17);
-        else
-            subscriber.connect("ipc://" +  1); //42);
+//        if (ae.getSystemConfig().getOwnAgentID() == 1){ //42)
+//            subscriber.connect("ipc://" + 2); //17);
+//        }
+//        else
+//            subscriber.connect("ipc://" +  1); //42);
+
+        for (int i = 1; i < 8 ; i++) {
+            if (ae.getSystemConfig().getOwnAgentID() != i) {
+                subscriber.connect("ipc://" + i);
+            }
+        }
 
         ZMQ.Socket publisher = context.createSocket(SocketType.PUB);
 //        publisher.bind("tcp://*:5556");
-        publisher.bind("ipc://" +  ae.getSystemConfig().getOwnRobotID());
+        publisher.bind("ipc://" +  ae.getSystemConfig().getOwnAgentID());
 
-        System.out.println("ZMQ-C: AGENT CHANNEL "+ "ipc://" +  ae.getSystemConfig().getOwnRobotID());
+        System.out.println("ZMQ-C: AGENT CHANNEL "+ "ipc://" +  ae.getSystemConfig().getOwnAgentID());
 
 //        AllocationAuthorityInfoPublisher = rosNode.advertise<alica_ros_proxy::AllocationAuthorityInfo>(this.allocationAuthorityInfoTopic, 2);
 //        AllocationAuthorityInfoSubscriber = rosNode.subscribe(this.allocationAuthorityInfoTopic, 10, &AlicaRosCommunication::handleAllocationAuthority, (AlicaRosCommunication*)this);

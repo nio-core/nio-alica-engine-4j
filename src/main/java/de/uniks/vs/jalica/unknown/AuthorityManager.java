@@ -1,6 +1,7 @@
 package de.uniks.vs.jalica.unknown;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
+import de.uniks.vs.jalica.unknown.Communication.AllocationAuthorityInfo;
 
 import java.util.Vector;
 

@@ -1,6 +1,7 @@
 package de.uniks.vs.jalica.behaviours.conditions;
 
 import de.uniks.vs.jalica.unknown.BasicCondition;
+import de.uniks.vs.jalica.unknown.Condition;
 import de.uniks.vs.jalica.unknown.RunningPlan;
 
 public class TransitionCondition1414403842622 extends BasicCondition {
@@ -31,4 +32,5 @@ public class TransitionCondition1414403842622 extends BasicCondition {
         /*PROTECTED REGION ID(1414403840950) ENABLED START*/
         return true;
         /*PROTECTED REGION END*/    }
+
 }

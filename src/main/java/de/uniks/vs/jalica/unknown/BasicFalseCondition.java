@@ -6,4 +6,5 @@ public class BasicFalseCondition extends BasicCondition {
     protected boolean evaluate(RunningPlan rp) {
         return false;
     }
+
 }

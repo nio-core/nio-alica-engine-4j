@@ -6,7 +6,7 @@ import java.util.Vector;
 /**
  * Created by alex on 20.07.17.
  */
-public class Condition extends AlicaElement{
+public class Condition extends AlicaElement {
 
     private BasicCondition basicCondition;
     private AlicaElement abstractPlan;
@@ -17,10 +17,11 @@ public class Condition extends AlicaElement{
     protected Vector<Variable> variables = new Vector<>();
 
     protected String conditionString;
+    private Transition transition;
 
     public Condition() {}
 
-    public boolean evaluate(RunningPlan rp) {
+    protected boolean evaluate(RunningPlan rp) {
         if (basicCondition == null)
         {
             System.err.println( "Condition: Missing implementation of condition: ID " + this.getID() );
@@ -76,5 +77,12 @@ public class Condition extends AlicaElement{
 
     public void setBasicConstraint(BasicConstraint basicConstraint) {
         this.basicConstraint = basicConstraint;
+    }
+
+    public void setTransition(Transition transition) {
+
+        if (this.transition == transition)
+            return;
+        this.transition = transition;
     }
 }

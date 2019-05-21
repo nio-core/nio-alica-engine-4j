@@ -1,9 +1,9 @@
 package de.uniks.vs.jalica.unknown;
 
 import de.uniks.vs.jalica.common.AssignmentCollection;
+import de.uniks.vs.jalica.unknown.Communication.AllocationAuthorityInfo;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.Vector;
 

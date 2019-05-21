@@ -10,6 +10,7 @@ public class State extends AlicaElement {
     protected boolean successState;
     protected boolean failureState;
     protected boolean terminal;
+    protected boolean finished;
     protected ArrayList<Transition> outTransitions = new ArrayList<>();
     protected ArrayList<Transition> inTransitions = new ArrayList<>();
     protected ArrayList<AbstractPlan> plans = new ArrayList<>();
@@ -50,12 +51,44 @@ public class State extends AlicaElement {
         return outTransitions;
     }
 
+    public void addOutTransition(Transition transition) {
+
+        if (outTransitions.contains(transition))
+            return;
+        outTransitions.add(transition);
+        transition.setInState(this);
+    }
+
+    public void removeOutTransition(Transition transition) {
+
+        if (!this.outTransitions.contains(transition))
+            return;
+        this.outTransitions.remove(transition);
+        transition.deleteInState(this);
+    }
+
     public void setOutTransitions(ArrayList<Transition> outTransitions) {
         this.outTransitions = outTransitions;
     }
 
     public ArrayList<Transition> getInTransitions() {
         return inTransitions;
+    }
+
+    public void addInTransition(Transition transition) {
+
+        if (inTransitions.contains(transition))
+            return;
+        inTransitions.add(transition);
+        transition.setInState(this);
+    }
+
+    public void removeInTransition(Transition transition) {
+
+        if (!this.inTransitions.contains(transition))
+            return;
+        this.inTransitions.remove(transition);
+        transition.deleteInState(this);
     }
 
     public void setInTransitions(ArrayList<Transition> inTransitions) {
@@ -78,7 +111,9 @@ public class State extends AlicaElement {
         this.parametrisation = parametrisation;
     }
 
-    public Plan getInPlan() {return inPlan;}
+    public Plan getInPlan() {
+        return inPlan;
+    }
 
     public void setInPlan(Plan inPlan) {
         this.inPlan = inPlan;

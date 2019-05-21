@@ -17,14 +17,14 @@ public abstract class Trigger {
     }
 
     public boolean isNotifyCalled(ConditionVariable cv) {
-        if (CommonUtils.TE_DEBUG_debug)CommonUtils.aboutCallNotification("isNotfiyCalled " + (registeredCVs.containsKey(cv) && registeredCVs.get(cv)) );
+//        if (CommonUtils.TE_DEBUG_debug)CommonUtils.aboutCallNotification("isNotfiyCalled " + (registeredCVs.containsKey(cv) && registeredCVs.get(cv)) );
         return registeredCVs.containsKey(cv) && registeredCVs.get(cv);
     }
 
     public void setNotifyCalled(boolean called, ConditionVariable cv) {
 
         if (registeredCVs.containsKey(cv)) {
-            if (CommonUtils.TE_DEBUG_debug) CommonUtils.aboutCallNotification("setNotifyCalled " + called);
+//            if (CommonUtils.TE_DEBUG_debug) CommonUtils.aboutCallNotification("setNotifyCalled " + called);
             registeredCVs.put(cv, called);
         }
     }
@@ -32,8 +32,9 @@ public abstract class Trigger {
     protected void notifyAll(boolean notifyAll) {
 
         for (ConditionVariable cv : registeredCVs.keySet()) {
-            if (CommonUtils.TE_DEBUG_debug) CommonUtils.aboutCallNotification("notifyAll " + notifyAll);
-            registeredCVs.put(cv, true);
+            if (CommonUtils.TE_DEBUG_debug && false)  CommonUtils.aboutCallNotification("notifyAll " + notifyAll);
+
+            registeredCVs.replace(cv, true);
 
             if (notifyAll) {
                 cv.notifyAllThreads();

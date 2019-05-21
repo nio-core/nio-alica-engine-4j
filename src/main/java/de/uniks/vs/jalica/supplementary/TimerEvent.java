@@ -3,6 +3,8 @@ package de.uniks.vs.jalica.supplementary;
 import de.uniks.vs.jalica.unknown.CommonUtils;
 import de.uniks.vs.jalica.unknown.ConditionVariable;
 
+import java.sql.SQLOutput;
+
 /**
  * Created by alex on 17.07.17.
  */
@@ -34,20 +36,22 @@ public class TimerEvent extends Trigger implements Runnable {
     public TimerEvent(long msInterval, long msDelayedStart, String parent) {
         this(msInterval, msDelayedStart);
         this.parent = parent;
+        if (CommonUtils.TE_DEBUG_debug) System.out.println("TE:  new Timer for "+ parent);
     }
 
     public boolean start() {
 
         if(!this.started) {
-            CommonUtils.aboutCallNotification();
+            if (CommonUtils.TE_DEBUG_debug) CommonUtils.aboutCallNotification();
             this.started = true;
             runThread.start();
-            CommonUtils.aboutCallNotification("TimerEvent: Thread id " + runThread.getId() + " started");
+            if (CommonUtils.TE_DEBUG_debug) CommonUtils.aboutCallNotification("TimerEvent: Thread id " + runThread.getId() + " started");
         }
 
         if (this.started && !this.running) {
             this.running = true;
             this.cv.notifyOneThread();
+            if (CommonUtils.TE_DEBUG_debug) CommonUtils.aboutCallNotification();
         }
         return this.started && this.running;
     }
@@ -83,10 +87,12 @@ public class TimerEvent extends Trigger implements Runnable {
 
                     @Override
                     public void run() {
+
                         while (true) {
 
                             if(!started || (running && registeredCVs.size() > 0)) {
                                 if (CommonUtils.TE_DEBUG_debug) CommonUtils.aboutCallNotification("Timer notified");
+
                                 synchronized (TimerEvent.this) {
                                     TimerEvent.this.notify();
                                 }
@@ -100,9 +106,9 @@ public class TimerEvent extends Trigger implements Runnable {
                 synchronized (this) {
                     this.wait();
                 }
-
-                if (CommonUtils.TE_DEBUG_debug) System.out.println("TimerEvent:  awakened " + parent);
-                if (CommonUtils.TE_DEBUG_debug) CommonUtils.aboutCallNotification();
+                System.out.println("TimerEvent:  awakened " + parent);
+                if (CommonUtils.TE_DEBUG_debug && false) System.out.println("TimerEvent:  awakened " + parent);
+                if (CommonUtils.TE_DEBUG_debug && false) CommonUtils.aboutCallNotification();
 
 //            this.cv.wait(lck, [&] {
 //                    return !this.started || (this.running && this.registeredCVs.size() > 0);
@@ -117,18 +123,18 @@ public class TimerEvent extends Trigger implements Runnable {
                     return;
 
                 long start = getCurrentTimeInNanoSec();
-                if (CommonUtils.TE_DEBUG_debug) CommonUtils.aboutCallNotification("TE: notify all !!!!!");
+                if (CommonUtils.TE_DEBUG_debug && false) CommonUtils.aboutCallNotification("TE: notify all !!!!!");
                 this.notifyAll(notifyAll);
 //                this.notify();
 //                this.notifyAll();
                 long dura = (getCurrentTimeInNanoSec()) - start;
-                if (CommonUtils.TE_DEBUG_debug) System.out.println("TE 1: Duration is " + dura + " nanoseconds");
+                if (CommonUtils.TE_DEBUG_debug) System.out.println("TE 1: Run duration is " + dura + " nanoseconds");
 
                 if (msInterval > dura) {
-                    if (CommonUtils.TE_DEBUG_debug)  System.out.println("TE 2: Duration is " + (msInterval - start) + " nanoseconds");
+                    if (CommonUtils.TE_DEBUG_debug)  System.out.println("TE 2: Wait duration is " + (msInterval - dura) + " nanoseconds");
                     Thread.sleep(Math.abs(msInterval - dura));
                 }
-                if (CommonUtils.TE_DEBUG_debug) System.out.println("TE 3: Duration is " + ((getCurrentTimeInNanoSec()) - start) + " nanoseconds");
+                if (CommonUtils.TE_DEBUG_debug) System.out.println("TE 3: Total duration is " + ((getCurrentTimeInNanoSec()) - start) + " nanoseconds");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

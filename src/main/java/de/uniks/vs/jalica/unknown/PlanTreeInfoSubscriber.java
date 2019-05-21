@@ -1,11 +1,13 @@
 package de.uniks.vs.jalica.unknown;
 
 import de.uniks.vs.jalica.dummy_proxy.AlicaZMQCommunication;
+import de.uniks.vs.jalica.unknown.Communication.PlanTreeInfo;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
 import org.zeromq.ZMQ;
+import org.zeromq.ZMQException;
 
 public class PlanTreeInfoSubscriber extends ZMQSubscriber {
 
@@ -22,6 +24,7 @@ public class PlanTreeInfoSubscriber extends ZMQSubscriber {
                 if (CommonUtils.COMM_debug) System.out.println("PTI-Sub("+alicaZMQCommunication.ae.getAgentName()+"): Thread started" );
                 while (true) {
 
+                    try {
                     String string = subscriber.recvStr(0).trim();
 
                     if (!string.startsWith(topic))
@@ -29,7 +32,7 @@ public class PlanTreeInfoSubscriber extends ZMQSubscriber {
 
                     if (CommonUtils.COMM_debug) System.out.println("PTI-Sub(" + alicaZMQCommunication.ae.getAgentName() +") " + string);
 
-                    try {
+
                         JSONObject jsonObject = (JSONObject)JSONValue.parseWithException(string.replace(topic, ""));
                         PlanTreeInfo pti = new PlanTreeInfo();
                         pti.senderID = (Long) jsonObject.get("senderID");
@@ -45,6 +48,8 @@ public class PlanTreeInfoSubscriber extends ZMQSubscriber {
                         alicaZMQCommunication.handlePlanTreeInfo(pti);
                     } catch (ParseException e) {
                         e.printStackTrace();
+                    } catch (ZMQException e) {
+                        System.err.println(e.getErrorCode());
                     }
                 }
             }

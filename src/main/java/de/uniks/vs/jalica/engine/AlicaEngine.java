@@ -16,6 +16,7 @@ import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.unknown.*;
 import de.uniks.vs.jalica.behaviours.UtilityFunctionCreator;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -144,7 +145,7 @@ public class AlicaEngine {
         }
 
         if (this.getCommunicator() != null) {
-            this.getCommunicator().init();
+            this.getCommunicator().init(this.teamObserver.getAvailableAgentIDs());
             this.getCommunicator().startCommunication();
         }
 

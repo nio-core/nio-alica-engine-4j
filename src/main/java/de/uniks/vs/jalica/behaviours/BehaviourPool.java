@@ -41,6 +41,7 @@ public class BehaviourPool implements IBehaviourPool {
                 basicBeh.setInterval(1000 / behaviourConfs.get(key).getFrequency());
 
                 this.availableBehaviours.put(behaviourConfs.get(key), basicBeh);
+                behaviourConfs.get(key).getBehaviour().setImplementation(basicBeh);
             }
             else {
                 return false;
@@ -65,25 +66,22 @@ public class BehaviourPool implements IBehaviourPool {
 //        }
 //    }
 
-    public void startBehaviour(RunningPlan rp) {
+    public void startBehaviour(RunningPlan runningPlan) {
+        BehaviourConfiguration behaviourConfiguration = (BehaviourConfiguration)(runningPlan.getPlan());
 
-        BehaviourConfiguration bc = (BehaviourConfiguration)(rp.getPlan());
+        if (behaviourConfiguration != null) {
+            System.out.println("BP::  BehaviourPool:" + this.availableBehaviours.size() );
+            BasicBehaviour behaviour = this.availableBehaviours.get(behaviourConfiguration);
 
-        if (bc != null)
-        {
-            BasicBehaviour bb = this.availableBehaviours.get(bc);
+            if (behaviour != null) {
+                runningPlan.setBasicBehaviour(behaviour);
+                behaviour.setRunningPlan(runningPlan);
 
-            if (bb != null) {
-                // set both directions rp <. bb
-                rp.setBasicBehaviour(bb);
-                bb.setRunningPlan(rp);
-
-                bb.start();
+                behaviour.start();
             }
         }
-        else
-        {
-            System.err.println("BP::startBehaviour(): Cannot start Behaviour of given RunningPlan! Plan Name: " + rp.getPlan().getName() + " Plan Id: " + rp.getPlan().getID() );
+        else {
+            System.err.println("BP::startBehaviour(): Cannot start Behaviour of given RunningPlan! Plan Name: " + runningPlan.getPlan().getName() + " Plan Id: " + runningPlan.getPlan().getID() );
         }
     }
 
@@ -95,18 +93,19 @@ public class BehaviourPool implements IBehaviourPool {
         HashMap<Long, BehaviourConfiguration> behaviourConfs = ae.getPlanRepository().getBehaviourConfigurations();
 
         for (long key : behaviourConfs.keySet()) {
-            BasicBehaviour basicBeh = this.behaviourCreator.createBehaviour(behaviourConfs.get(key).getBehaviour().getID(), ae);
+            BasicBehaviour domainImplementation = this.behaviourCreator.createBehaviour(behaviourConfs.get(key).getBehaviour().getID(), ae);
 
-            if (basicBeh != null) {
+            if (domainImplementation != null) {
                 BehaviourConfiguration configuration = behaviourConfs.get(key);
                 // set stuff from behaviour configuration in basic behaviour object
-                basicBeh.setParameters(configuration.getParameters());
-                basicBeh.setVariables(configuration.getVariables());
-                basicBeh.setDelayedStart(configuration.getDeferring());
+                domainImplementation.setParameters(configuration.getParameters());
+                domainImplementation.setVariables(configuration.getVariables());
+                domainImplementation.setDelayedStart(configuration.getDeferring());
                 //TODO: HACK
-                basicBeh.setInterval(1000 / 1000 + configuration.getFrequency());
+                domainImplementation.setInterval(1000 / 1000 + configuration.getFrequency());
 
-                this.availableBehaviours.put(configuration, basicBeh);
+                this.availableBehaviours.put(configuration, domainImplementation);
+                configuration.getBehaviour().setImplementation(domainImplementation);
             }
             else
             {
@@ -117,13 +116,13 @@ public class BehaviourPool implements IBehaviourPool {
     }
 
     public void stopBehaviour(RunningPlan rp) {
-        BehaviourConfiguration bc = (BehaviourConfiguration)(rp.getPlan());
+        BehaviourConfiguration behaviourConfiguration = (BehaviourConfiguration)(rp.getPlan());
 
-        if (bc != null) {
-            BasicBehaviour bb = this.availableBehaviours.get(bc);
+        if (behaviourConfiguration != null) {
+            BasicBehaviour basicBehaviour = this.availableBehaviours.get(behaviourConfiguration);
 
-            if (bb != null) {
-                bb.stop();
+            if (basicBehaviour != null) {
+                basicBehaviour.stop();
             }
         }
         else {

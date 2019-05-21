@@ -99,25 +99,19 @@ public class ModelFactory {
     }
 
     public void computeReachabilities() {
-//        #ifdef MF_DEBUG
         if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Computing Reachability sets...");
-//#endif
 
         for (Plan plan : this.rep.getPlans().values()) {
             for (EntryPoint entryPoint : plan.getEntryPoints().values()) {
                 entryPoint.computeReachabilitySet();
             }
         }
-//#ifdef MF_DEBUG
         if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Computing Reachability sets...done!");
-//#endif
 
     }
 
     public void attachRoleReferences() {
-//#ifdef MF_DEBUG
         if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Attaching Role references..." );
-//#endif
         for (Pair<Long, Long> pairs : this.rtmRoleReferences) {
             Role  r = this.rep.getRoles().get(pairs.snd);//find(pairs.second).second;
             RoleTaskMapping rtm = (RoleTaskMapping) this.elements.get(pairs.fst);//find(pairs.first).second;
@@ -125,9 +119,7 @@ public class ModelFactory {
             rtm.setRole(r);
         }
         this.rtmRoleReferences.clear();
-//#ifdef MF_DEBUG
         if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Attaching Role references... done!" );
-        //#endif
     }
 
 //    public void attachPlanReferences() {
@@ -281,9 +273,8 @@ public class ModelFactory {
 
     public void attachCharacteristicReferences() {
         {
-//#ifdef MF_DEBUG
             if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Attaching Characteristics references...");
-//#endif
+
             for (Pair<Long, Long> pairs : this.charCapReferences) {
                 Characteristic cha = this.rep.getCharacteristics().get(pairs.fst);
                 Capability cap = (Capability) this.elements.get(pairs.snd);
@@ -297,9 +288,8 @@ public class ModelFactory {
                 cha.setCapValue(capVal);
             }
             this.charCapValReferences.clear();
-//#ifdef MF_DEBUG
+
             if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Attaching Characteristics references... done!");
-//#endif
         }
     }
 
@@ -818,6 +808,47 @@ public class ModelFactory {
         }
         return fail;
     }
+    public FailureState createFailureState(JSONObject jsonObject) {
+        FailureState state = new FailureState();
+        long id =  this.parser.fetchId(jsonObject.get("id").toString());
+        state.setID(id);
+        setAlicaElementAttributes(state, jsonObject);
+        addElement(state);
+        this.rep.getStates().put(state.getID(), state);
+
+        JSONArray inTransitions = (JSONArray) jsonObject.get("inTransitions");
+
+        for (Object obj : inTransitions) {
+            long objID = this.parser.fetchId(obj.toString());
+            this.stateInTransitionReferences.add(new Pair(state.getID(), objID));
+        }
+
+        JSONObject postConditionJSONObj = (JSONObject) jsonObject.get("postCondition");
+        PostCondition postCon = createPostCondition(postConditionJSONObj);
+        state.setPostCondition(postCon);
+//
+//        while (curChild != null) {
+//            // TODO: FIXME skip #text (extract to method)
+//            if ("#text".equals(curChild.getNodeName()))
+//                curChild = curChild.getNextSibling();
+//            else {
+//                String val = curChild.getNodeName();
+//                long cid = this.parser.parserId(curChild);
+//
+//                if (inTransitions.equals(val)) {
+//                    this.stateInTransitionReferences.add(new Pair(fail.getID(), cid));
+//                } else if (postCondition.equals(val)) {
+//                    PostCondition postCon = createPostCondition(curChild);
+//                    fail.setPostCondition(postCon);
+//                } else {
+//                    ae.abort("MF: Unhandled FaulireState Child: ", curChild.getNodeValue());
+//                }
+//
+//                curChild = curChild.getNextSibling();
+//            }
+//        }
+        return state;
+    }
 
     public SuccessState createSuccessState(Node element) {
         SuccessState suc = new SuccessState();
@@ -847,6 +878,48 @@ public class ModelFactory {
             }
         }
         return suc;
+    }
+
+    public SuccessState createSuccessState(JSONObject jsonObject) {
+        SuccessState state = new SuccessState();
+        long id =  this.parser.fetchId(jsonObject.get("id").toString());
+        state.setID(id);
+        setAlicaElementAttributes(state, jsonObject);
+        addElement(state);
+        this.rep.getStates().put(state.getID(), state);
+
+        JSONArray inTransitions = (JSONArray) jsonObject.get("inTransitions");
+
+        for (Object obj : inTransitions) {
+            long objID = this.parser.fetchId(obj.toString());
+            this.stateInTransitionReferences.add(new Pair(state.getID(), objID));
+        }
+
+        JSONObject postConditionJSONObj = (JSONObject) jsonObject.get("postCondition");
+        PostCondition postCon = createPostCondition(postConditionJSONObj);
+        state.setPostCondition(postCon);
+//        Node curChild = element.getFirstChild();
+//
+//        while (curChild != null) {
+//            // TODO: FIXME skip #text (extract to method)
+//            if ("#text".equals(curChild.getNodeName()))
+//                curChild = curChild.getNextSibling();
+//            else {
+//                String val = curChild.getNodeName();
+//                long cid = this.parser.parserId(curChild);
+//
+//                if (inTransitions.equals(val)) {
+//                    this.stateInTransitionReferences.add(new Pair(suc.getID(), cid));
+//                } else if (postCondition.equals(val)) {
+//                    PostCondition postCon = createPostCondition(curChild);
+//                    suc.setPostCondition(postCon);
+//                } else {
+//                    ae.abort("MF: Unhandled SuccesState Child:", curChild.getNodeValue());
+//                }
+//                curChild = curChild.getNextSibling();
+//            }
+//        }
+        return state;
     }
 
     public PostCondition createPostCondition(Node element) {
@@ -1191,7 +1264,7 @@ public class ModelFactory {
     private void setAlicaElementAttributes(AlicaElement ae, JSONObject jsonObject) {
         String name = jsonObject.get("name").toString();
         String comment = jsonObject.get("comment").toString();
-        System.out.println("MF: attribute " + name + " ("+ comment + ")");
+        if (CommonUtils.MF_DEBUG_debug)  System.out.println("MF: attribute " + name + " ("+ comment + ")");
 
         if (!name.isEmpty()) {
             ae.setName(name);
@@ -1212,9 +1285,7 @@ public class ModelFactory {
     }
 
     public void attachPlanReferences() {
-//        #ifdef MF_DEBUG
         if (CommonUtils.MF_DEBUG_debug)  System.out.println("MF: Attaching Plan references..");
-//#endif
         //epTaskReferences
         for (Pair<Long, Long> pairs : this.epTaskReferences) {
             Task task = (Task) this.elements.get(pairs.snd);
@@ -1232,7 +1303,7 @@ public class ModelFactory {
                 ae.abort("MF: Cannot resolve transitionAimReferences target: ", "" + pairs.fst);
             }
             transition.setOutState(state);
-            state.getInTransitions().add(transition);
+            state.addInTransition(transition);
         }
         this.transitionAimReferences.clear();
 
@@ -1262,7 +1333,7 @@ public class ModelFactory {
         for (Pair<Long, Long> pairs : this.stateOutTransitionReferences) {
             State state = (State) this.elements.get(pairs.fst);
             Transition transition = (Transition) this.elements.get(pairs.snd);
-            state.getOutTransitions().add(transition);
+            state.addOutTransition(transition);
             transition.setInState(state);
         }
         this.stateOutTransitionReferences.clear();
@@ -1359,10 +1430,7 @@ public class ModelFactory {
         this.quantifierScopeReferences.clear();
 
         removeRedundancy();
-//#ifdef MF_DEBUG
-        System.out.println("MF: DONE!");
-//#endif
-
+        if (CommonUtils.MF_DEBUG_debug)  System.out.println("MF: DONE!");
     }
 
     private void removeRedundancy() {
@@ -2216,9 +2284,7 @@ public class ModelFactory {
                             this.planTypePlanReferences.add(new Pair(pt.getID(), cid));
                         }
                     } else {
-//#ifdef PP_DEBUG
                         if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Skipping deactivated plan");
-//#endif
                     }
                 } else if (vars.equals(val)) {
                     Variable var = createVariable(curChild);

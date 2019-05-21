@@ -2,6 +2,7 @@ package de.uniks.vs.jalica.behaviours;
 
 import de.uniks.vs.jalica.unknown.BasicCondition;
 import de.uniks.vs.jalica.unknown.CommonUtils;
+import de.uniks.vs.jalica.unknown.Condition;
 import de.uniks.vs.jalica.unknown.RunningPlan;
 
 public class DummyTransitionCondition extends BasicCondition {
@@ -10,6 +11,7 @@ public class DummyTransitionCondition extends BasicCondition {
         CommonUtils.aboutCallNotification();
     }
 
+    @Override
     protected boolean evaluate(RunningPlan rp) {
         /*PROTECTED REGION ID(1528125075116) ENABLED START*/
         System.out.println("TC: Dummy condition " + rp.getActiveState().getName());

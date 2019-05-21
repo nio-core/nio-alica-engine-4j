@@ -2,6 +2,11 @@ package de.uniks.vs.jalica.dummy_proxy;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.unknown.*;
+import de.uniks.vs.jalica.unknown.Communication.AlicaEngineInfo;
+import de.uniks.vs.jalica.unknown.Communication.AllocationAuthorityInfo;
+import de.uniks.vs.jalica.unknown.Communication.PlanTreeInfo;
+
+import java.util.ArrayList;
 
 /**
  * Created by alex on 13.07.17.
@@ -22,7 +27,7 @@ public class AlicaDummyCommunication extends AlicaCommunication {
     public void tick() { CommonUtils.aboutNoImpl(); }
 
     @Override
-    public boolean init() { return true; }
+    public boolean init(ArrayList<Long> ids) { return true; }
 
     @Override
     public void sendAlicaEngineInfo(AlicaEngineInfo statusMessage) { CommonUtils.aboutNoImpl(); }

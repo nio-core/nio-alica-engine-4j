@@ -78,4 +78,8 @@ public class Behaviour extends AbstractPlan {
         ss += "#EndBehaviour\n";
         return ss;
     }
+
+    public boolean isFinished() {
+        return getImplementation().isFinished() || getImplementation().isSuccess();
+    }
 }

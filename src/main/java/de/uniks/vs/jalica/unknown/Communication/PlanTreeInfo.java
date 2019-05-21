@@ -1,4 +1,6 @@
-package de.uniks.vs.jalica.unknown;
+package de.uniks.vs.jalica.unknown.Communication;
+
+import de.uniks.vs.jalica.unknown.Message;
 
 import java.util.ArrayList;
 
@@ -12,10 +14,7 @@ public class PlanTreeInfo implements Message {
 
     @Override
     public String toString() {
-        String info = "\n Sender               :" +senderID + " \n";
-        info += " States               :"+stateIDs+ " \n";
-        info += " succeeded EntryPoints:"+succeededEPs;
-        return info;
+        return  "\n Sender:" +senderID + " | "+ " States:"+stateIDs+ " | " + " succeeded EntryPoints:"+succeededEPs;
     }
 }
 

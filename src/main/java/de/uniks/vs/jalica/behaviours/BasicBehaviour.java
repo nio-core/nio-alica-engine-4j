@@ -21,10 +21,12 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
     private ArrayList<Variable> variables;
     private RunningPlan runningPlan;
     private boolean started;
+    private boolean finished;
     private boolean success;
     private boolean failure;
     private boolean callInit;
     private boolean running;
+    private boolean loop;
     private Trigger behaviourTrigger;
     private TimerEvent timer;
     private int delayedStart;
@@ -34,12 +36,14 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
     public BasicBehaviour(String name) {
         if (CommonUtils.B_DEBUG_debug) System.out.println("BB: constructor called " + name);
         this.name = name;
+        this.loop =  false;
+        this.finished =  false;
         this.failure =  false;
         this.success =  false;
         this.callInit = true;
         this.started =  true;
         this.running =  false;
-        this.timer = new TimerEvent(3300, 0, this.getClass().getSimpleName());
+        this.timer = new TimerEvent(303030, 0, this.getClass().getSimpleName());
 //        this.runThread = new Thread(this);
 //        this.runCV = new ConditionVariable(this.runThread);
         this.runCV = new ConditionVariable(this);
@@ -76,7 +80,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
         if (behaviourTrigger == null) {
 
             if (CommonUtils.B_DEBUG_debug) System.out.println("BB: stop behaviour type -> " + this.getClass().getSimpleName());
-            CommonUtils.aboutImplIncomplete();
+            if (CommonUtils.B_DEBUG_debug) CommonUtils.aboutImplIncomplete();
             return this.timer.stop();
         }
         else {
@@ -118,7 +122,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
 
     void runInternal() {
 //        unique_lock<mutex> lck(runCV_mtx);
-        CommonUtils.aboutCallNotification();
+        if (CommonUtils.B_DEBUG_debug) CommonUtils.aboutCallNotification();
         while (this.started) {
 
             if (CommonUtils.B_DEBUG_debug) CommonUtils.aboutCallNotification(this.getClass().getSimpleName());
@@ -138,7 +142,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
 
                     @Override
                     public void run() {
-                        CommonUtils.aboutCallNotification("thread started");
+                        if (CommonUtils.B_DEBUG_debug)  CommonUtils.aboutCallNotification("thread started");
 
                         while (true) {
                             if(behaviourTrigger == null && (!started || timer.isNotifyCalled(runCV))) {
@@ -157,7 +161,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
                             }
 
                             try {
-                                Thread.sleep(10);
+                                Thread.sleep(30);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
@@ -230,7 +234,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
     }
 
     private void initInternal() {
-        CommonUtils.aboutCallNotification();
+        if (CommonUtils.B_DEBUG_debug) CommonUtils.aboutCallNotification();
         this.success = false;
         this.failure = false;
         this.callInit = false;
@@ -254,6 +258,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
     @Override
     public void run() {
         runInternal();
+        CommonUtils.aboutCallNotification();
     }
 
     public abstract void run(String msg);
@@ -289,5 +294,17 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
         CommonUtils.aboutCallNotification();
         this.behaviourTrigger = behaviourTrigger;
         this.behaviourTrigger.addConditionVariable(this.runCV);
+    }
+
+    public boolean isFinished() {
+        return finished;
+    }
+
+    public void notifyLoopFinished() {
+        this.finished = !this.loop;
+    }
+
+    public void isLoop(boolean loop) {
+        this.loop = loop;
     }
 }

@@ -1,6 +1,7 @@
 package de.uniks.vs.jalica.behaviours;
 
 import de.uniks.vs.jalica.unknown.BasicCondition;
+import de.uniks.vs.jalica.unknown.Condition;
 import de.uniks.vs.jalica.unknown.RunningPlan;
 
 public class DomainCondition extends BasicCondition {

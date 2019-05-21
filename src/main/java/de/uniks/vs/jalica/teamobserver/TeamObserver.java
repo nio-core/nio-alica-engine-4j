@@ -4,6 +4,7 @@ import de.uniks.vs.jalica.common.config.ConfigPair;
 import de.uniks.vs.jalica.common.Logger;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.unknown.*;
+import de.uniks.vs.jalica.unknown.Communication.PlanTreeInfo;
 
 import java.util.*;
 
@@ -115,16 +116,18 @@ public class TeamObserver implements ITeamObserver {
             if (spt != null) {
 
                 for (AgentEngineData agentEngineData : allOtherAgents) {
-                    System.out.println("TO("+this.getOwnID()+"): agent " + agentEngineData.getProperties().getID());
+                    if (CommonUtils.TO_DEBUG_debug) System.out.println("TO("+this.getOwnID()+"): agent:" + agentEngineData.getProperties().getID());
+
                     if (agentEngineData.getProperties().getID() == incoming.senderID) {
+                        if (CommonUtils.TO_DEBUG_debug) System.out.println("TO("+this.getOwnID()+"): agent:" + agentEngineData.getProperties().getID() + " == " +incoming.senderID);
 
                         synchronized (agentEngineData) {
                             agentEngineData.setLastMessageTime(ae.getIAlicaClock().now().time);
                             agentEngineData.setSuccessMarks(new SuccessMarks(ae, incoming.succeededEPs));
-                            System.out.println("TO("+this.getOwnID()+"): agent " + incoming.senderID + "  succeeded EPs " + incoming.succeededEPs );
+                            if (CommonUtils.TO_DEBUG_debug) System.out.println("TO("+this.getOwnID()+"): agent:" + incoming.senderID + "  state:"+ spt.getState().getName() +"  succeeded EPs:" + incoming.succeededEPs );
                         }
+                        break;
                     }
-                    break;
                 }
             }
             synchronized (this.simplePlanTrees) {
@@ -144,10 +147,10 @@ public class TeamObserver implements ITeamObserver {
     private SimplePlanTree sptFromMessage(long agentID, ArrayList<Long> ids) {
 
         if (CommonUtils.TO_DEBUG_debug) {
-            System.out.println("TO("+this.getOwnID()+"): Spt from robot " + agentID);
+            System.out.print("TO("+this.getOwnID()+"): SimplePlanTree from robot:" + agentID +  "   ");
 
             for (long i : ids) {
-                System.out.println(i + "\t");
+                System.out.print(i + "\t");
             }
             System.out.println();
         }
@@ -320,25 +323,25 @@ public class TeamObserver implements ITeamObserver {
     @Override
     public int successesInPlan(Plan plan) {
         int ret = 0;
-        List<EntryPoint> suc = new ArrayList<EntryPoint>();
+        List<EntryPoint> succeededEntryPoints = new ArrayList<EntryPoint>();
 
         for (AgentEngineData r : this.allOtherAgents) {
 
             if (r.isActive()) {
                 {
 //                    lock_guard<mutex> lock(this.successMark);
-                    suc = r.getSuccessMarks().succeededEntryPoints(plan);
+                    succeededEntryPoints = r.getSuccessMarks().succeededEntryPoints(plan);
                 }
 
-                if (suc != null) {
-                    ret += suc.size();
+                if (succeededEntryPoints != null) {
+                    ret += succeededEntryPoints.size();
                 }
             }
         }
-        suc = me.getSuccessMarks().succeededEntryPoints(plan);
+        succeededEntryPoints = me.getSuccessMarks().succeededEntryPoints(plan);
 
-        if (suc != null) {
-            ret += suc.size();
+        if (succeededEntryPoints != null) {
+            ret += succeededEntryPoints.size();
         }
         return ret;
     }
@@ -452,12 +455,12 @@ public class TeamObserver implements ITeamObserver {
                     }
                     else
                     {
-                        if (CommonUtils.TO_DEBUG_debug)  System.out.println("TO: added to noupdate" );
+                        if (CommonUtils.TO_DEBUG_debug)  System.out.println("TO: added to no_update" );
                         noUpdates.add(second.getAgentID());
                     }
                 }
             }
-            if (CommonUtils.TO_DEBUG_debug)  System.out.println("TO: spts size " + updatePlanTrees.size());
+            if (CommonUtils.TO_DEBUG_debug)  System.out.println("TO: SPTs size " + updatePlanTrees.size());
 
             if (root.recursiveUpdateAssignment(updatePlanTrees, agentsAvail, noUpdates, time))
             {
@@ -481,16 +484,15 @@ public class TeamObserver implements ITeamObserver {
         planTreeInfo.stateIDs = msg;
         planTreeInfo.succeededEPs = this.getOwnEngineData().getSuccessMarks().toList();
         ae.getCommunicator().sendPlanTreeInfo(planTreeInfo);
-//#ifdef TO_DEBUG
-        String ss = "TO("+this.getOwnID()+"): Sending Plan Message: " +"\n";
 
-        for (long i: msg) {
-            ss+= "    " +i + "\t";
+        if (CommonUtils.TO_DEBUG_debug) {
+            String ss = "TO(" + this.getOwnID() + "): Sending Plan Message: ";
+
+            for (long i : msg) {
+                ss += "  " + i ;
+            }
+            System.out.println(ss);
         }
-
-        ss+="\n";
-        if (CommonUtils.TO_DEBUG_debug)  System.out.println(ss);
-//#endif
     }
 
     @Override
@@ -515,34 +517,34 @@ public class TeamObserver implements ITeamObserver {
 
     private void cleanOwnSuccessMarks(RunningPlan root) {
         HashSet<AbstractPlan> presentPlans  = new HashSet<AbstractPlan>();
+
         if (root != null) {
-            ArrayList<RunningPlan> q = new ArrayList<RunningPlan>();
-            q.add(0,root);
+            ArrayList<RunningPlan> plans = new ArrayList<RunningPlan>();
+            plans.add(0,root);
 
-            while (q.size() > 0) {
-                RunningPlan p = q.get(0);
-                q.remove(0);
+            while (plans.size() > 0) {
+                RunningPlan plan = plans.get(0);
+                plans.remove(0);
 
-                if (!p.isBehaviour()) {
-                    presentPlans.add(p.getPlan());
+                if (!plan.isBehaviour()) {
+                    presentPlans.add(plan.getPlan());
 
-                    for (RunningPlan c : p.getChildren()) {
-                        q.add(c);
+                    for (RunningPlan c : plan.getChildren()) {
+                        plans.add(c);
                     }
                 }
             }
         }
         ArrayList<SimplePlanTree > queue = new ArrayList<>();
-//        lock_guard<mutex> lock(this.simplePlanTreeMutex);
-        for (long key : this.simplePlanTrees.keySet())
-        {
 
+        for (long key : this.simplePlanTrees.keySet()) {
 //          TODO:  if (pair.second.operator bool())
-            CommonUtils.aboutImplIncomplete();
+
             if (this.simplePlanTrees.get(key) == null) {
                 queue.add(this.simplePlanTrees.get(key));
             }
         }
+
         while (queue.size() > 0)
         {
             SimplePlanTree spt = queue.get(0);
@@ -554,7 +556,8 @@ public class TeamObserver implements ITeamObserver {
             }
         }
 //        this.getOwnEngineData().getSuccessMarks().limitToPlans(move(presentPlans));
-        this.getOwnEngineData().getSuccessMarks().limitToPlans(presentPlans);
+        this.getOwnEngineData().getSuccessMarks().limitToPlans(CommonUtils.move(presentPlans));
+//        this.getOwnEngineData().getSuccessMarks().limitToPlans(presentPlans);
     }
 
     public void messageRecievedFrom(long rID) {

@@ -47,78 +47,78 @@ public class PlanSelector implements IPlanSelector {
         return this.createRunningPlan(runningPlan.getParent(), newPlanList, selectedAgents, runningPlan, runningPlan.getPlanType());
     }
 
-    private ArrayList<RunningPlan> getPlansForStateInternal(RunningPlan planningParent, ArrayList<AbstractPlan> plans, Vector<Long> agentIDs) {
+    private ArrayList<RunningPlan> getPlansForStateInternal(RunningPlan planningParent, ArrayList<AbstractPlan> abstractPlans, Vector<Long> agentIDs) {
         ArrayList<RunningPlan> rps = new ArrayList<RunningPlan>();
         if (CommonUtils.PS_DEBUG_debug) System.out.println("###### PS: GetPlansForState: Parent:"
                 + (planningParent != null ? planningParent.getPlan().getName() : "null") + " plan count: "
-                + plans.size() + " agent count: "
+                + abstractPlans.size() + " agent count: "
                 + agentIDs.size() + " ######" );
-        RunningPlan rp;
-        ArrayList<Plan> planList;
-        BehaviourConfiguration bc;
-        Plan p;
-        PlanType pt;
-        PlanningProblem pp;
+        RunningPlan runningPlan;
+        ArrayList<Plan> plans;
+        BehaviourConfiguration behaviourConfiguration;
+        Plan plan;
+        PlanType planType;
+        PlanningProblem planningProblem;
 
-        for (AbstractPlan ap : plans) {
+        for (AbstractPlan abstractPlan : abstractPlans) {
             // BEHAVIOUR CONFIGURATION
 //            bc = (BehaviourConfiguration) ap;
 
-            if (ap == null) {
+            if (abstractPlan == null) {
                 System.out.println("PS: plan is null");
                 continue;
             }
 
-            if (ap instanceof BehaviourConfiguration) {
-                bc = (BehaviourConfiguration) ap;
-                rp = new RunningPlan(alicaEngine, bc);
+            if (abstractPlan instanceof BehaviourConfiguration) {
+                behaviourConfiguration = (BehaviourConfiguration) abstractPlan;
+                runningPlan = new RunningPlan(alicaEngine, behaviourConfiguration);
                 // A BehaviourConfiguration is a Plan too (in this context)
-                rp.setPlan(bc);
-                rps.add(rp);
-                rp.setParent(planningParent);
-                if (CommonUtils.PS_DEBUG_debug) System.out.println("PS: Added Behaviour " + bc.getBehaviour().getName() );
+                runningPlan.setPlan(behaviourConfiguration);
+                rps.add(runningPlan);
+                runningPlan.setParent(planningParent);
+                if (CommonUtils.PS_DEBUG_debug) System.out.println("PS: Added Behaviour " + behaviourConfiguration.getBehaviour().getName() );
             } else {
                 // PLAN
 //                p = (Plan)(ap);
 //                if (p != null)
 
-                if ((ap instanceof Plan)) {
-                    p = (Plan)ap;
-                    planList = new ArrayList<>();
-                    planList.add(p);
-                    rp = this.createRunningPlan(planningParent, planList, agentIDs, null, null);
+                if ((abstractPlan instanceof Plan)) {
+                    plan = (Plan)abstractPlan;
+                    plans = new ArrayList<>();
+                    plans.add(plan);
+                    runningPlan = this.createRunningPlan(planningParent, plans, agentIDs, null, null);
 
-                    if (rp == null) {
-                        if (CommonUtils.PS_DEBUG_debug) System.out.println("PS: It was not possible teamObserver create a RunningPlan for the Plan " + p.getName() + " !");
+                    if (runningPlan == null) {
+                        if (CommonUtils.PS_DEBUG_debug) System.out.println("PS: It was not possible teamObserver create a RunningPlan for the Plan " + plan.getName() + " !");
                         return null;
                     }
-                    rps.add(rp);
+                    rps.add(runningPlan);
                 }
                 else
                 {
                     // PLANTYPE
 //                    pt = dynamic_cast<PlanType*>(ap);
 //                    if (pt != null)
-                    if (ap instanceof PlanType)
+                    if (abstractPlan instanceof PlanType)
                     {
-                        pt = (PlanType)(ap);
-                        rp = this.createRunningPlan(planningParent, pt.getPlans(), agentIDs, null, pt);
-                        if (rp == null)
+                        planType = (PlanType)(abstractPlan);
+                        runningPlan = this.createRunningPlan(planningParent, planType.getPlans(), agentIDs, null, planType);
+                        if (runningPlan == null)
                         {
-                            if (CommonUtils.PS_DEBUG_debug) System.out.println( "PS: It was not possible teamObserver create a RunningPlan for the Plan (Plantype) " + pt.getName()
+                            if (CommonUtils.PS_DEBUG_debug) System.out.println( "PS: It was not possible teamObserver create a RunningPlan for the Plan (Plantype) " + planType.getName()
                                     + "!" );
                             return null;
                         }
-                        rps.add(rp);
+                        rps.add(runningPlan);
                     }
                     else
                     {
-                        pp = null;
+                        planningProblem = null;
 //                        pp = dynamic_cast<PlanningProblem*>(ap);
 //                        if (pp == null)
-                        if (!(ap instanceof PlanningProblem))
+                        if (!(abstractPlan instanceof PlanningProblem))
                         {
-                            System.err.println( "PS: WTF? An AbstractPlan wasnt a BehaviourConfiguration, a Plan, a PlanType nor a PlannigProblem: " + ap.getID() );
+                            System.err.println( "PS: WTF? An AbstractPlan wasnt a BehaviourConfiguration, a Plan, a PlanType nor a PlannigProblem: " + abstractPlan.getID() );
                             try {
                                 throw new Exception();
                             } catch (Exception e) {
@@ -126,19 +126,19 @@ public class PlanSelector implements IPlanSelector {
                             }
                         }
                         else
-                            pp = (PlanningProblem)ap;
+                            planningProblem = (PlanningProblem)abstractPlan;
 
                         //TODO implement method in planner
-                        Plan myP = alicaEngine.getPlanner().requestPlan(pp);
-                        planList = new ArrayList<Plan>();
-                        planList.add(myP);
-                        rp = this.createRunningPlan(planningParent, planList, agentIDs, null, null);
-                        if (rp == null)
+                        Plan myP = alicaEngine.getPlanner().requestPlan(planningProblem);
+                        plans = new ArrayList<Plan>();
+                        plans.add(myP);
+                        runningPlan = this.createRunningPlan(planningParent, plans, agentIDs, null, null);
+                        if (runningPlan == null)
                         {
                             if (CommonUtils.PS_DEBUG_debug) System.out.println( "PS: Unable teamObserver execute planning result" );
                             return null;
                         }
-                        rps.add(rp);
+                        rps.add(runningPlan);
                     }
                 }// else Plan
             }// else BehaviourConfiguration
@@ -155,7 +155,7 @@ public class PlanSelector implements IPlanSelector {
             // CHECK: number of agents < minimum cardinality of this plan
             if (plan.getMinCardinality() > (agentIDs.size() + teamObserver.successesInPlan(plan)))
             {
-//#ifdef PSDEBUG
+
                 String ss = "";
                 ss += "PS: AgentIDs: ";
                 for (long agent : agentIDs)
@@ -166,7 +166,6 @@ public class PlanSelector implements IPlanSelector {
                 //this.baseModule.Mon.Error(1000, msg);
 
                 if (CommonUtils.PS_DEBUG_debug) System.out.println(ss);
-//#endif
             }
             else
             {

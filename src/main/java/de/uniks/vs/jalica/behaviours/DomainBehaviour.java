@@ -17,7 +17,7 @@ public abstract class DomainBehaviour extends BasicBehaviour {
         super(name);
         this.systemConfig = ae.getSystemConfig();
         this.agentName = ae.getAgentName();
-        this.ownID = systemConfig.getOwnRobotID();
+        this.ownID = systemConfig.getOwnAgentID();
     }
 
     public String getAgentName() {

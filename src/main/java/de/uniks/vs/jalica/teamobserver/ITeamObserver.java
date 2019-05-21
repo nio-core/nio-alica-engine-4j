@@ -1,6 +1,7 @@
 package de.uniks.vs.jalica.teamobserver;
 
 import de.uniks.vs.jalica.unknown.*;
+import de.uniks.vs.jalica.unknown.Communication.PlanTreeInfo;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

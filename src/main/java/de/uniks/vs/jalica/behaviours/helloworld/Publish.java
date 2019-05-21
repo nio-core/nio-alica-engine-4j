@@ -32,7 +32,7 @@ public class Publish extends DomainBehaviour {
             lock.lock();
             stackFullCondition.awaitNanos(countMax);
             count++;
-            System.out.println("Publish: " + systemConfig.getOwnRobotID() + "  " + count);
+            System.out.println("Publish: " + systemConfig.getOwnAgentID() + "  " + count);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {

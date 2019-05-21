@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.unknown;
 
+import de.uniks.vs.jalica.unknown.Communication.PlanTreeInfo;
 import org.json.simple.JSONObject;
 import org.zeromq.ZMQ;
 

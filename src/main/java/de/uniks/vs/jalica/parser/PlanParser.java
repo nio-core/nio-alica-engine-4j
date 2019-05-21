@@ -353,10 +353,7 @@ public class PlanParser {
     }
 
     private void parseTaskFile(String file) {
-        //  #ifdef PP_DEBUG
         if (CommonUtils.PP_DEBUG_debug) System.out.println( "PP: parsing Task file: " + currentFile );
-        //#endif
-
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -392,9 +389,7 @@ public class PlanParser {
     }
 
     private void parseRoleDefFile(String currentFile) {
-//#ifdef PP_DEBUG
         if (CommonUtils.PP_DEBUG_debug) System.out.println("PP: parsing RoleDef file: " + currentFile);
-//#endif
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -419,9 +414,7 @@ public class PlanParser {
     }
 
     private void parseCapabilityDefFile(String currentFile){
-//        #ifdef PP_DEBUG
         if (CommonUtils.PP_DEBUG_debug) System.out.println("PP: parsing RoleDef file: " + currentFile);
-//#endif
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -446,9 +439,7 @@ public class PlanParser {
     }
 
     private void parsePlanTypeFile(String currentFile){
-//        #ifdef PP_DEBUG
         if (CommonUtils.PP_DEBUG_debug) System.out.println( "PP: parsing PlanType file: " + currentFile );
-//#endif
         Document doc = null;
         DocumentBuilder docBuilder = null;
 
@@ -471,9 +462,7 @@ public class PlanParser {
     }
 
     private void parseBehaviourFile(String currentFile){
-//        #ifdef PP_DEBUG
         if (CommonUtils.PP_DEBUG_debug) System.out.println("PP: parsing Behaviour file: " + currentFile);;
-//        #endif
         File file = new File(currentFile);
 
         if (!file.exists()) {
@@ -515,9 +504,7 @@ public class PlanParser {
     }
 
     private void parsePlanningProblem(String currentFile){
-//        #ifdef PP_DEBUG
         if (CommonUtils.PP_DEBUG_debug) System.out.println( "PP: parsing Planning Problem file: " + currentFile );
-//#endif
         Document doc;
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -535,9 +522,7 @@ public class PlanParser {
 
     private Plan parsePlanFile(String planFile){
         Plan p = null;
-//#ifdef PP_DEBUG
         if (CommonUtils.PP_DEBUG_debug) System.out.println("PP: parsing Plan file: " + planFile );
-//#endif
 
         File file = new File(planFile);
 
@@ -583,13 +568,13 @@ public class PlanParser {
     this.parser.fetchId(jsonObject.get("id").toString(), id); */
 
     public Long extractID(String idString) {
-        System.out.println("PP: extract ID " + idString);
+        if (CommonUtils.PP_DEBUG_debug) System.out.println("PP: extract ID " + idString);
         int hashPos = idString.indexOf("#");
         return Long.valueOf(hashPos > 0 ? idString.substring(hashPos+1) : idString);
     }
 
     public long fetchId(String idString) {
-        System.out.println("PP: fetch ID " + idString);
+        if (CommonUtils.PP_DEBUG_debug) System.out.println("PP: fetch ID " + idString);
         int hashPos = idString.indexOf("#");
         long id = -1;
 		String temp = null;
@@ -644,9 +629,7 @@ public class PlanParser {
 
             if (!found)
             {
-//#ifdef PP_DEBUG
-                System.out.println("PP: Adding " + path + " to parse queue ");
-//#endif
+                if (CommonUtils.PP_DEBUG_debug) System.out.println("PP: Adding " + path + " to parse queue ");
                 filesToParse.add(path);
             }
         }
@@ -743,7 +726,7 @@ public class PlanParser {
     }
 
     public void handleEntry(Object entry, Plan plan, ModelFactory modelFactory) {
-        System.out.println("PP: handleEntry " + entry );
+        if (CommonUtils.PP_DEBUG_debug) System.out.println("PP: handleEntry " + entry );
         for (JSONHandler handler : jsonEntryHandlers) {
 
             if (handler.handle(entry, plan, modelFactory))

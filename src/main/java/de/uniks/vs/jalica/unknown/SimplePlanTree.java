@@ -21,7 +21,7 @@ public class SimplePlanTree {
      * The id of the agent to which this tree refers to
      */
     private long agentID = -1;
-    private boolean newSimplePlanTree;
+    private boolean newSimplePlanTree = true;
     /**
      * The timestamp denoting when this tree was received.
      */

@@ -5,6 +5,7 @@ package de.uniks.vs.jalica.unknown;
 import de.uniks.vs.jalica.common.Logger;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.teamobserver.ITeamObserver;
+import de.uniks.vs.jalica.unknown.Communication.AlicaEngineInfo;
 
 import java.util.ArrayList;
 import java.util.PriorityQueue;

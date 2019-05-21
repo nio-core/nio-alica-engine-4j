@@ -1,6 +1,11 @@
 package de.uniks.vs.jalica.unknown;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
+import de.uniks.vs.jalica.unknown.Communication.AlicaEngineInfo;
+import de.uniks.vs.jalica.unknown.Communication.AllocationAuthorityInfo;
+import de.uniks.vs.jalica.unknown.Communication.PlanTreeInfo;
+
+import java.util.ArrayList;
 
 /**
  * Created by alex on 13.07.17.
@@ -48,5 +53,5 @@ public abstract class AlicaCommunication {
         ae.getResultStore().onSolverResult(sr);
     }
 
-    public abstract boolean init();
+    public abstract boolean init(ArrayList<Long> ids);
 }

@@ -320,24 +320,18 @@ public class RuleBook {
                 rp.getAssignment().getAgentStateMapping().getAgentsInState(rp.getActiveState()).size()-1,
                 agents);
 
-//#ifdef RULE_debug
         if (CommonUtils.RULE_debug) System.out.println( "RB: There are " + rp.getActiveState().getPlans().size() + " Plans in State " + rp.getActiveState().getName() );
-//#endif
         ArrayList<RunningPlan> children = this.planSelector.getPlansForState( rp, rp.getActiveState().getPlans(), agents);
 
         if (children == null || children.size() < rp.getActiveState().getPlans().size())
         {
             rp.addFailure();
-//#ifdef RULE_debug
             if (CommonUtils.RULE_debug) System.out.println( "RB: PlanAllocFailed " + rp.getPlan().getName() );
-//#endif
             return PlanChange.FailChange;
         }
         rp.addChildren(children);
-//#ifdef RULE_debug
         if (CommonUtils.RULE_debug) System.out.println( "RB: after add children" );
         if (CommonUtils.RULE_debug) System.out.println( "RB: PlanAlloc " +  rp.getPlan().getName() );
-//#endif
 
         if (children.size() > 0)
         {
@@ -348,10 +342,8 @@ public class RuleBook {
     }
 
     private PlanChange topFailRule(RunningPlan r) {
-//        #ifdef RULE_debug
         if (CommonUtils.RULE_debug) System.out.println( "RB: TopFail-Rule called." );
         if (CommonUtils.RULE_debug) System.out.println( "RB: TopFail RP \n" + r.toString() );
-//#endif
 //        if (!r.getParent().expired())
         if (r.getParent() == null)
 

@@ -10,35 +10,41 @@ import java.util.*;
  */
 public class CommonUtils {
 
+    public static final boolean PP_DEBUG_debug = false;
+    public static final boolean CM_DEBUG_debug = false;
+    public static final boolean MF_DEBUG_debug = false;
+    public static final boolean RA_DEBUG_debug = false;
+    public static final boolean FS_DEBUG_debug = false;
+    public static final boolean PS_DEBUG_debug = false;
+    public static final boolean TA_DEBUG_debug = false;
+    public static final boolean AM_DEBUG_debug = false;
+    public static final boolean PA_DEBUG_debug = false;
+    public static final boolean AE_DEBUG_debug = false;
+    public static final boolean SC_DEBUG_debug = false;
+
+    // Communication
+    public static final boolean COMM_debug = true;
+
     public static final boolean RULE_debug = false;
     public static final boolean SM_FAILURE_debug = false;
     public static final boolean SM_MESSAGES_debug = false;
-    public static final boolean PP_DEBUG_debug = true;
     public static final boolean UFDEBUG_debug = false;
     public static final boolean PB_DEBUG_debug = false;
     public static final boolean CM_REASON_DEBUG_debug = false;
-    public static final boolean CM_DEBUG_debug = true;
     public static final boolean SUCDEBUG_debug = false;
     public static final boolean CS_DEBUG_debug = false;
-    public static final boolean MF_DEBUG_debug = true;
-    public static final boolean FS_DEBUG_debug = true;
-    public static final boolean TO_DEBUG_debug = false;
-    public static final boolean RA_DEBUG_debug = true;
+    public static final boolean TO_DEBUG_debug = true;
     public static final boolean RP_DEBUG_debug = false;
-    public static final boolean PS_DEBUG_debug = true;
-    public static final boolean TA_DEBUG_debug = true;
-    public static final boolean AM_DEBUG_debug = true;
     public static final boolean AC_DEBUG_debug = false;
-    public static final boolean TE_DEBUG_debug = false;
+    public static final boolean TE_DEBUG_debug = true;
     public static final boolean B_DEBUG_debug = false;
-    public static final boolean PA_DEBUG_debug = true;
     public static final boolean CV_DEBUG_debug = false;
-    public static final boolean AE_DEBUG_debug = true;
     public static final boolean AED_DEBUG_debug = false;
-    public static final boolean COMM_debug = true;
     public static final boolean XTH_DEBUG_debug = false;
     public static final boolean DC_debug = false;
 
+    // DEBUG Extension
+    public static final boolean VERBOSE_ARRAY_LIST_DEBUG = false;
     public static final boolean MISSING_IMPLEMENTATION_debug = true;
     public static final boolean IMPLEMENTATION_INCOMPLETE_debug = true;
     public static final boolean CALL_debug = true;
@@ -82,6 +88,12 @@ public class CommonUtils {
         return newAgents;
     }
 
+    public static <T> HashSet<T> move(HashSet<T> agents) {
+        HashSet<T> newAgents = new HashSet<>(agents);
+        agents.clear();
+        return newAgents;
+    }
+
     public static <T> void copy(Set<T> agentsInState, int start, int end, Vector<T> agents) {
         T[] array = (T[]) agentsInState.toArray();
 
@@ -111,8 +123,8 @@ public class CommonUtils {
             } catch (Exception e) {
                 System.out.flush();
                 StackTraceElement[] stackTrace = e.getStackTrace();
-                System.err.println(stackTrace[1] + " ->  Implementation is missing!");
-                System.err.flush();
+                System.out.println(stackTrace[1] + " ->  Implementation is missing!");
+                System.out.flush();
             }
     }
 
@@ -140,12 +152,13 @@ public class CommonUtils {
         } catch (Exception e) {
             System.out.flush();
             StackTraceElement[] stackTrace = e.getStackTrace();
-            System.err.println(stackTrace[1] + " ->  Implementation incomplete!");
-            System.err.flush();
+            System.out.println(stackTrace[1] + " ->  Implementation incomplete!");
+            System.out.flush();
         }
     }
 
     public static void aboutCallNotification(String msg) {
+
         if (!CALL_debug)
             return;
 
@@ -154,8 +167,12 @@ public class CommonUtils {
         } catch (Exception e) {
             System.out.flush();
             StackTraceElement[] stackTrace = e.getStackTrace();
-            System.err.println(stackTrace[1] + " ->  called  ("+msg+")");
-            System.err.flush();
+            System.out.print(stackTrace[1] + " ->  called  ("+msg+")");
+            if (stackTrace.length > 2)
+                System.out.println("  (from " + stackTrace[2] + ")");
+            else
+                System.out.println();
+            System.out.flush();
         }
     }
 
@@ -170,8 +187,12 @@ public class CommonUtils {
         } catch (Exception e) {
             System.out.flush();
             StackTraceElement[] stackTrace = e.getStackTrace();
-            System.err.println(stackTrace[1] + " ->  called");
-            System.err.flush();
+            System.out.print(stackTrace[1] + " ->  called");
+            if (stackTrace.length > 2)
+                System.out.println("  (from " + stackTrace[2] + ")");
+            else
+                System.out.println();
+            System.out.flush();
         }
     }
 
@@ -181,8 +202,8 @@ public class CommonUtils {
         } catch (Exception e) {
             System.out.flush();
             StackTraceElement[] stackTrace = e.getStackTrace();
-            System.err.println(stackTrace[1] + "  called from   ->   " + stackTrace[2] );
-            System.err.flush();
+            System.out.println(stackTrace[1] + "  called from   ->   " + stackTrace[2] );
+            System.out.flush();
         }
     }
 
@@ -192,9 +213,9 @@ public class CommonUtils {
         } catch (Exception e) {
             System.out.flush();
             StackTraceElement[] stackTrace = e.getStackTrace();
-            System.err.println(msg);
-            System.err.println(stackTrace[1] + "  called from   ->   " + stackTrace[2] );
-            System.err.flush();
+            System.out.println(msg);
+            System.out.println(stackTrace[1] + "  called from   ->   " + stackTrace[2] );
+            System.out.flush();
         }
     }
 

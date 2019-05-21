@@ -57,10 +57,10 @@ public class SystemConfig {
 //        rootPath = rootPath; //".";
 //        logPath = logPath; //"log/";
 
-        System.out.println("SC: Root:           \"" + rootPath + "\"" );
-        System.out.println("SC: Config Path:     \"" + configPath + "\"" );
-        System.out.println("SC: Hostname:       \"" + id + "\"" );
-        System.out.println("SC: Logging Folder: \"" + logPath + "\"" );
+        System.out.println("SysC: Root:           \"" + rootPath + "\"" );
+        System.out.println("SysC: Config Path:     \"" + configPath + "\"" );
+        System.out.println("SysC: Hostname:       \"" + id + "\"" );
+        System.out.println("SysC: Logging Folder: \"" + logPath + "\"" );
     }
 
     public ConfigPair get(String name) {
@@ -90,7 +90,7 @@ public class SystemConfig {
      * Looks up the own robot's ID with the system config's local hostname.
      * @return The own robot's ID
      */
-    public int getOwnRobotID() {
+    public int getOwnAgentID() {
         return this.getRobotID(this.getHostname());
     }
     /**
