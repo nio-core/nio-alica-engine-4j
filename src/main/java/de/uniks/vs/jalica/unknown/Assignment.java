@@ -113,7 +113,7 @@ public class Assignment extends IAssignment {
         Vector<Long> curAgents;
         for (short i = 0; i < this.epAgentsMapping.getSize(); i++) {
             // set the entrypoint
-            if (!this.epAgentsMapping.setEp(i, assCol.getEp(i))) {
+            if (!this.epAgentsMapping.setEp(i, assCol.getEntryPoint(i))) {
                 CommonUtils.aboutError("Ass: AssignmentCollection Index out of entrypoints bounds!");
             }
 
@@ -238,7 +238,7 @@ public class Assignment extends IAssignment {
 //            if (iter != this.epAgentsMapping.getAgents(i).get(this.epAgentsMapping.getAgents(i).size()-1))
 
             if (iter != null) {
-                return this.epAgentsMapping.getEp(i);
+                return this.epAgentsMapping.getEntryPoint(i);
             }
         }
         return null;
@@ -277,7 +277,7 @@ public class Assignment extends IAssignment {
         boolean ret = false;
         for (int i = 0; i < this.epAgentsMapping.getSize(); i++)
         {
-            if (this.epAgentsMapping.getEp(i) == ep)
+            if (this.epAgentsMapping.getEntryPoint(i) == ep)
             {
                 if (CommonUtils.find(this.epAgentsMapping.getAgents(i),0, this.epAgentsMapping.getAgents(i).size()-1,
                     agentID) != this.epAgentsMapping.getAgents(i).lastElement())
@@ -325,8 +325,8 @@ public class Assignment extends IAssignment {
         for (int i = 0; i < this.epAgentsMapping.getSize(); i++)
         {
             int c = this.epAgentsMapping.getAgents(i).size() + success[i].size();
-            if (c > this.epAgentsMapping.getEp(i).getMaxCardinality()
-                || c < this.epAgentsMapping.getEp(i).getMinCardinality())
+            if (c > this.epAgentsMapping.getEntryPoint(i).getMaxCardinality()
+                || c < this.epAgentsMapping.getEntryPoint(i).getMinCardinality())
             {
                 return false;
             }
@@ -415,7 +415,7 @@ public class Assignment extends IAssignment {
 
         for (int i = 0; i < this.epAgentsMapping.getSize(); i++) {
 
-            if (this.epAgentsMapping.getEp(i) == ep) {
+            if (this.epAgentsMapping.getEntryPoint(i) == ep) {
 
                 if (this.epAgentsMapping.getAgents(i).contains(agent)) {
                     return false;

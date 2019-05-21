@@ -2,7 +2,6 @@ package de.uniks.vs.jalica.unknown;
 
 import de.uniks.vs.jalica.common.AssignmentCollection;
 import de.uniks.vs.jalica.common.UtilityFunction;
-import de.uniks.vs.jalica.supplementary.TimerEvent;
 
 import java.util.ArrayList;
 import java.util.Vector;
@@ -66,7 +65,7 @@ public class PartialAssignment extends IAssignment  implements Comparable<Partia
         newPartialAssignment.epAgentsMapping.setSize(oldPartialAssignment.epAgentsMapping.getSize());
 
         for (int i = 0; i < oldPartialAssignment.epAgentsMapping.getSize(); i++) {
-            newPartialAssignment.epAgentsMapping.setEp(i, oldPartialAssignment.epAgentsMapping.getEp(i));
+            newPartialAssignment.epAgentsMapping.setEp(i, oldPartialAssignment.epAgentsMapping.getEntryPoint(i));
 
             for (int j = 0; j < oldPartialAssignment.epAgentsMapping.getAgents(i).size(); j++) {
                 newPartialAssignment.epAgentsMapping.getAgents(i).add(oldPartialAssignment.epAgentsMapping.getAgents(i).get(j));
@@ -107,9 +106,9 @@ public class PartialAssignment extends IAssignment  implements Comparable<Partia
         partialAssignment.epAgentsMapping.sortEps();
 
         for (int i = 0; i < partialAssignment.epAgentsMapping.getSize(); i++) {
-            partialAssignment.dynCardinalities[i].setMin(partialAssignment.epAgentsMapping.getEp(i).getMinCardinality());
-            partialAssignment.dynCardinalities[i].setMax(partialAssignment.epAgentsMapping.getEp(i).getMaxCardinality());
-            ArrayList<Long> suc = successCollection.getAgents(partialAssignment.epAgentsMapping.getEp(i));
+            partialAssignment.dynCardinalities[i].setMin(partialAssignment.epAgentsMapping.getEntryPoint(i).getMinCardinality());
+            partialAssignment.dynCardinalities[i].setMax(partialAssignment.epAgentsMapping.getEntryPoint(i).getMaxCardinality());
+            ArrayList<Long> suc = successCollection.getAgents(partialAssignment.epAgentsMapping.getEntryPoint(i));
 
             if (suc != null) {
                 partialAssignment.dynCardinalities[i].setMin(partialAssignment.dynCardinalities[i].getMin() - suc.size());
@@ -275,7 +274,7 @@ public class PartialAssignment extends IAssignment  implements Comparable<Partia
             }
 
             for (int i = 0; i < max; ++i) {
-                curEp = this.epAgentsMapping.getEp(i);
+                curEp = this.epAgentsMapping.getEntryPoint(i);
 
                 if (spt.getEntryPoint().getID() == curEp.getID()) {
 
@@ -418,7 +417,7 @@ public class PartialAssignment extends IAssignment  implements Comparable<Partia
 
         for (int i = 0; i < this.epAgentsMapping.getSize(); i++) {
             agents = (this.epAgentsMapping.getAgents(i));
-            string += "EPid: " + this.epAgentsMapping.getEp(i).getID() + " Task: " + this.epAgentsMapping.getEp(i).getTask().getName() + " minCar: "
+            string += "EPid: " + this.epAgentsMapping.getEntryPoint(i).getID() + " Task: " + this.epAgentsMapping.getEntryPoint(i).getTask().getName() + " minCar: "
                 + this.dynCardinalities[i].getMin() + " maxCar: "
                 + (this.dynCardinalities[i].getMax() == INFINIT ? "*" : String.valueOf(this.dynCardinalities[i].getMax())) + " Assigned Agents: ";
 

@@ -17,7 +17,7 @@ import java.util.ArrayList;
 public class AlicaZMQCommunication extends AlicaCommunication {
 
     private String configFile;
-    //    private  String alicaEngineInfoTopic;
+//    private  String alicaEngineInfoTopic;
 //    private  String allocationAuthorityInfoTopic;
 //    private  String ownRoleTopic;
 //    private  String planTreeInfoTopic;
@@ -52,7 +52,7 @@ public class AlicaZMQCommunication extends AlicaCommunication {
     }
 
     public boolean init(ArrayList<Long> ids) {
-        //        this.allocationAuthorityInfoTopic = (String) this.systemConfig.get("AlicaRosProxy").get("Topics.allocationAuthorityInfoTopic");
+ //        this.allocationAuthorityInfoTopic = (String) this.systemConfig.get("AlicaRosProxy").get("Topics.allocationAuthorityInfoTopic");
 //        this.ownRoleTopic = (String) this.systemConfig.get("AlicaRosProxy").get("Topics.ownRoleTopic");
 //        this.alicaEngineInfoTopic = (String) ae.getSystemConfig().get("AlicaRosProxy").get("Topics.alicaEngineInfoTopic");
 //        this.planTreeInfoTopic = (String) this.systemConfig.get("AlicaRosProxy").get("Topics.planTreeInfoTopic");
@@ -69,7 +69,7 @@ public class AlicaZMQCommunication extends AlicaCommunication {
 //        else
 //            subscriber.connect("ipc://" +  1); //42);
 
-        for (int i = 1; i < 8 ; i++) {
+        for (int i = 1; i <= 4 ; i++) {
             if (ae.getSystemConfig().getOwnAgentID() != i) {
                 subscriber.connect("ipc://" + i);
             }
@@ -212,14 +212,14 @@ public class AlicaZMQCommunication extends AlicaCommunication {
         }
     }
 
-//    public void handleSyncReadyRos(SyncReady sr) {
+//    public void handleSyncReady(SyncReady sr) {
 //
 //        if (this.isRunning) {
 //            this.onSyncReadyReceived(sr);
 //        }
 //    }
 
-//    public void handleSyncTalkRos(SyncTalk st) {
+//    public void handleSyncTalk(SyncTalk st) {
 //        if (this.isRunning)
 //        {
 //            this.onSyncTalkReceived(st);

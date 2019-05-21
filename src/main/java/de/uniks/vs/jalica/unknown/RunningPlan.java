@@ -416,7 +416,7 @@ public class RunningPlan {
             if (CommonUtils.find(curentAgents,0, curentAgents.size()-1, r) == curentAgents.lastElement())
             {
                 if (this.activeState != null
-                    && this.assignment.getAgentStateMapping().stateOfAgent(r) == this.activeState)
+                    && this.assignment.getAgentStateMapping().getStateOfAgent(r) == this.activeState)
                 {
                     recurse = true;
                 }
@@ -538,131 +538,133 @@ public class RunningPlan {
         }
 
         boolean keepTask = ((this.planStartTime.time + assignmentProtectionTime.time) < now.time);
-        boolean auth = this.cycleManagement.haveAuthority();
+        boolean authority = this.cycleManagement.haveAuthority();
 
         //if keepTask, the task Assignment should not be changed!
-        boolean ret = false;
-        AllocationDifference aldif = new AllocationDifference();
+        boolean result = false;
+        AllocationDifference allocationDifference = new AllocationDifference();
 
-        for (SimplePlanTree spt : spts) {
+        for (SimplePlanTree simplePlanTree : spts) {
 
-            if (spt.getState().getInPlan() != this.plan) { //the robot is no longer participating in this plan
+            if (simplePlanTree.getState().getInPlan() != this.plan) { //the robot is no longer participating in this plan
 
-                if (!keepTask & !auth) {
-                    EntryPoint ep = this.getAssignment().getEntryPointOfAgent(spt.getAgentID());
+                if (!keepTask & !authority) {
+                    EntryPoint entryPoint = this.getAssignment().getEntryPointOfAgent(simplePlanTree.getAgentID());
 
-                    if (ep != null ) {
-                        this.getAssignment().removeAgent(spt.getAgentID());
-                        ret = true;
-                        aldif.getSubtractions().add(new EntryPointAgentPair(ep, spt.getAgentID()));
+                    if (entryPoint != null ) {
+                        this.getAssignment().removeAgent(simplePlanTree.getAgentID());
+                        result = true;
+                        allocationDifference.getSubtractions().add(new EntryPointAgentPair(entryPoint, simplePlanTree.getAgentID()));
                     }
                 }
             }
 			else {
 
-                if (keepTask || auth) { //Update only state, and that only if it is in the reachability graph of its current entrypoint, else ignore
-                    EntryPoint cep = this.getAssignment().getEntryPointOfAgent(spt.getAgentID());
+                if (keepTask || authority) { //Update only state, and that only if it is in the reachability graph of its current entrypoint, else ignore
+                    EntryPoint cep = this.getAssignment().getEntryPointOfAgent(simplePlanTree.getAgentID());
 
                     if (cep != null ) {
 
-                        if (!cep.getReachableStates().contains(spt.getState())) {
-                            this.getAssignment().getAgentStateMapping().setState(spt.getAgentID(), spt.getState());
+                        if (!cep.getReachableStates().contains(simplePlanTree.getState())) {
+                            this.getAssignment().getAgentStateMapping().setState(simplePlanTree.getAgentID(), simplePlanTree.getState());
                         }
                     }
                     else { //robot was not expected teamObserver be here during protected assignment time, add it.
-                        this.getAssignment().addAgent(spt.getAgentID(), spt.getEntryPoint(), spt.getState());
-                        aldif.getAdditions().add(
-                                        new EntryPointAgentPair(spt.getEntryPoint(), spt.getAgentID()));
+                        this.getAssignment().addAgent(simplePlanTree.getAgentID(), simplePlanTree.getEntryPoint(), simplePlanTree.getState());
+                        allocationDifference.getAdditions().add(
+                                        new EntryPointAgentPair(simplePlanTree.getEntryPoint(), simplePlanTree.getAgentID()));
 
                     }
                 }
                 else
                 { //Normal Update
-                    EntryPoint ep = this.getAssignment().getEntryPointOfAgent(spt.getAgentID());
-                    ret |= this.getAssignment().updateAgent(spt.getAgentID(), spt.getEntryPoint(), spt.getState());
+                    EntryPoint entryPoint = this.getAssignment().getEntryPointOfAgent(simplePlanTree.getAgentID());
+                    result |= this.getAssignment().updateAgent(simplePlanTree.getAgentID(), simplePlanTree.getEntryPoint(), simplePlanTree.getState());
 
-                    if (spt.getEntryPoint() != ep) {
-                        aldif.getAdditions().add(new EntryPointAgentPair(spt.getEntryPoint(), spt.getAgentID()));
+                    if (simplePlanTree.getEntryPoint() != entryPoint) {
+                        allocationDifference.getAdditions().add(new EntryPointAgentPair(simplePlanTree.getEntryPoint(), simplePlanTree.getAgentID()));
 
-                        if (ep != null )
-                            aldif.getSubtractions().add(new EntryPointAgentPair(ep, spt.getAgentID()));
+                        if (entryPoint != null )
+                            allocationDifference.getSubtractions().add(new EntryPointAgentPair(entryPoint, simplePlanTree.getAgentID()));
                     }
 
                 }
             }
         }
-        ArrayList<Long> rem = new ArrayList<>();
+        ArrayList<Long> agents = new ArrayList<>();
 
         if (!keepTask) { //remove any robot no longer available in the spts (auth flag obey here, as robot might be unavailable)
             //EntryPoint[] eps = this.Assignment.GetEntryPoints();
-            EntryPoint ep;
+            EntryPoint entryPoint;
 
             for (int i = 0; i < this.getAssignment().getEntryPointCount(); i++) {
-                ep = this.getAssignment().getEpAgentsMapping().getEp(i);
-                rem.clear();
-                Vector<Long> robs = this.getAssignment().getAgentsWorking(ep);
+                entryPoint = this.getAssignment().getEpAgentsMapping().getEntryPoint(i);
+                agents.clear();
+                Vector<Long> agentsWorking = this.getAssignment().getAgentsWorking(entryPoint);
 
-                for (long rob : (robs)) {
+                for (long agentID : (agentsWorking)) {
 
-                    if (rob == ownID)
+                    if (agentID == ownID)
                         continue;
                     boolean found = false;
 
-                    if (noUpdates.contains(rob)) {
-                        //found = true;
+                    if (noUpdates.contains(agentID)) {
+//                        found = true;
                         continue;
                     }
 
-                    for (SimplePlanTree spt : spts) {
+                    for (SimplePlanTree simplePlanTree : spts) {
 
-                        if (spt.getAgentID() == rob) {
+                        if (simplePlanTree.getAgentID() == agentID) {
                             found = true;
                             break;
                         }
                     }
 
                     if (!found) {
-                        rem.add(rob);
-                        //this.Assignment.RemoveRobot(rob);
-                        aldif.getSubtractions().add(new EntryPointAgentPair(ep, rob));
-                        ret = true;
+                        agents.add(agentID);
+                        //this.Assignment.RemoveRobot(agentID);
+                        allocationDifference.getSubtractions().add(new EntryPointAgentPair(entryPoint, agentID));
+                        result = true;
                     }
                 }
 
-                for (long rob : rem) {
-                    this.getAssignment().removeAgent(rob, ep);
+                for (long agentID : agents) {
+                    this.getAssignment().removeAgent(agentID, entryPoint);
                 }
             }
         }
 
         //enforce consistency between RA and PlanTree by removing agents deemed inactive:
-        if (!auth) { //under authority do not remove agents from assignment
-            EntryPoint ep;
+        if (!authority) { //under authority do not remove agents from assignment
+            EntryPoint entryPoint;
 
             for (int i = 0; i < this.getAssignment().getEntryPointCount(); i++) {
-                ep = this.getAssignment().getEpAgentsMapping().getEp(i);
-                rem.clear();
-                Vector<Long> robs = this.getAssignment().getAgentsWorking(ep);
+                entryPoint = this.getAssignment().getEpAgentsMapping().getEntryPoint(i);
+                agents.clear();
+                Vector<Long> agentsWorking = this.getAssignment().getAgentsWorking(entryPoint);
 
-                for (long rob : (robs)) {
-                    //if (rob==ownID) continue;
+                for (long agentID : (agentsWorking)) {
 
-                    if (!availableAgents.contains(rob)) {
-                        rem.add(rob);
+                    if (agentID==ownID)
+                        continue;
+
+                    if (!availableAgents.contains(agentID)) {
+                        agents.add(agentID);
                         //this.Assignment.RemoveRobot(rob);
-                        aldif.getSubtractions().add(new EntryPointAgentPair(ep, rob));
-                        ret = true;
+                        allocationDifference.getSubtractions().add(new EntryPointAgentPair(entryPoint, agentID));
+                        result = true;
                     }
                 }
 
-                for (long rob : rem) {
-                    this.getAssignment().removeAgent(rob, ep);
+                for (long rob : agents) {
+                    this.getAssignment().removeAgent(rob, entryPoint);
                 }
             }
         }
 
-        aldif.setReason(AllocationDifference.Reason.message);
-        this.cycleManagement.setNewAllocDiff(aldif);
+        allocationDifference.setReason(AllocationDifference.Reason.message);
+        this.cycleManagement.setNewAllocDiff(allocationDifference);
 //Update Success Collection:
         this.teamObserver.updateSuccessCollection((Plan)this.getPlan(), this.getAssignment().getEpSuccessMapping());
 
@@ -679,7 +681,7 @@ public class RunningPlan {
                 }
             }
         }
-		else if (auth)
+		else if (authority)
     { // in case of authority, remove all that are not assigned teamObserver same task
         Vector<Long> agentsJoined = this.getAssignment().getAgentsWorking(this.getOwnEntryPoint());
 
@@ -715,9 +717,9 @@ public class RunningPlan {
                     }
                 }
             }
-            ret |= r.recursiveUpdateAssignment(newcspts, availableAgents, noUpdates, now);
+            result |= r.recursiveUpdateAssignment(newcspts, availableAgents, noUpdates, now);
         }
-        return ret;
+        return result;
     }
 
     public long getOwnID() {return ownID;}

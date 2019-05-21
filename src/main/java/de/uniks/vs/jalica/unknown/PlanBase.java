@@ -9,6 +9,7 @@ import de.uniks.vs.jalica.unknown.Communication.AlicaEngineInfo;
 
 import java.util.ArrayList;
 import java.util.PriorityQueue;
+import java.util.Set;
 
 /**
  * Created by alex on 13.07.17.
@@ -241,13 +242,14 @@ public class PlanBase implements Runnable {
 
                     if (this.deepestNode.getActiveState() != null) {
                         this.statusMessage.currentState = this.deepestNode.getActiveState().getName();
+                        Set<Long> agentsInState = this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(this.deepestNode.getActiveState());
+                        System.out.println("AGENT:" +this.statusMessage.senderID+ "    AGENTS :"+agentsInState);
                         CommonUtils.copy( this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(this.deepestNode.getActiveState()),
                                     0,
                                      this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(this.deepestNode.getActiveState()
 //                                               ).size()-1, back_inserter(this.statusMessage.agentIDsWithMe)
                                           ).size()-1,
                                          (this.statusMessage.agentIDsWithMe));
-
                     }
 					else {
                         this.statusMessage.currentState = "NONE";
@@ -316,7 +318,8 @@ public class PlanBase implements Runnable {
                 alicaClock.sleep(availTime);
             }
 
-            if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: loop const " + this.loopTime.time + "   loop duration time  " + (alicaClock.now().time - beginTime.time));
+            if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: loop const " + this.loopTime.time
+                    + "   loop duration time  " + (alicaClock.now().time - beginTime.time));
 //            double durarion = alicaClock.now().time - beginTime.time;
 //            double rest = this.loopTime.time - durarion;
 //            if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: DIFF " + rest);

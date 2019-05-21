@@ -196,7 +196,7 @@ public class CycleManager {
             EntryPoint ep;
             //for (EntryPoint* ep : (*oldAss.getEntryPoints()))
             for (int i = 0; i < oldAss.getEntryPointCount(); i++) {
-                ep = oldAss.getEpAgentsMapping().getEp(i);
+                ep = oldAss.getEpAgentsMapping().getEntryPoint(i);
 
                 Vector<Long> newAgents = newAss.getAgentsWorking(ep);
                 Vector<Long> oldAgents = oldAss.getAgentsWorking(ep);

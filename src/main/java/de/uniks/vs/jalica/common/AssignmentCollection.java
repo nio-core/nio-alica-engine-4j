@@ -77,7 +77,7 @@ public class AssignmentCollection {
         }
     }
 
-    public EntryPoint getEp(int index) {
+    public EntryPoint getEntryPoint(int index) {
 
         if (index < this.numEps) {
             return this.entryPoints[index];

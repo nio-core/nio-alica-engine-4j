@@ -17,7 +17,7 @@ public class StateCollection {
     public StateCollection(AssignmentCollection ac) {
 
         for(int i = 0;i < ac.getSize(); i ++) {
-            State initialState = ac.getEp(i).getState();
+            State initialState = ac.getEntryPoint(i).getState();
 
             for(long r : ac.getAgents(i)) {
                 this.setState(r, initialState);
@@ -25,18 +25,19 @@ public class StateCollection {
         }
     }
 
-    public Set<Long> getAgentsInState(State s) {
-        if (CommonUtils.SC_DEBUG_debug) System.out.println("SC: agent size:" + agents.size());
-        Set<Long> ret = new HashSet<>();
-        for (int i = 0; i < this.agents.size(); i++)
-        {
-            if (this.states.get(i) == s)
-            {
-                ret.add(this.agents.get(i));
+    public Set<Long> getAgentsInState(State state) {
+//        if (CommonUtils.SC_DEBUG_debug)
+            System.out.println("SC: agent size:" + agents.size());
+        Set<Long> stateAgents = new HashSet<>();
+
+        for (int i = 0; i < this.agents.size(); i++) {
+
+            if (this.states.get(i) == state) {
+                stateAgents.add(this.agents.get(i));
             }
         }
-        if (CommonUtils.SC_DEBUG_debug) System.out.println("SC: agents in state:" + ret.size());
-        return ret;
+        if (CommonUtils.SC_DEBUG_debug) System.out.println("SC: agents in state:" + stateAgents.size());
+        return stateAgents;
     }
 
     public void setStates(Vector<State> states) {
@@ -57,11 +58,11 @@ public class StateCollection {
         this.states.add(state);
     }
 
-    public void removeAgent(long r) {
+    public void removeAgent(long agentID) {
 
-        for(int i = 0; i < this.states.size();i++) {
+        for(int i = 0; i < this.states.size(); i++) {
 
-            if(this.agents.get(i) == r) {
+            if(this.agents.get(i) == agentID) {
                 this.agents.remove( i);
                 this.states.remove( i);
                 return;
@@ -74,30 +75,29 @@ public class StateCollection {
         this.states.clear();
     }
 
-    public State stateOfAgent(long agent) {
-        for (int i = 0; i < this.agents.size(); i++)
-        {
-            if (this.agents.get(i) == agent)
-            {
+    public State getStateOfAgent(long agentID) {
+
+        for (int i = 0; i < this.agents.size(); i++) {
+
+            if (this.agents.get(i) == agentID) {
                 return this.states.get(i);
             }
         }
         return null;
     }
 
-    public void setStates(Vector<Long> agents, State state) {
+    public void setStates(Vector<Long> agentIDs, State state) {
 
-        for(int i = 0; i <  agents.size(); i++)
-        {
-            setState(agents.get(i), state);
+        for(int i = 0; i <  agentIDs.size(); i++) {
+            setState(agentIDs.get(i), state);
         }
     }
 
-    public State getState(long r) {
-        for (int i = 0; i < this.agents.size(); i++)
-        {
-            if (this.agents.get(i) == r)
-            {
+    public State getState(long agentID) {
+
+        for (int i = 0; i < this.agents.size(); i++) {
+
+            if (this.agents.get(i) == agentID) {
                 return this.states.get(i);
             }
         }
@@ -105,15 +105,15 @@ public class StateCollection {
     }
 
     public void reconsiderOldAssignment(Assignment oldOne, Assignment newOne) {
-        if(oldOne.getPlan() != newOne.getPlan())
-        {
+
+        if(oldOne.getPlan() != newOne.getPlan()) {
             return;
         }
         //shared_ptr<vector<EntryPoint*> >eps = oldOne.getEntryPoints();
         EntryPoint ep;
         for(short i = 0; i < oldOne.getEntryPointCount(); i++)
         {
-            ep = oldOne.getEpAgentsMapping().getEp(i);
+            ep = oldOne.getEpAgentsMapping().getEntryPoint(i);
             for(long rid : (oldOne.getAgentsWorking(ep)))
             {
                 Long iter = CommonUtils.find(newOne.getAgentsWorking(ep), 0, newOne.getAgentsWorking(ep).size() - 1, rid);
@@ -123,6 +123,5 @@ public class StateCollection {
                 }
             }
         }
-
     }
 }

@@ -176,7 +176,7 @@ public class UtilityFunction {
         EntryPoint ep;
         for (short i = 0; i < oldAss.getEntryPointCount(); ++i)
         {
-            ep = oldAss.getEpAgentsMapping().getEp(i);
+            ep = oldAss.getEpAgentsMapping().getEntryPoint(i);
             // for normalisation
             ArrayList<Long> oldAgents = oldAss.getAgentsWorkingAndFinished(ep);
             numOldAssignedAgents += oldAgents.size();
@@ -244,7 +244,7 @@ public class UtilityFunction {
         EntryPoint ep;
 
         for (int i = 0; i < ass.getEntryPointCount(); ++i) {
-            ep = ass.getEpAgentsMapping().getEp(i);
+            ep = ass.getEpAgentsMapping().getEntryPoint(i);
             taskId = ep.getTask().getID();
             ArrayList<Long> agents = ass.getUniqueAgentsWorkingAndFinished(ep);
 

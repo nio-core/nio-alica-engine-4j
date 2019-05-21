@@ -163,7 +163,7 @@ public class AuthorityManager {
 
         for (int i = 0; i < ass.getEntryPointCount(); i++) {
             EntryPointAgents entryPointAgents = new EntryPointAgents();
-            entryPointAgents.entrypoint = ass.getEpAgentsMapping().getEp(i).getID();
+            entryPointAgents.entrypoint = ass.getEpAgentsMapping().getEntryPoint(i).getID();
 
             for (long robot : ass.getAgentsWorking(entryPointAgents.entrypoint)) {
                 entryPointAgents.agents.add(robot);

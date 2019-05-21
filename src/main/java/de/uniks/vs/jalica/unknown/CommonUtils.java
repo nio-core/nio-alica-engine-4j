@@ -36,7 +36,7 @@ public class CommonUtils {
     public static final boolean TO_DEBUG_debug = true;
     public static final boolean RP_DEBUG_debug = false;
     public static final boolean AC_DEBUG_debug = false;
-    public static final boolean TE_DEBUG_debug = true;
+    public static final boolean TE_DEBUG_debug = false;
     public static final boolean B_DEBUG_debug = false;
     public static final boolean CV_DEBUG_debug = false;
     public static final boolean AED_DEBUG_debug = false;
