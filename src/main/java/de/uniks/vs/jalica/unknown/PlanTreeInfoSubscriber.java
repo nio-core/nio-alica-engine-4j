@@ -49,7 +49,7 @@ public class PlanTreeInfoSubscriber extends ZMQSubscriber {
                     } catch (ParseException e) {
                         e.printStackTrace();
                     } catch (ZMQException e) {
-                        System.err.println(e.getErrorCode());
+//                        System.err.println(e.getErrorCode());
                     }
                 }
             }

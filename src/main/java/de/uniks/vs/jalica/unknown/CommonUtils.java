@@ -23,7 +23,7 @@ public class CommonUtils {
     public static final boolean SC_DEBUG_debug = false;
 
     // Communication
-    public static final boolean COMM_debug = true;
+    public static final boolean COMM_debug = false;
 
     public static final boolean RULE_debug = false;
     public static final boolean SM_FAILURE_debug = false;
@@ -33,7 +33,7 @@ public class CommonUtils {
     public static final boolean CM_REASON_DEBUG_debug = false;
     public static final boolean SUCDEBUG_debug = false;
     public static final boolean CS_DEBUG_debug = false;
-    public static final boolean TO_DEBUG_debug = true;
+    public static final boolean TO_DEBUG_debug = false;
     public static final boolean RP_DEBUG_debug = false;
     public static final boolean AC_DEBUG_debug = false;
     public static final boolean TE_DEBUG_debug = false;
