@@ -38,23 +38,19 @@ public class RunningPlan {
     private State activeState;
     //    private EntryPoint ownEntryPoint;
 
-    private ArrayList<RunningPlan> children;
-    private ArrayList<Long> agentsAvail;
-    private LinkedHashMap<AbstractPlan, Integer> failedSubPlans;
+    private ArrayList<RunningPlan> children = new ArrayList<>();
+    private ArrayList<Long> agentsAvail = new ArrayList<>();
+    private LinkedHashMap<AbstractPlan, Integer> failedSubPlans = new LinkedHashMap<>();
 
     protected AlicaTime assignmentProtectionTime;
 
     RunningPlan(AlicaEngine alicaEngine) {
-
-        failedSubPlans = new LinkedHashMap<>();
-        agentsAvail = new ArrayList<>();
-        children = new VerboseArrayList<>();
-
-        this.assignmentProtectionTime = new AlicaTime(Long.valueOf((String) alicaEngine.getSystemConfig().get("Alica").get("Alica.AssignmentProtectionTime")) * 1000000);
+        long assignmentProtectTime = Long.valueOf((String)alicaEngine.getSystemConfig().get("Alica").get("Alica.AssignmentProtectionTime"));
+        this.assignmentProtectionTime = new AlicaTime().inMilliseconds(assignmentProtectTime);
         this.alicaEngine = alicaEngine;
         this.behaviour = false;
-        this.planStartTime = new AlicaTime(0);
-        this.stateStartTime = new AlicaTime(0);
+        this.planStartTime = new AlicaTime();
+        this.stateStartTime = new AlicaTime();
         this.teamObserver = alicaEngine.getTeamObserver();
         this.ownID = teamObserver.getOwnID();
         this.status = PlanStatus.Running;
@@ -64,7 +60,6 @@ public class RunningPlan {
         this.failHandlingNeeded = false;
         this.constraintStore = new ConditionStore();
         this.cycleManagement = new CycleManager(alicaEngine, this);
-        this.agentsAvail = new ArrayList<>();
     }
 
     public RunningPlan(AlicaEngine ae, PlanType pt) {
@@ -192,11 +187,11 @@ public class RunningPlan {
 
     public void setActiveState(State state) {
 
-        System.out.println("RP: set active state from " + (this.activeState != null? this.activeState.name: "null") +" to " +state.name);
+        if (CommonUtils.RP_DEBUG_debug) System.out.println("RP: set active state from " + (this.activeState != null? this.activeState.name: "null") +" to " +state.name);
 
         if (this.activeState != state) {
             this.activeState = state;
-            this.stateStartTime.time = alicaEngine.getIAlicaClock().now().time;
+            this.stateStartTime.time = alicaEngine.getAlicaClock().now().time;
 
             if (this.activeState != null) {
 

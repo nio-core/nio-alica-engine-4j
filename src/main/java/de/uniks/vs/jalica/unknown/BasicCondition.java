@@ -12,7 +12,7 @@ public abstract class BasicCondition {
 
         if (rp.getStateStartTime().time == 0)
             return false;
-        double time = (long) (rp.getAlicaEngine().getIAlicaClock().now()).time;
+        double time = (long) (rp.getAlicaEngine().getAlicaClock().now()).time;
         double timeDiff = time - (rp.getStateStartTime()).time;
 
         if (timeDiff > timeOut) {
@@ -25,7 +25,7 @@ public abstract class BasicCondition {
 
         if (startTime == 0)
             return false;
-        double time = (rp.getAlicaEngine().getIAlicaClock().now()).time;
+        double time = (rp.getAlicaEngine().getAlicaClock().now()).time;
         double timeDiff = time - (startTime);
 
         if (timeDiff > timeOut) {

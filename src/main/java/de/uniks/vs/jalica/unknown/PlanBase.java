@@ -53,71 +53,96 @@ public class PlanBase implements Runnable {
 
     public PlanBase(AlicaEngine ae, Plan masterPlan) {
 
-        this.mainThread = Thread.currentThread();
-        this.treeDepth = 0;
-        this.lastSendTime = new AlicaTime(0);
-        this.statusPublisher = null;
-        this.lastSentStatusTime = new AlicaTime(0);
-        this.loopInterval = new AlicaTime(0);
-        this.deepestNode = null;
-        this.log = ae.getLogger();
-        this.rootNode = null;
-        this.masterPlan = masterPlan;
         this.ae = ae;
+        this.masterPlan = masterPlan;
+        this.rootNode = null;
+        this.mainThread = Thread.currentThread();
         this.teamObserver = ae.getTeamObserver();
         this.syncModel = ae.getSyncModul();
         this.authModul = ae.getAuthorityManager();
         this.roleAssignment = ae.getRoleAssignment();
-        this.alicaClock = ae.getIAlicaClock();
-        this.fpEvents = new PriorityQueue<>();
-
         this.ruleBook = new RuleBook(ae);
-        double freq = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.EngineFrequency"));
-        double minbcfreq = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.MinBroadcastFrequency"));
-        double maxbcfreq = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.MaxBroadcastFrequency"));
+        this.alicaClock = ae.getAlicaClock();
+        this.lastSendTime = new AlicaTime();
+        this.lastSentStatusTime = new AlicaTime();
+        this.loopInterval = new AlicaTime();
+        this.log = ae.getLogger();
+        this.fpEvents = new PriorityQueue<>();
+        this.treeDepth = 0;
+        this.statusPublisher = null;
+        this.deepestNode = null;
+        this.stepModeCV = null;
+        this.running = false;
 
-        this.loopTime = new AlicaTime(Math.max(1000000, Math.round(1.0 / freq * 1000000000)));
+        double frequency      = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.EngineFrequency"));
+        double minBroadcastFrequency = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.MinBroadcastFrequency"));
+        double maxBroadcastFrequency = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.MaxBroadcastFrequency"));
 
-        if (this.loopTime.time == 1000000) {
-            System.out.println("PB: ALICA should not be used with more than 1000Hz . 1000Hz assumed");
+        if (frequency > 1000000) {
+            System.out.println("PB: ALICA should not be used with more than 1000Hz");
         }
 
-        if (minbcfreq > maxbcfreq) {
+        if (maxBroadcastFrequency > frequency) {
+            ae.abort("PB: Alica.conf: Maximum broadcast frequency must not exceed the engine frequency");
+        }
+
+        if (minBroadcastFrequency > maxBroadcastFrequency) {
             ae.abort( "PB: Alica.conf: Minimal broadcast frequency must be lower or equal to maximal broadcast frequency!");
         }
 
-        this.minSendInterval = new AlicaTime(Math.max(1000000, Math.round(1.0 / maxbcfreq * 1000000000)));
-        this.maxSendInterval = new AlicaTime(Math.max(1000000, Math.round(1.0 / minbcfreq * 1000000000)));
+//        this.loopTime        = new AlicaTime(Math.max(1000000, Math.round(1.0 / frequency *      1000000000)));
+//        this.minSendInterval = new AlicaTime(Math.max(1000000, Math.round(1.0 / maxBroadcastFrequency * 1000000000)));
+//        this.maxSendInterval = new AlicaTime(Math.max(1000000, Math.round(1.0 / minBroadcastFrequency * 1000000000)));
+        this.loopTime        = new AlicaTime().inSeconds(1.0 / frequency);
+        this.minSendInterval = new AlicaTime().inSeconds(1.0 / maxBroadcastFrequency);
+        this.maxSendInterval = new AlicaTime().inSeconds(1.0 / minBroadcastFrequency);
 
-        AlicaTime halfLoopTime = new AlicaTime(this.loopTime.time / 2);
-        this.running = false;
+        long halfLoopTime = this.loopTime.time / 2;
 
         this.sendStatusMessages = Boolean.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.StatusMessages.Enabled"));
 
         if (sendStatusMessages) {
-            double stfreq = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.StatusMessages.Frequency"));
-            this.sendStatusInterval = new AlicaTime(Math.max(1000000.0, Math.round(1.0 / stfreq * 1000000000)));
+            double statusMessageFrequency = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.StatusMessages.Frequency"));
+
+            if (statusMessageFrequency > frequency) {
+                ae.abort("PB: Alica.conf: Status messages frequency must not exceed the engine frequency");
+            }
+            this.sendStatusInterval = new AlicaTime().inSeconds(1.0 / statusMessageFrequency);
             this.statusMessage = new AlicaEngineInfo();
             this.statusMessage.senderID = this.teamObserver.getOwnID();
             this.statusMessage.masterPlan = masterPlan.getName();
         }
-        this.stepModeCV = null;
 
         if (this.ae.getStepEngine()) {
             this.stepModeCV = new ConditionVariable(this);
         }
 
-        if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: Engine loop time is " +(loopTime.time / 1000000)+ "ms, broadcast interval is "+(this.minSendInterval.time / 1000000)
-                + "ms - " + (this.maxSendInterval.time / 1000000) + "ms" );
+        if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: Engine loop time is " +(loopTime.inMilliseconds())
+                + "ms, broadcast interval is "+(this.minSendInterval.inMilliseconds())
+                + "ms - " + (this.maxSendInterval.inMilliseconds()) + "ms" );
 
-        if (halfLoopTime.time < this.minSendInterval.time) {
-            this.minSendInterval.time -= halfLoopTime.time;
-            this.maxSendInterval.time -= halfLoopTime.time;
+        if (halfLoopTime < this.minSendInterval.time) {
+            this.minSendInterval.time -= halfLoopTime;
+            this.maxSendInterval.time -= halfLoopTime;
+        }
+    }
+
+    public void start() {
+
+        if (ae.getAlicaClock() == null) {
+            ae.abort("PB: Start impossible, without ALICA Clock set!");
+        }
+
+        if (!this.running) {
+            this.running = true;
+            this.mainThread = new Thread(this);
+            this.mainThread.start();
         }
     }
 
     public void run() {
         if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: Run-Method of PlanBase started. " );
+
         while (this.running) {
             AlicaTime beginTime = alicaClock.now();
             this.log.itertionStarts();
@@ -208,7 +233,7 @@ public class PlanBase implements Runnable {
             AlicaTime now = alicaClock.now();
 
 //            if (CommonUtils.PB_DEBUG_debug) System.out.println(" PB: " + now.time + " > " +this.lastSendTime.time + " " +  (now.time - this.lastSendTime.time));
-            if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: delay time " + (now.time - this.lastSendTime.time));
+            if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: delay time " + (now.time - this.lastSendTime.time)+"ns");
 
             if (now.time <= this.lastSendTime.time) {
                 // Taker fix
@@ -243,7 +268,7 @@ public class PlanBase implements Runnable {
                     if (this.deepestNode.getActiveState() != null) {
                         this.statusMessage.currentState = this.deepestNode.getActiveState().getName();
                         Set<Long> agentsInState = this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(this.deepestNode.getActiveState());
-                        System.out.println("AGENT:" +this.statusMessage.senderID+ "    AGENTS :"+agentsInState);
+                        if (CommonUtils.PB_DEBUG_debug)System.out.println("PB:  AGENT:" +this.statusMessage.senderID+ "    AGENTS :"+agentsInState);
                         CommonUtils.copy( this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(this.deepestNode.getActiveState()),
                                     0,
                                      this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(this.deepestNode.getActiveState()
@@ -319,7 +344,7 @@ public class PlanBase implements Runnable {
             }
 
             if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: loop const " + this.loopTime.time
-                    + "   loop duration time  " + (alicaClock.now().time - beginTime.time));
+                    + "ns    loop duration time  " + (alicaClock.now().time - beginTime.time)+"ns");
 //            double durarion = alicaClock.now().time - beginTime.time;
 //            double rest = this.loopTime.time - durarion;
 //            if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: DIFF " + rest);
@@ -327,14 +352,6 @@ public class PlanBase implements Runnable {
         }
     }
 
-    public void start() {
-
-        if (!this.running) {
-            this.running = true;
-            this.mainThread = new Thread(this);
-            this.mainThread.start();
-        }
-    }
 
     public ConditionVariable getStepModeCV() {
         return stepModeCV;

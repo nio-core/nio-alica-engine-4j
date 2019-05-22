@@ -70,7 +70,7 @@ public class BehaviourPool implements IBehaviourPool {
         BehaviourConfiguration behaviourConfiguration = (BehaviourConfiguration)(runningPlan.getPlan());
 
         if (behaviourConfiguration != null) {
-            System.out.println("BP::  BehaviourPool:" + this.availableBehaviours.size() );
+            if (CommonUtils.BP_DEBUG_debug) System.out.println("BP::  BehaviourPool:" + this.availableBehaviours.size() );
             BasicBehaviour behaviour = this.availableBehaviours.get(behaviourConfiguration);
 
             if (behaviour != null) {

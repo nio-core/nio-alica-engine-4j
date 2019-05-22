@@ -40,7 +40,7 @@ public class Synchronisation {
             }
             return false;
         }
-        long now = (long) ae.getIAlicaClock().now().time / 1000000L;
+        long now = (long) ae.getAlicaClock().now().time / 1000000L;
 
         if (this.lastTalkTime != 0) {  //talked already
 
@@ -74,7 +74,7 @@ public class Synchronisation {
     private void sendTalk(SyncData sd) {
         SyncTalk talk = new SyncTalk();
         talk.syncData.add(sd);
-        this.lastTalkTime = (long) ae.getIAlicaClock().now().time / 1000000L;
+        this.lastTalkTime = (long) ae.getAlicaClock().now().time / 1000000L;
 //#ifdef SM_MESSAGES
         if (CommonUtils.SM_MESSAGES_debug) System.out.println("S: Sending Talk TID: " + sd.transitionID );
 //#endif

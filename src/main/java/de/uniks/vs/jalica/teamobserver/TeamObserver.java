@@ -107,7 +107,7 @@ public class TeamObserver implements ITeamObserver {
         if (incoming.senderID != myId) {
 
             if (isAgentIgnored(incoming.senderID)) {
-                System.out.println("TO("+this.getOwnID()+"): agent " + incoming.senderID + " ignored" );
+                if (CommonUtils.TO_DEBUG_debug)  System.out.println("TO("+this.getOwnID()+"): agent " + incoming.senderID + " ignored" );
                 return;
             }
 
@@ -122,7 +122,7 @@ public class TeamObserver implements ITeamObserver {
                         if (CommonUtils.TO_DEBUG_debug) System.out.println("TO("+this.getOwnID()+"): agent:" + agentEngineData.getProperties().getID() + " == " +incoming.senderID);
 
                         synchronized (agentEngineData) {
-                            agentEngineData.setLastMessageTime(ae.getIAlicaClock().now().time);
+                            agentEngineData.setLastMessageTime(ae.getAlicaClock().now().time);
                             agentEngineData.setSuccessMarks(new SuccessMarks(ae, incoming.succeededEPs));
                             if (CommonUtils.TO_DEBUG_debug) System.out.println("TO("+this.getOwnID()+"): agent:" + incoming.senderID + "  state:"+ spt.getState().getName() +"  succeeded EPs:" + incoming.succeededEPs );
                         }
@@ -162,7 +162,7 @@ public class TeamObserver implements ITeamObserver {
             return null;
         }
         LinkedHashMap<Long, State> states = ae.getPlanRepository().getStates();
-        double time = ae.getIAlicaClock().now().time;
+        double time = ae.getAlicaClock().now().time;
         SimplePlanTree root = new SimplePlanTree();
         root.setAgentID(agentID);
         root.setReceiveTime(time);
@@ -407,7 +407,7 @@ public class TeamObserver implements ITeamObserver {
     @Override
     public void tick(RunningPlan root) {
         boolean changed = false;
-        AlicaTime time = ae.getIAlicaClock().now();
+        AlicaTime time = ae.getAlicaClock().now();
         Vector<Long> agentsAvail = new Vector<>();
         agentsAvail.add(this.myId);
 
@@ -565,7 +565,7 @@ public class TeamObserver implements ITeamObserver {
         for (AgentEngineData re : this.allOtherAgents) {
 
             if (re.getProperties().getID() == rID) {
-                re.setLastMessageTime(ae.getIAlicaClock().now().time);
+                re.setLastMessageTime(ae.getAlicaClock().now().time);
                 break;
             }
         }

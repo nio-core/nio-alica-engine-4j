@@ -26,8 +26,7 @@ public class StateCollection {
     }
 
     public Set<Long> getAgentsInState(State state) {
-//        if (CommonUtils.SC_DEBUG_debug)
-            System.out.println("SC: agent size:" + agents.size());
+        if (CommonUtils.SC_DEBUG_debug) System.out.println("SC: agent size:" + agents.size());
         Set<Long> stateAgents = new HashSet<>();
 
         for (int i = 0; i < this.agents.size(); i++) {

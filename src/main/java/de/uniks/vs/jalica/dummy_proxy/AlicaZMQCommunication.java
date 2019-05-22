@@ -69,7 +69,7 @@ public class AlicaZMQCommunication extends AlicaCommunication {
 //        else
 //            subscriber.connect("ipc://" +  1); //42);
 
-        for (int i = 1; i <= 5 ; i++) {
+        for (int i = 1; i <= ids.size() ; i++) {
             if (ae.getSystemConfig().getOwnAgentID() != i) {
                 subscriber.connect("ipc://" + i);
             }

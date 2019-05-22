@@ -41,17 +41,22 @@ public class CycleManager {
 
     private Vector<AllocationDifference> allocationHistory = new Vector<>();
 
-    public CycleManager(AlicaEngine ae, RunningPlan p) {
-        SystemConfig sc = ae.getSystemConfig();
-        maxAllocationCycles = Integer.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.CycleCount"));
-        enabled = Boolean.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.Enabled"));
-        minimalOverrideTimeInterval = new AlicaTime(Long.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.MinimalAuthorityTimeInterval")) * 1000000);
-        maximalOverrideTimeInterval = new AlicaTime(Long.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.MaximalAuthorityTimeInterval")) * 1000000);
-        overrideShoutInterval = new AlicaTime(Long.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.MessageTimeInterval")) * 1000000);
-//        overrideWaitInterval = new AlicaTime(Long.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.MessageWaitTimeInterval")) * 1000000);
-        historySize = Integer.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.HistorySize"));
-
+    public CycleManager(AlicaEngine ae, RunningPlan runningPlan) {
         this.alicaEngine = ae;
+        SystemConfig sc = ae.getSystemConfig();
+        this.maxAllocationCycles = Integer.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.CycleCount"));
+        this.enabled = Boolean.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.Enabled"));
+
+        long minimalOverrideInterval = Long.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.MinimalAuthorityTimeInterval"));
+        long maximalAuthorityInterval = Long.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.MaximalAuthorityTimeInterval"));
+        long messageInterval = Long.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.MessageTimeInterval"));
+        this.minimalOverrideTimeInterval = new AlicaTime().inMilliseconds(minimalOverrideInterval);
+        this.maximalOverrideTimeInterval = new AlicaTime().inMilliseconds(maximalAuthorityInterval);
+        this.overrideShoutInterval = new AlicaTime().inMilliseconds(messageInterval);
+//        overrideWaitInterval = new AlicaTime(Long.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.MessageWaitTimeInterval")) * 1000000);
+
+        this.historySize = Integer.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.HistorySize"));
+
         this.intervalIncFactor = Double.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.IntervalIncreaseFactor"));
         this.intervalDecFactor = Double.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.IntervalDecreaseFactor"));
 
@@ -62,11 +67,11 @@ public class CycleManager {
         }
         this.newestAllocationDifference = 0;
         this.setState(CycleState.observing);
-        this.runningPlan = p;
+        this.runningPlan = runningPlan;
         this.myID = ae.getTeamObserver().getOwnID();
         this.planRepository = ae.getPlanRepository();
-        this.overrideTimestamp = new AlicaTime(0);
-        this.overrideShoutTime = new AlicaTime(0);
+        this.overrideTimestamp = new AlicaTime();
+        this.overrideShoutTime = new AlicaTime();
     }
 
     public boolean isOverridden() {
@@ -237,15 +242,16 @@ public class CycleManager {
     }
 
     public boolean needsSending() {
-        if (CommonUtils.CM_DEBUG_debug) System.out.println("CM: " + this.overrideShoutTime.time + overrideShoutInterval.time + "<" +alicaEngine.getIAlicaClock().now().time + " = "+ (this.overrideShoutTime.time + overrideShoutInterval.time < alicaEngine.getIAlicaClock().now().time) +"  " +
+        if (CommonUtils.CM_DEBUG_debug) System.out.println("CM: " + this.overrideShoutTime.time + overrideShoutInterval.time + "<" +alicaEngine.getAlicaClock().now().time
+                + " = "+ (this.overrideShoutTime.time + overrideShoutInterval.time < alicaEngine.getAlicaClock().now().time) +"  " +
                 " " + ((this.state == CycleState.overriding) ));
 
         return (this.state == CycleState.overriding )
-                && ((this.overrideShoutTime.time + overrideShoutInterval.time) < alicaEngine.getIAlicaClock().now().time);
+                && ((this.overrideShoutTime.time + overrideShoutInterval.time) < alicaEngine.getAlicaClock().now().time);
     }
 
     public void sent() {
-        this.overrideShoutTime = alicaEngine.getIAlicaClock().now();
+        this.overrideShoutTime = alicaEngine.getAlicaClock().now();
     }
 
     public void handleAuthorityInfo(AllocationAuthorityInfo aai) {
@@ -261,11 +267,9 @@ public class CycleManager {
         }
         if (rid > myID)
         {
-//#ifdef CM_DEBUG
             if (CommonUtils.CM_DEBUG_debug) System.out.println("CM: Assignment overridden in " + this.runningPlan.getPlan().getName());
-//#endif
             this.setState(CycleState.overridden);
-            this.overrideShoutTime = alicaEngine.getIAlicaClock().now();
+            this.overrideShoutTime = alicaEngine.getAlicaClock().now();
             this.fixedAllocation = aai;
         }
         else
@@ -273,13 +277,11 @@ public class CycleManager {
             if (CommonUtils.CM_DEBUG_debug) System.out.println("CM: Rcv: Rejecting Authority!" );
             if (this.state != CycleState.overriding)
             {
-//#ifdef CM_DEBUG
                 if (CommonUtils.CM_DEBUG_debug) System.out.println("CM: Overriding assignment of " + this.runningPlan.getPlan().getName() );
-//#endif
                 this.setState(CycleState.overriding);
-                this.runningPlan.getPlan().setAuthorityTimeInterval( new AlicaTime(
-                    Math.min(maximalOverrideTimeInterval.time, (this.runningPlan.getPlan().getAuthorityTimeInterval().time * intervalIncFactor))));
-                this.overrideTimestamp = alicaEngine.getIAlicaClock().now();
+                this.runningPlan.getPlan().setAuthorityTimeInterval( new AlicaTime().inNanoseconds(
+                    Math.min(maximalOverrideTimeInterval.time, (long)(this.runningPlan.getPlan().getAuthorityTimeInterval().time * intervalIncFactor))));
+                this.overrideTimestamp = alicaEngine.getAlicaClock().now();
                 this.overrideShoutTime.time = 0;
             }
         }
@@ -303,40 +305,34 @@ public class CycleManager {
                 System.err.println("CM("+this.myID+"): Cycle Detected!");
 
                 this.setState(CycleState.overriding);
-                plan.setAuthorityTimeInterval( new AlicaTime(
-                        Math.min(maximalOverrideTimeInterval.time, (plan.getAuthorityTimeInterval().time * intervalIncFactor))));
+                plan.setAuthorityTimeInterval( new AlicaTime().inNanoseconds(
+                        Math.min(maximalOverrideTimeInterval.time, (long) (plan.getAuthorityTimeInterval().time * intervalIncFactor))));
                 this.overrideShoutTime.time = 0;
-//#ifdef CM_DEBUG
                 if (CommonUtils.CM_DEBUG_debug) System.out.println("CM("+this.myID+"): Assuming Authority for " + plan.getAuthorityTimeInterval().time / 1000000000.0
                         + "sec!" );
-//#endif
-                this.overrideTimestamp = alicaEngine.getIAlicaClock().now();
+                this.overrideTimestamp = alicaEngine.getAlicaClock().now();
             }
             else
             {
-                plan.setAuthorityTimeInterval( new AlicaTime(
-                        Math.max(minimalOverrideTimeInterval.time, (plan.getAuthorityTimeInterval().time * intervalDecFactor))));
+                plan.setAuthorityTimeInterval( new AlicaTime().inNanoseconds(
+                        Math.max(minimalOverrideTimeInterval.time, (long)(plan.getAuthorityTimeInterval().time * intervalDecFactor))));
             }
         }
 		else
         {
             if (this.state == CycleState.overriding
                 && this.overrideTimestamp.time + plan.getAuthorityTimeInterval().time
-                < alicaEngine.getIAlicaClock().now().time)
+                < alicaEngine.getAlicaClock().now().time)
             {
-//#ifdef CM_DEBUG
                 if (CommonUtils.CM_DEBUG_debug) System.out.println("CM("+this.myID+"): Resume Observing!" );
-//#endif
                 this.setState(CycleState.observing);
                 this.fixedAllocation = null;
             }
 			else if (this.state == CycleState.overridden
                 && this.overrideShoutTime.time + plan.getAuthorityTimeInterval().time
-                < alicaEngine.getIAlicaClock().now().time)
+                < alicaEngine.getAlicaClock().now().time)
             {
-//#ifdef CM_DEBUG
                 if (CommonUtils.CM_DEBUG_debug)  System.out.println("CM("+this.myID+"): Resume Observing!" );
-//#endif
                 this.setState(CycleState.observing);
                 this.fixedAllocation = null;
 

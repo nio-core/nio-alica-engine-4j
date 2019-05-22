@@ -61,7 +61,7 @@ public class TaskAssignment {
 
         SystemConfig sc = new SystemConfig("nase");
         AlicaEngine alicaEngine = new AlicaEngine();
-        alicaEngine.setIAlicaClock(new AlicaSystemClock());
+        alicaEngine.setIAlicaClock(new AlicaClock());
         alicaEngine.setCommunicator(new AlicaZMQCommunication(alicaEngine));
         boolean result = alicaEngine.init(sc, bc, cc, uc, crc, "RolesetTA", "MasterPlanTaskAssignment", "roles/", false);
         Assertions.assertTrue(result);

@@ -21,19 +21,20 @@ public class CommonUtils {
     public static final boolean PA_DEBUG_debug = false;
     public static final boolean AE_DEBUG_debug = false;
     public static final boolean SC_DEBUG_debug = false;
+    public static final boolean BP_DEBUG_debug = false;
 
     // Communication
-    public static final boolean COMM_debug = true;
+    public static final boolean COMM_debug = false;
 
     public static final boolean RULE_debug = false;
     public static final boolean SM_FAILURE_debug = false;
     public static final boolean SM_MESSAGES_debug = false;
     public static final boolean UFDEBUG_debug = false;
-    public static final boolean PB_DEBUG_debug = false;
+    public static final boolean PB_DEBUG_debug = true;
     public static final boolean CM_REASON_DEBUG_debug = false;
     public static final boolean SUCDEBUG_debug = false;
     public static final boolean CS_DEBUG_debug = false;
-    public static final boolean TO_DEBUG_debug = true;
+    public static final boolean TO_DEBUG_debug = false;
     public static final boolean RP_DEBUG_debug = false;
     public static final boolean AC_DEBUG_debug = false;
     public static final boolean TE_DEBUG_debug = false;
@@ -242,11 +243,11 @@ public class CommonUtils {
     }
 
     public static AlicaTime debugNowTime(){
-        return new AlicaTime(TimerEvent.getCurrentTimeInNanoSec());
+        return new AlicaTime().inNanoseconds(TimerEvent.getCurrentTimeInNanoSec());
     }
 
     public static void debugPrintDiff( AlicaTime start){
-        System.err.println((new AlicaTime(TimerEvent.getCurrentTimeInNanoSec()).time - start.time));
+        System.err.println((new AlicaTime().inNanoseconds(TimerEvent.getCurrentTimeInNanoSec()).time - start.time));
     }
 
 }

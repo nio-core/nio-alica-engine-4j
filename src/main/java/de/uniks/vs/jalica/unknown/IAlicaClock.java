@@ -3,9 +3,17 @@ package de.uniks.vs.jalica.unknown;
 /**
  * Created by alex on 13.07.17.
  */
-public interface IAlicaClock {
+public abstract class IAlicaClock {
 
-    AlicaTime now();
+    public abstract AlicaTime now();
 
-    void sleep(long availTime);
+    public abstract void sleep(AlicaTime availTime);
+
+    public void sleep(long availTime) {
+        try {
+            Thread.sleep(availTime);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }

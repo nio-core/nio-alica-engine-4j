@@ -24,7 +24,7 @@ public class ResultEntry {
     }
 
     void addValue(long vid, Vector<Integer> result) {
-        double now = ae.getIAlicaClock().now().time;
+        double now = ae.getAlicaClock().now().time;
         VarValue vv;
 //        lock_guard<std::mutex> lock(valueLock);
         VarValue it = this.values.get(vid);
@@ -47,7 +47,7 @@ public class ResultEntry {
     Vector<SolverVar> getCommunicatableResults(long ttl4Communication) {
 //        lock_guard<std::mutex> lock(valueLock);
         Vector<SolverVar> lv = new Vector<SolverVar>();
-        double now = ae.getIAlicaClock().now().time;
+        double now = ae.getAlicaClock().now().time;
 
         for(VarValue varValue : values.values()) {
 
@@ -62,7 +62,7 @@ public class ResultEntry {
     }
 
     Vector<Integer> getValue(long vid, long ttl4Usage) {
-        double now = ae.getIAlicaClock().now().time;
+        double now = ae.getAlicaClock().now().time;
 //        lock_guard<std::mutex> lock(valueLock);
         VarValue it = this.values.get(vid);
 

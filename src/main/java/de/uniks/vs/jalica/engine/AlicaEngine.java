@@ -204,9 +204,6 @@ public class AlicaEngine {
         return roleAssignment;
     }
 
-    public IAlicaClock getIAlicaClock() {
-        return alicaClock;
-    }
 
     public boolean getStepEngine() {
         return stepEngine;
@@ -285,5 +282,9 @@ public class AlicaEngine {
 
     public SystemConfig getSystemConfig() {
         return sc;
+    }
+
+    public IAlicaClock getAlicaClock() {
+        return this.alicaClock;
     }
 }
