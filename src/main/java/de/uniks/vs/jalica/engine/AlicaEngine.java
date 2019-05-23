@@ -48,11 +48,11 @@ public class AlicaEngine {
     private AuthorityManager authorityManager;
     private Logger logger;
     private VariableSyncModule variableSyncModule;
-    private IAlicaClock alicaClock;
+    private AlicaClock alicaClock;
     private IPlanner planner;
     private HashMap<Integer, Solver> solver = new HashMap<>();
 
-    public void setIAlicaClock(IAlicaClock clock) {
+    public void setIAlicaClock(AlicaClock clock) {
         this.alicaClock = clock;
     }
 
@@ -284,7 +284,7 @@ public class AlicaEngine {
         return sc;
     }
 
-    public IAlicaClock getAlicaClock() {
+    public AlicaClock getAlicaClock() {
         return this.alicaClock;
     }
 }
