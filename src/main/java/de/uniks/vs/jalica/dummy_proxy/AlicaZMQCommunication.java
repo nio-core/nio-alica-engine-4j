@@ -41,7 +41,7 @@ public class AlicaZMQCommunication extends AlicaCommunication {
 
     public AlicaZMQCommunication(AlicaEngine ae) {
         super(ae);
-        this.configFile = "AlicaRosProxy";
+        this.configFile = "AlicaCommuicationTopics";
         this.isRunning = false;
     }
 
@@ -69,7 +69,7 @@ public class AlicaZMQCommunication extends AlicaCommunication {
 //        else
 //            subscriber.connect("ipc://" +  1); //42);
 
-        for (int i = 1; i <= ids.size() ; i++) {
+        for (int i = 1; i <= 6 ; i++) {
             if (ae.getSystemConfig().getOwnAgentID() != i) {
                 subscriber.connect("ipc://" + i);
             }
