@@ -25,7 +25,7 @@ public class TimerEvent extends Trigger implements Runnable {
         this.started = false;
         this.running = false;
         this.triggered = false;
-        this.msInterval = msInterval;
+        this.msInterval  = msInterval;
         this.msDelayedStart = msDelayedStart;
         this.runThread = new Thread(this);
         this.notifyAll = false;
@@ -60,6 +60,7 @@ public class TimerEvent extends Trigger implements Runnable {
 
         if (this.started && this.running){
             this.running = false;
+            this.started = false;
         }
         return this.started && this.running;
     }
@@ -106,7 +107,6 @@ public class TimerEvent extends Trigger implements Runnable {
                 synchronized (this) {
                     this.wait();
                 }
-                System.out.println("TimerEvent:  awakened " + parent);
                 if (CommonUtils.TE_DEBUG_debug && false) System.out.println("TimerEvent:  awakened " + parent);
                 if (CommonUtils.TE_DEBUG_debug && false) CommonUtils.aboutCallNotification();
 

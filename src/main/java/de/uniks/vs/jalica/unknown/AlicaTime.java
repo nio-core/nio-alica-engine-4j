@@ -11,6 +11,13 @@ public class AlicaTime  {
 
     public long time;
 
+    public static long milliseconds(long milliSeconds) {
+        return (long) (milliSeconds * mys);
+    }
+    public static long seconds(long seconds) {
+        return (long) (seconds * ns);
+    }
+
     public AlicaTime() {
         this.time = 0;
     }
@@ -54,4 +61,13 @@ public class AlicaTime  {
         return time / (1000000000l * 60l * 60l);
     }
 
+
+    // Operators
+    public AlicaTime subtract(AlicaTime time) {
+        return new AlicaTime().inNanoseconds(this.time - time.time);
+    }
+
+    public AlicaTime add(AlicaTime time) {
+        return new AlicaTime().inNanoseconds(this.time + time.time);
+    }
 }

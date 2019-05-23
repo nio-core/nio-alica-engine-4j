@@ -46,10 +46,7 @@ public class PlanBase implements Runnable {
     private Logger log;
 
     private AlicaEngineInfo statusMessage;
-//    private Mutex lomutex;
-//    private Mutex stepMutex;
     private PriorityQueue<RunningPlan> fpEvents;
-
 
     public PlanBase(AlicaEngine ae, Plan masterPlan) {
 
@@ -268,7 +265,7 @@ public class PlanBase implements Runnable {
                     if (this.deepestNode.getActiveState() != null) {
                         this.statusMessage.currentState = this.deepestNode.getActiveState().getName();
                         Set<Long> agentsInState = this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(this.deepestNode.getActiveState());
-                        if (CommonUtils.PB_DEBUG_debug)System.out.println("PB:  AGENT:" +this.statusMessage.senderID+ "    AGENTS :"+agentsInState);
+                        System.out.println("PB:  AGENT:" +this.statusMessage.senderID+ "    AGENTS :"+agentsInState);
                         CommonUtils.copy( this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(this.deepestNode.getActiveState()),
                                     0,
                                      this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(this.deepestNode.getActiveState()
@@ -287,24 +284,19 @@ public class PlanBase implements Runnable {
 
             this.log.iterationEnds(this.rootNode);
             this.ae.iterationComplete();
-            long availTime;
             now = alicaClock.now();
 
-            if (this.loopTime.time > (now.time - beginTime.time)) {
-                availTime = (long)((this.loopTime.time - (now.time - beginTime.time)) / 1000);
-            }
-			else {
-                availTime = 0;
-            }
+            long availTime = this.loopTime.time - now.time - beginTime.time;
+//            availTime = availTime < 0? 0: availTime;
 
             if (fpEvents.size() > 0) {
                 //lock for fpEvents
-                synchronized (this.fpEvents)
-                {
-//                    lock_guard<mutex> lock(lomutex);
-                    while (this.running && availTime > 1000 && fpEvents.size() > 0) {
-                        RunningPlan runningPlan = fpEvents.peek();//front();
-                        fpEvents.poll();
+                synchronized (this.fpEvents) {
+
+                    while (this.running && availTime > AlicaTime.milliseconds(1) && fpEvents.size() > 0) {
+//                        RunningPlan runningPlan = fpEvents.peek();//front();
+//                        fpEvents.poll();
+                        RunningPlan runningPlan = fpEvents.poll();
 
                         if (runningPlan.isActive()) {
                             boolean first = true;
@@ -323,12 +315,7 @@ public class PlanBase implements Runnable {
                         }
                         now = alicaClock.now();
 
-                        if (this.loopTime.time > (now.time - beginTime.time)) {
-                            availTime = (long)((this.loopTime.time - (now.time - beginTime.time)));// / 1000);
-                        }
-						else {
-                            availTime = 0;
-                        }
+                        availTime = this.loopTime.time - now.time - beginTime.time;
                     }
                 }
             }
@@ -339,7 +326,6 @@ public class PlanBase implements Runnable {
             if (availTime > 0 && !ae.getStepEngine()) {
 
                 if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: sleep " + availTime);
-
                 alicaClock.sleep(availTime);
             }
 

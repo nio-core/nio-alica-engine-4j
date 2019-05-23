@@ -43,19 +43,16 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
         this.callInit = true;
         this.started =  true;
         this.running =  false;
-        this.timer = new TimerEvent(303030, 0, this.getClass().getSimpleName());
-//        this.runThread = new Thread(this);
+        this.timer = new TimerEvent(100, 0, this.getClass().getSimpleName());
 //        this.runCV = new ConditionVariable(this.runThread);
         this.runCV = new ConditionVariable(this);
         this.timer.addConditionVariable(this.runCV);
         //TODO: change to start on demand
-//        this.runThread.start();
         this.runThread = new Thread(this);
         this.runThread.start();
     }
 
     public boolean start() {
-
 //        if (!this.runThread.isAlive())
 //            this.runThread.start();
         this.callInit = true;
@@ -63,6 +60,10 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
         if (behaviourTrigger == null) {
             if (CommonUtils.B_DEBUG_debug) System.out.println("BB: start behaviour type -> " + this.getClass().getSimpleName());
             if (CommonUtils.B_DEBUG_debug) CommonUtils.aboutCallNotification();
+            //TODO: check
+//            synchronized (runCV) {
+//                runCV.notifyAll();
+//            }
             return this.timer.start();
         }
         else {

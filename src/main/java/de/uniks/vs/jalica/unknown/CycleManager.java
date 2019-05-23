@@ -308,7 +308,7 @@ public class CycleManager {
                 plan.setAuthorityTimeInterval( new AlicaTime().inNanoseconds(
                         Math.min(maximalOverrideTimeInterval.time, (long) (plan.getAuthorityTimeInterval().time * intervalIncFactor))));
                 this.overrideShoutTime.time = 0;
-                if (CommonUtils.CM_DEBUG_debug) System.out.println("CM("+this.myID+"): Assuming Authority for " + plan.getAuthorityTimeInterval().time / 1000000000.0
+                if (CommonUtils.CM_DEBUG_debug) System.out.println("CM("+this.myID+"): Assuming Authority for " + plan.getAuthorityTimeInterval().inSeconds()
                         + "sec!" );
                 this.overrideTimestamp = alicaEngine.getAlicaClock().now();
             }
