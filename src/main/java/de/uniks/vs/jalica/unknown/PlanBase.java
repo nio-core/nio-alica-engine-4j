@@ -29,7 +29,7 @@ public class PlanBase implements Runnable {
     private ISyncModul syncModel;
     private AuthorityManager authModul;
     private AlicaCommunication statusPublisher;
-    private IAlicaClock alicaClock;
+    private AlicaClock alicaClock;
 
     private AlicaTime loopTime;
     private AlicaTime lastSendTime;

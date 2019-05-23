@@ -2,12 +2,12 @@ package de.uniks.vs.jalica.dummy_proxy;
 
 import de.uniks.vs.jalica.supplementary.TimerEvent;
 import de.uniks.vs.jalica.unknown.AlicaTime;
-import de.uniks.vs.jalica.unknown.IAlicaClock;
+import de.uniks.vs.jalica.unknown.AlicaClock;
 
 /**
  * Created by alex on 13.07.17.
  */
-public class AlicaSystemClock implements IAlicaClock {
+public class AlicaSystemClock implements AlicaClock {
 
     public AlicaTime now() {
 //        time_t t;

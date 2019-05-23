@@ -16,7 +16,6 @@ import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.unknown.*;
 import de.uniks.vs.jalica.behaviours.UtilityFunctionCreator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -48,11 +47,11 @@ public class AlicaEngine {
     private AuthorityManager authorityManager;
     private Logger logger;
     private VariableSyncModule variableSyncModule;
-    private IAlicaClock alicaClock;
+    private AlicaClock alicaClock;
     private IPlanner planner;
     private HashMap<Integer, Solver> solver = new HashMap<>();
 
-    public void setIAlicaClock(IAlicaClock clock) {
+    public void setIAlicaClock(AlicaClock clock) {
         this.alicaClock = clock;
     }
 
@@ -204,7 +203,7 @@ public class AlicaEngine {
         return roleAssignment;
     }
 
-    public IAlicaClock getIAlicaClock() {
+    public AlicaClock getIAlicaClock() {
         return alicaClock;
     }
 
