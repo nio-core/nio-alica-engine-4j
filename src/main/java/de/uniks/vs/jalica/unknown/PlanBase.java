@@ -265,7 +265,7 @@ public class PlanBase implements Runnable {
                     if (this.deepestNode.getActiveState() != null) {
                         this.statusMessage.currentState = this.deepestNode.getActiveState().getName();
                         Set<Long> agentsInState = this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(this.deepestNode.getActiveState());
-                        System.out.println("PB:  AGENT:" +this.statusMessage.senderID+ "    AGENTS :"+agentsInState);
+                        System.out.println("BP: AGENT:" +this.statusMessage.senderID+ "    AGENTS :"+agentsInState);
                         CommonUtils.copy( this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(this.deepestNode.getActiveState()),
                                     0,
                                      this.deepestNode.getAssignment().getAgentStateMapping().getAgentsInState(this.deepestNode.getActiveState()

@@ -16,7 +16,6 @@ import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.unknown.*;
 import de.uniks.vs.jalica.behaviours.UtilityFunctionCreator;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -204,6 +203,9 @@ public class AlicaEngine {
         return roleAssignment;
     }
 
+    public AlicaClock getAlicaClock() {
+        return alicaClock;
+    }
 
     public boolean getStepEngine() {
         return stepEngine;
@@ -282,9 +284,5 @@ public class AlicaEngine {
 
     public SystemConfig getSystemConfig() {
         return sc;
-    }
-
-    public AlicaClock getAlicaClock() {
-        return this.alicaClock;
     }
 }
