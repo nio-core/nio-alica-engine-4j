@@ -1,15 +1,14 @@
 package de.uniks.vs.jalica;
 
 import de.uniks.vs.jalica.behaviours.BehaviourCreator;
-import de.uniks.vs.jalica.common.SolverType;
 import de.uniks.vs.jalica.behaviours.ConditionCreator;
 import de.uniks.vs.jalica.behaviours.ConstraintCreator;
-import de.uniks.vs.jalica.dummy_proxy.AlicaSystemClock;
+import de.uniks.vs.jalica.behaviours.UtilityFunctionCreator;
+import de.uniks.vs.jalica.common.SolverType;
 import de.uniks.vs.jalica.dummy_proxy.AlicaZMQCommunication;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.reasoner.CGSolver;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
-import de.uniks.vs.jalica.behaviours.UtilityFunctionCreator;
 import de.uniks.vs.jalica.unknown.AlicaClock;
 
 /**
