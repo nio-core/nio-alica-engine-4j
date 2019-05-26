@@ -1,16 +1,10 @@
 package de.uniks.vs.jalica.discovery;
 
-import de.uniks.vs.jalica.dummy_proxy.CommonNetworkUtils;
-import de.uniks.vs.jalica.dummy_proxy.StdDiscovery;
+import de.uniks.vs.jalica.common.CommonNetworkUtils;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.net.*;
-import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.util.Iterator;
 
 public class TestDiscovery {
 

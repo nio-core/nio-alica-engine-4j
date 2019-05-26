@@ -1,10 +1,12 @@
-package de.uniks.vs.jalica.dummy_proxy;
+package de.uniks.vs.jalica.communication;
 
+import de.uniks.vs.jalica.communication.discovery.StdDiscovery;
+import de.uniks.vs.jalica.communication.pubsub.*;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.unknown.*;
-import de.uniks.vs.jalica.unknown.Communication.AlicaEngineInfo;
-import de.uniks.vs.jalica.unknown.Communication.AllocationAuthorityInfo;
-import de.uniks.vs.jalica.unknown.Communication.PlanTreeInfo;
+import de.uniks.vs.jalica.communication.messages.AlicaEngineInfo;
+import de.uniks.vs.jalica.communication.messages.AllocationAuthorityInfo;
+import de.uniks.vs.jalica.communication.messages.PlanTreeInfo;
 import org.zeromq.*;
 
 import java.util.ArrayList;
@@ -14,7 +16,7 @@ import java.util.ArrayList;
  */
 public class AlicaZMQCommunication extends AlicaCommunication {
 
-    private final Topics topics;
+    private final MessageTopics topics;
 
     private AlicaEngineInfoPublisher alicaEngineInfoPublisher;
 
@@ -35,7 +37,7 @@ public class AlicaZMQCommunication extends AlicaCommunication {
 
     public AlicaZMQCommunication(AlicaEngine ae, String configFile) {
         super(ae);
-        this.topics = new Topics(ae, configFile);
+        this.topics = new MessageTopics(ae, configFile);
         this.isRunning = false;
         System.setProperty("java.net.preferIPv4Stack", "true");
     }
@@ -73,9 +75,9 @@ public class AlicaZMQCommunication extends AlicaCommunication {
         publisher.bind("ipc://" +  ae.getSystemConfig().getOwnAgentID());
 //        publisher.bind("tcp://*:5556");
         System.out.println("ZMQ-C: AGENT CHANNEL "+ "ipc://" +  ae.getSystemConfig().getOwnAgentID());
-        allocationAuthorityInfoPublisher = new AllocationAuthorityInfoPublisher(topics.getTopic(Topics.Type.allocationAuthorityInfoTopic), publisher);
-        alicaEngineInfoPublisher = new AlicaEngineInfoPublisher(topics.getTopic(Topics.Type.alicaEngineInfoTopic), publisher);
-        planTreeInfoPublisher = new PlanTreeInfoPublisher(topics.getTopic(Topics.Type.planTreeInfoTopic), publisher);
+        allocationAuthorityInfoPublisher = new AllocationAuthorityInfoPublisher(topics.getTopic(MessageTopics.Type.allocationAuthorityInfoTopic), publisher);
+        alicaEngineInfoPublisher = new AlicaEngineInfoPublisher(topics.getTopic(MessageTopics.Type.alicaEngineInfoTopic), publisher);
+        planTreeInfoPublisher = new PlanTreeInfoPublisher(topics.getTopic(MessageTopics.Type.planTreeInfoTopic), publisher);
 //        roleSwitchPublisher = new RoleSwitchPublisher(topics.getTopic(Topics.Type.ownRoleTopic), publisher);
 //        SyncReadyPublisher = rosNode.advertise<alica_ros_proxy::SyncReady>(this.syncReadyTopic, 10);
 //        SyncTalkPublisher = rosNode.advertise<alica_ros_proxy::SyncTalk>(this.syncTalkTopic, 10);

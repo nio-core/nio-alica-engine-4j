@@ -1,11 +1,10 @@
-package de.uniks.vs.jalica.dummy_proxy;
+package de.uniks.vs.jalica.communication;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
 
 import java.util.HashMap;
 
-public class Topics {
+public class MessageTopics {
 
     public enum Type {
         allocationAuthorityInfoTopic,
@@ -22,12 +21,12 @@ public class Topics {
     private AlicaEngine alicaEngine;
     private HashMap<Type, String> topics = new HashMap();
 
-    public Topics(AlicaEngine alicaEngine, String configfile) {
+    public MessageTopics(AlicaEngine alicaEngine, String configfile) {
         this.alicaEngine = alicaEngine;
         this.configFile = configfile;
     }
 
-    public Topics loadTopics() {
+    public MessageTopics loadTopics() {
 
         for (Type topic : Type.values()) {
             topics.put(topic, (String) this.alicaEngine.getSystemConfig().get(configFile).get("Topics." + topic.name()));

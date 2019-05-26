@@ -1,7 +1,7 @@
 package de.uniks.vs.jalica.unknown;
 
 import de.uniks.vs.jalica.common.AssignmentCollection;
-import de.uniks.vs.jalica.unknown.Communication.AllocationAuthorityInfo;
+import de.uniks.vs.jalica.communication.messages.AllocationAuthorityInfo;
 
 import java.util.ArrayList;
 import java.util.Set;

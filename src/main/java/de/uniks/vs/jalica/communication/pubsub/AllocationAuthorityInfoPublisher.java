@@ -1,6 +1,8 @@
-package de.uniks.vs.jalica.unknown;
+package de.uniks.vs.jalica.communication.pubsub;
 
-import de.uniks.vs.jalica.unknown.Communication.AllocationAuthorityInfo;
+import de.uniks.vs.jalica.communication.messages.AllocationAuthorityInfo;
+import de.uniks.vs.jalica.unknown.EntryPointAgents;
+import de.uniks.vs.jalica.unknown.Message;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.zeromq.ZMQ;

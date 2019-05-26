@@ -1,4 +1,4 @@
-package de.uniks.vs.jalica.unknown;
+package de.uniks.vs.jalica.communication.pubsub;
 
 import org.zeromq.ZMQ;
 

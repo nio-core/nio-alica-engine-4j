@@ -1,13 +1,12 @@
-package de.uniks.vs.jalica.dummy_proxy;
+package de.uniks.vs.jalica.communication;
 
-import de.uniks.vs.jalica.unknown.AllocationAuthorityInfoSubscriber;
-import de.uniks.vs.jalica.unknown.PlanTreeInfoSubscriber;
-import de.uniks.vs.jalica.unknown.SolverResultSubscriber;
-import org.zeromq.SocketType;
+import de.uniks.vs.jalica.communication.pubsub.AllocationAuthorityInfoSubscriber;
+import de.uniks.vs.jalica.communication.pubsub.PlanTreeInfoSubscriber;
+import de.uniks.vs.jalica.communication.pubsub.SolverResultSubscriber;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
-public class CommunicationNode {
+public class NetworkNode {
 
     private final ZContext context;
     private final long id;
@@ -18,17 +17,17 @@ public class CommunicationNode {
 
     private long signOfLife = -1;
 
-    public CommunicationNode(ZContext context, long id, Topics topics, AlicaZMQCommunication communication, ZMQ.Socket subscriber) {
+    public NetworkNode(ZContext context, long id, MessageTopics topics, AlicaZMQCommunication communication, ZMQ.Socket subscriber) {
         this.context = context;
         this.id = id;
 
         subscriber.connect("ipc://" + id);
 
-        subscriber.subscribe(topics.getTopic(Topics.Type.alicaEngineInfoTopic).getBytes(ZMQ.CHARSET));
-        subscriber.subscribe(topics.getTopic(Topics.Type.ownRoleTopic).getBytes(ZMQ.CHARSET));
+        subscriber.subscribe(topics.getTopic(MessageTopics.Type.alicaEngineInfoTopic).getBytes(ZMQ.CHARSET));
+        subscriber.subscribe(topics.getTopic(MessageTopics.Type.ownRoleTopic).getBytes(ZMQ.CHARSET));
 
-        allocationAuthorityInfoSubscriber = new AllocationAuthorityInfoSubscriber(topics.getTopic(Topics.Type.allocationAuthorityInfoTopic), subscriber, communication);
-        planTreeInfoSubscriber = new PlanTreeInfoSubscriber(topics.getTopic(Topics.Type.planTreeInfoTopic), subscriber, communication);
+        allocationAuthorityInfoSubscriber = new AllocationAuthorityInfoSubscriber(topics.getTopic(MessageTopics.Type.allocationAuthorityInfoTopic), subscriber, communication);
+        planTreeInfoSubscriber = new PlanTreeInfoSubscriber(topics.getTopic(MessageTopics.Type.planTreeInfoTopic), subscriber, communication);
 //        SyncReadySubscriber = rosNode.subscribe(this.syncReadyTopic, 5, &AlicaRosCommunication::handleSyncReadyRos, (AlicaRosCommunication*)this);
 //        SyncTalkSubscriber = rosNode.subscribe(this.syncTalkTopic, 5, &AlicaRosCommunication::handleSyncTalkRos, (AlicaRosCommunication*)this);
 //        solverResultSubscriber = new SolverResultSubscriber(topics.getTopic(Topics.Type.solverResultTopic), subscriber, communication);

@@ -1,10 +1,9 @@
-package de.uniks.vs.jalica.unknown.Communication;
+package de.uniks.vs.jalica.communication.messages;
 
 import de.uniks.vs.jalica.unknown.EntryPointAgents;
 import de.uniks.vs.jalica.unknown.Message;
 
 import java.util.LinkedList;
-import java.util.Vector;
 
 /**
  * Created by alex on 27.07.17.

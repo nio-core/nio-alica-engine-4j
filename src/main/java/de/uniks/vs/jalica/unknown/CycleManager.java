@@ -3,7 +3,7 @@ package de.uniks.vs.jalica.unknown;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.teamobserver.PlanRepository;
-import de.uniks.vs.jalica.unknown.Communication.AllocationAuthorityInfo;
+import de.uniks.vs.jalica.communication.messages.AllocationAuthorityInfo;
 
 import java.util.Set;
 import java.util.Vector;

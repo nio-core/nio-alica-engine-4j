@@ -1,4 +1,4 @@
-package de.uniks.vs.jalica.dummy_proxy;
+package de.uniks.vs.jalica.common;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;

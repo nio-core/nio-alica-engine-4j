@@ -1,10 +1,8 @@
-package de.uniks.vs.jalica.dummy_proxy;
+package de.uniks.vs.jalica.communication.pubsub;
 
-import de.uniks.vs.jalica.unknown.Communication.DiscoveryInfo;
-import de.uniks.vs.jalica.unknown.EntryPointAgents;
+import de.uniks.vs.jalica.communication.messages.DiscoveryInfo;
+import de.uniks.vs.jalica.communication.pubsub.ZMQPublisher;
 import de.uniks.vs.jalica.unknown.Message;
-import de.uniks.vs.jalica.unknown.ZMQPublisher;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.zeromq.ZMQ;
 

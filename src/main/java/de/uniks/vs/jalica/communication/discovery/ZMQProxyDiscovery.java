@@ -1,4 +1,4 @@
-package de.uniks.vs.jalica.dummy_proxy;
+package de.uniks.vs.jalica.communication.discovery;
 
 import org.zeromq.*;
 

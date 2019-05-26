@@ -4,7 +4,7 @@ import de.uniks.vs.jalica.common.config.ConfigPair;
 import de.uniks.vs.jalica.common.Logger;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.unknown.*;
-import de.uniks.vs.jalica.unknown.Communication.PlanTreeInfo;
+import de.uniks.vs.jalica.communication.messages.PlanTreeInfo;
 
 import java.util.*;
 

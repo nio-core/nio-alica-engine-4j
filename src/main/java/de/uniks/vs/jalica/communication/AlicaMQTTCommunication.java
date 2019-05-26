@@ -1,10 +1,10 @@
-package de.uniks.vs.jalica.dummy_proxy;
+package de.uniks.vs.jalica.communication;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.unknown.*;
-import de.uniks.vs.jalica.unknown.Communication.AlicaEngineInfo;
-import de.uniks.vs.jalica.unknown.Communication.AllocationAuthorityInfo;
-import de.uniks.vs.jalica.unknown.Communication.PlanTreeInfo;
+import de.uniks.vs.jalica.communication.messages.AlicaEngineInfo;
+import de.uniks.vs.jalica.communication.messages.AllocationAuthorityInfo;
+import de.uniks.vs.jalica.communication.messages.PlanTreeInfo;
 
 import java.util.ArrayList;
 

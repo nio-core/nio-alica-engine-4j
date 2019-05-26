@@ -1,6 +1,9 @@
-package de.uniks.vs.jalica.unknown;
+package de.uniks.vs.jalica.communication.pubsub;
 
-import de.uniks.vs.jalica.dummy_proxy.AlicaZMQCommunication;
+import de.uniks.vs.jalica.communication.AlicaZMQCommunication;
+import de.uniks.vs.jalica.unknown.CommonUtils;
+import de.uniks.vs.jalica.unknown.SolverResult;
+import de.uniks.vs.jalica.unknown.SolverVar;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;

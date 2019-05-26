@@ -1,7 +1,8 @@
-package de.uniks.vs.jalica.unknown;
+package de.uniks.vs.jalica.communication.pubsub;
 
-import de.uniks.vs.jalica.dummy_proxy.AlicaZMQCommunication;
-import de.uniks.vs.jalica.unknown.Communication.PlanTreeInfo;
+import de.uniks.vs.jalica.communication.AlicaZMQCommunication;
+import de.uniks.vs.jalica.communication.messages.PlanTreeInfo;
+import de.uniks.vs.jalica.unknown.CommonUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -21,7 +22,7 @@ public class PlanTreeInfoSubscriber extends ZMQSubscriber {
 
             @Override
             public void run() {
-                if (CommonUtils.COMM_debug) System.out.println("PTI-Sub("+alicaZMQCommunication.ae.getAgentName()+"): Thread started" );
+                if (CommonUtils.COMM_debug) System.out.println("PTI-Sub("+alicaZMQCommunication.getAe().getAgentName()+"): Thread started" );
                 while (true) {
 
                     try {
@@ -30,7 +31,7 @@ public class PlanTreeInfoSubscriber extends ZMQSubscriber {
                     if (!string.startsWith(topic))
                         continue;
 
-                    if (CommonUtils.COMM_debug) System.out.println("PTI-Sub(" + alicaZMQCommunication.ae.getAgentName() +") " + string);
+                    if (CommonUtils.COMM_debug) System.out.println("PTI-Sub(" + alicaZMQCommunication.getAe().getAgentName() +") " + string);
 
 
                         JSONObject jsonObject = (JSONObject)JSONValue.parseWithException(string.replace(topic, ""));

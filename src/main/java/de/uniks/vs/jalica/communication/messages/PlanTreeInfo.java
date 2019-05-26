@@ -1,4 +1,4 @@
-package de.uniks.vs.jalica.unknown.Communication;
+package de.uniks.vs.jalica.communication.messages;
 
 import de.uniks.vs.jalica.unknown.Message;
 

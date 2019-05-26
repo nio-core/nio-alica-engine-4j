@@ -1,7 +1,9 @@
-package de.uniks.vs.jalica.unknown;
+package de.uniks.vs.jalica.communication.pubsub;
 
-import de.uniks.vs.jalica.dummy_proxy.AlicaZMQCommunication;
-import de.uniks.vs.jalica.unknown.Communication.AllocationAuthorityInfo;
+import de.uniks.vs.jalica.communication.AlicaZMQCommunication;
+import de.uniks.vs.jalica.unknown.CommonUtils;
+import de.uniks.vs.jalica.communication.messages.AllocationAuthorityInfo;
+import de.uniks.vs.jalica.unknown.EntryPointAgents;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
@@ -32,7 +34,7 @@ public class AllocationAuthorityInfoSubscriber extends ZMQSubscriber {
                             continue;
                         }
 
-                        if (CommonUtils.COMM_debug) System.out.println("AAI-Sub("+alicaZMQCommunication.ae.getAgentName()+"): " +string);
+                        if (CommonUtils.COMM_debug) System.out.println("AAI-Sub("+alicaZMQCommunication.getAe().getAgentName()+"): " +string);
 
 
                             JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(string.replace(topic, ""));

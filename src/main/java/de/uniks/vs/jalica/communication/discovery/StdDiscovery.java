@@ -1,5 +1,8 @@
-package de.uniks.vs.jalica.dummy_proxy;
+package de.uniks.vs.jalica.communication.discovery;
 
+import de.uniks.vs.jalica.communication.AlicaZMQCommunication;
+import de.uniks.vs.jalica.communication.NetworkNode;
+import de.uniks.vs.jalica.communication.MessageTopics;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
@@ -23,12 +26,12 @@ public class StdDiscovery extends Discovery implements Runnable {
     private final AlicaZMQCommunication communication;
     private final ZContext context;
     private final ZMQ.Socket subscriber;
-    private final Topics topics;
+    private final MessageTopics topics;
 
     private Map<String, Long> hosts = new HashMap<String, Long>();
 
 
-    public StdDiscovery(AlicaZMQCommunication communication, ZContext context, ZMQ.Socket subscriber, Topics topics) {
+    public StdDiscovery(AlicaZMQCommunication communication, ZContext context, ZMQ.Socket subscriber, MessageTopics topics) {
         this.ownID = communication.getAe().getSystemConfig().getOwnAgentID();
         this.communication = communication;
         this.context = context;
@@ -108,7 +111,7 @@ public class StdDiscovery extends Discovery implements Runnable {
 //                        System.out.println("Agent("+ownID+")  "+getAvailableHosts() + " " + message);
 
                         if (!commNodes.containsKey(agentID)) {
-                            commNodes.put(agentID, new CommunicationNode(context, agentID, topics, communication, subscriber));
+                            commNodes.put(agentID, new NetworkNode(context, agentID, topics, communication, subscriber));
                         }
                     }
                     multicastSocket.leaveGroup(InetAddress.getByName(MULTICAST_IP));

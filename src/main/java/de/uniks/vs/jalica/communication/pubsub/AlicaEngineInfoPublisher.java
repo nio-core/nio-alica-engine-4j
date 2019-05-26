@@ -1,6 +1,8 @@
-package de.uniks.vs.jalica.unknown;
+package de.uniks.vs.jalica.communication.pubsub;
 
-import de.uniks.vs.jalica.unknown.Communication.AlicaEngineInfo;
+import de.uniks.vs.jalica.unknown.CommonUtils;
+import de.uniks.vs.jalica.communication.messages.AlicaEngineInfo;
+import de.uniks.vs.jalica.unknown.Message;
 import org.json.simple.JSONObject;
 import org.zeromq.ZMQ;
 

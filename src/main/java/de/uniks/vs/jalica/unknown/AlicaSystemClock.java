@@ -1,4 +1,4 @@
-package de.uniks.vs.jalica.dummy_proxy;
+package de.uniks.vs.jalica.unknown;
 
 import de.uniks.vs.jalica.supplementary.TimerEvent;
 import de.uniks.vs.jalica.unknown.AlicaClock;
