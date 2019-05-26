@@ -54,4 +54,8 @@ public abstract class AlicaCommunication {
     }
 
     public abstract boolean init(ArrayList<Long> ids);
+
+    public AlicaEngine getAe() {
+        return ae;
+    }
 }

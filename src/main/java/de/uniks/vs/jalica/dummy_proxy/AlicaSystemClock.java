@@ -7,6 +7,7 @@ import de.uniks.vs.jalica.unknown.AlicaTime;
 /**
  * Created by alex on 13.07.17.
  */
+@Deprecated
 public class AlicaSystemClock extends AlicaClock {
 
     public AlicaTime now() {

@@ -17,7 +17,7 @@ public class AllocationAuthorityInfoSubscriber extends ZMQSubscriber {
         super(topic, subscriber);
         this.alicaZMQCommunication = alicaZMQCommunication;
 
-        System.out.println("AAI-Sub("+this.alicaZMQCommunication.ae.getAgentName()+"): start");
+        System.out.println("AAI-Sub("+this.alicaZMQCommunication.getAe().getAgentName()+"): start");
 
         Thread thread = new Thread() {
 

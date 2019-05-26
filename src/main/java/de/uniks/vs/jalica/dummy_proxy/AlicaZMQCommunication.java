@@ -5,9 +5,7 @@ import de.uniks.vs.jalica.unknown.*;
 import de.uniks.vs.jalica.unknown.Communication.AlicaEngineInfo;
 import de.uniks.vs.jalica.unknown.Communication.AllocationAuthorityInfo;
 import de.uniks.vs.jalica.unknown.Communication.PlanTreeInfo;
-import org.zeromq.SocketType;
-import org.zeromq.ZContext;
-import org.zeromq.ZMQ;
+import org.zeromq.*;
 
 import java.util.ArrayList;
 
@@ -16,108 +14,72 @@ import java.util.ArrayList;
  */
 public class AlicaZMQCommunication extends AlicaCommunication {
 
-    private String configFile;
-//    private  String alicaEngineInfoTopic;
-//    private  String allocationAuthorityInfoTopic;
-//    private  String ownRoleTopic;
-//    private  String planTreeInfoTopic;
-//    private  String syncReadyTopic;
-//    private  String syncTalkTopic;
-//    private  String solverResultTopic;
-    private boolean isRunning;
+    private final Topics topics;
 
     private AlicaEngineInfoPublisher alicaEngineInfoPublisher;
 
     private PlanTreeInfoPublisher planTreeInfoPublisher;
-    private PlanTreeInfoSubscriber planTreeInfoSubscriber;
-
     private AllocationAuthorityInfoPublisher allocationAuthorityInfoPublisher;
-    private AllocationAuthorityInfoSubscriber allocationAuthorityInfoSubscriber;
-
     private SolverResultPublisher solverResultPublisher;
-    private SolverResultSubscriber solverResultSubscriber;
-
     private RoleSwitchPublisher roleSwitchPublisher;
+    private boolean isRunning;
+
+    private StdDiscovery discovery;
+
+//    private DiscoveryPublisher discoveryPublisher;
+//    private DiscoverySubscriber discoverySubscriber;
 
     public AlicaZMQCommunication(AlicaEngine ae) {
-        super(ae);
-        this.configFile = "AlicaCommuicationTopics";
-        this.isRunning = false;
+        this(ae, "AlicaCommuicationTopics");
     }
 
     public AlicaZMQCommunication(AlicaEngine ae, String configFile) {
         super(ae);
-        this.configFile = configFile;
+        this.topics = new Topics(ae, configFile);
         this.isRunning = false;
+        System.setProperty("java.net.preferIPv4Stack", "true");
     }
 
     public boolean init(ArrayList<Long> ids) {
- //        this.allocationAuthorityInfoTopic = (String) this.systemConfig.get("AlicaRosProxy").get("Topics.allocationAuthorityInfoTopic");
-//        this.ownRoleTopic = (String) this.systemConfig.get("AlicaRosProxy").get("Topics.ownRoleTopic");
-//        this.alicaEngineInfoTopic = (String) ae.getSystemConfig().get("AlicaRosProxy").get("Topics.alicaEngineInfoTopic");
-//        this.planTreeInfoTopic = (String) this.systemConfig.get("AlicaRosProxy").get("Topics.planTreeInfoTopic");
-//        this.syncReadyTopic = (String) this.systemConfig.get("AlicaRosProxy").get("Topics.syncReadyTopic");
-//        this.syncTalkTopic = (String) this.systemConfig.get("AlicaRosProxy").get("Topics.syncTalkTopic");
-//        this.solverResultTopic = (String) this.systemConfig.get("AlicaRosProxy").get("Topics.solverResultTopic");
-
+        topics.loadTopics();
         ZContext context = new ZContext();
-        ZMQ.Socket subscriber = context.createSocket(SocketType.SUB);
-//        subscriber.connect("tcp://localhost:5556");
-//        if (ae.getSystemConfig().getOwnAgentID() == 1){ //42)
-//            subscriber.connect("ipc://" + 2); //17);
-//        }
-//        else
-//            subscriber.connect("ipc://" +  1); //42);
+        initializeMsgPublishers(context);
+        initDiscovery(context);
+//        ZMQ.Socket subscriber = context.createSocket(SocketType.SUB);
 
-        for (int i = 1; i <= 6 ; i++) {
-            if (ae.getSystemConfig().getOwnAgentID() != i) {
-                subscriber.connect("ipc://" + i);
-            }
-        }
-
-        ZMQ.Socket publisher = context.createSocket(SocketType.PUB);
-//        publisher.bind("tcp://*:5556");
-        publisher.bind("ipc://" +  ae.getSystemConfig().getOwnAgentID());
-
-        System.out.println("ZMQ-C: AGENT CHANNEL "+ "ipc://" +  ae.getSystemConfig().getOwnAgentID());
-
-//        AllocationAuthorityInfoPublisher = rosNode.advertise<alica_ros_proxy::AllocationAuthorityInfo>(this.allocationAuthorityInfoTopic, 2);
-//        AllocationAuthorityInfoSubscriber = rosNode.subscribe(this.allocationAuthorityInfoTopic, 10, &AlicaRosCommunication::handleAllocationAuthority, (AlicaRosCommunication*)this);
-        String allocationAuthorityInfoTopic = (String) ae.getSystemConfig().get(configFile).get("Topics.allocationAuthorityInfoTopic");
-        allocationAuthorityInfoPublisher = new AllocationAuthorityInfoPublisher(allocationAuthorityInfoTopic, publisher);
-        allocationAuthorityInfoSubscriber = new AllocationAuthorityInfoSubscriber(allocationAuthorityInfoTopic, subscriber, this);
-
-
-//        AlicaEngineInfoPublisher = rosNode.advertise<alica_ros_proxy::AlicaEngineInfo>(this.alicaEngineInfoTopic, 2);
-        String alicaEngineInfoTopic = (String) ae.getSystemConfig().get(configFile).get("Topics.alicaEngineInfoTopic");
-        alicaEngineInfoPublisher = new AlicaEngineInfoPublisher(alicaEngineInfoTopic, publisher);
-        subscriber.subscribe(alicaEngineInfoTopic.getBytes(ZMQ.CHARSET));
-
-//        RoleSwitchPublisher = rosNode.advertise<alica_ros_proxy::RoleSwitch>(this.ownRoleTopic,  10);
-        String ownRoleTopic = (String) ae.getSystemConfig().get(configFile).get("Topics.ownRoleTopic");
-        roleSwitchPublisher = new RoleSwitchPublisher(ownRoleTopic, publisher);
-        subscriber.subscribe(ownRoleTopic.getBytes(ZMQ.CHARSET));
-
-
-//        PlanTreeInfoPublisher = rosNode.advertise<alica_ros_proxy::PlanTreeInfo>(this.planTreeInfoTopic, 10);
-//        PlanTreeInfoSubscriber = ro sNode.subscribe(this.planTreeInfoTopic, 1, &AlicaRosCommunication::handlePlanTreeInfo,  (AlicaRosCommunication*)this);
-        String planTreeInfoTopic = (String) ae.getSystemConfig().get(configFile).get("Topics.planTreeInfoTopic");
-        planTreeInfoPublisher = new PlanTreeInfoPublisher(planTreeInfoTopic, publisher);
-        planTreeInfoSubscriber = new PlanTreeInfoSubscriber(planTreeInfoTopic, subscriber, this);
-//
-//        SyncReadyPublisher = rosNode.advertise<alica_ros_proxy::SyncReady>(this.syncReadyTopic, 10);
-//        SyncReadySubscriber = rosNode.subscribe(this.syncReadyTopic, 5, &AlicaRosCommunication::handleSyncReadyRos, (AlicaRosCommunication*)this);
-
-//        SyncTalkPublisher = rosNode.advertise<alica_ros_proxy::SyncTalk>(this.syncTalkTopic, 10);
-//        SyncTalkSubscriber = rosNode.subscribe(this.syncTalkTopic, 5, &AlicaRosCommunication::handleSyncTalkRos, (AlicaRosCommunication*)this);
-//
-//        SolverResultPublisher = rosNode.advertise<alica_ros_proxy::SolverResult>(this.solverResultTopic, 10);
-//        SolverResultSubscriber = rosNode.subscribe(this.solverResultTopic, 5, &AlicaRosCommunication::handleSolverResult, (AlicaRosCommunication*)this);
-        String solverResultTopic = (String) ae.getSystemConfig().get(configFile).get("Topics.solverResultTopic");
-        solverResultPublisher = new SolverResultPublisher(solverResultTopic, publisher);
-        solverResultSubscriber = new SolverResultSubscriber(solverResultTopic, subscriber, this);
-
+//        for (int i = 0; i < 7; i++)
+//            if (i != ae.getSystemConfig().getOwnAgentID()) {
+//                initMsgSubscriber(context, i + "", topics, subscriber);
+//                try {
+//                    Thread.sleep(10);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
         return true;
+    }
+
+//    private void initMsgSubscriber(ZContext context, String id, Topics topics, ZMQ.Socket subscriber) {
+//        commNodes.add(new CommunicationNode(context, id, topics, this, subscriber));
+//    }
+
+    private void initDiscovery(ZContext context) {
+        ZMQ.Socket subscriber = context.createSocket(SocketType.SUB);
+        discovery = new StdDiscovery(this, context, subscriber, topics);
+    }
+
+    private void initializeMsgPublishers(ZContext context) {
+        ZMQ.Socket publisher = context.createSocket(SocketType.PUB);
+        publisher.bind("ipc://" +  ae.getSystemConfig().getOwnAgentID());
+//        publisher.bind("tcp://*:5556");
+        System.out.println("ZMQ-C: AGENT CHANNEL "+ "ipc://" +  ae.getSystemConfig().getOwnAgentID());
+        allocationAuthorityInfoPublisher = new AllocationAuthorityInfoPublisher(topics.getTopic(Topics.Type.allocationAuthorityInfoTopic), publisher);
+        alicaEngineInfoPublisher = new AlicaEngineInfoPublisher(topics.getTopic(Topics.Type.alicaEngineInfoTopic), publisher);
+        planTreeInfoPublisher = new PlanTreeInfoPublisher(topics.getTopic(Topics.Type.planTreeInfoTopic), publisher);
+//        roleSwitchPublisher = new RoleSwitchPublisher(topics.getTopic(Topics.Type.ownRoleTopic), publisher);
+//        SyncReadyPublisher = rosNode.advertise<alica_ros_proxy::SyncReady>(this.syncReadyTopic, 10);
+//        SyncTalkPublisher = rosNode.advertise<alica_ros_proxy::SyncTalk>(this.syncTalkTopic, 10);
+//        solverResultPublisher = new SolverResultPublisher(topics.getTopic(Topics.Type.solverResultTopic), publisher);
     }
 
     @Override
@@ -137,7 +99,6 @@ public class AlicaZMQCommunication extends AlicaCommunication {
             //Use this for synchronous communication!
         }
     }
-
 
     //TODO: chain of responsibility (all publisher)
     @Override
@@ -196,8 +157,6 @@ public class AlicaZMQCommunication extends AlicaCommunication {
         }
     }
 
-
-
     public void handleAllocationAuthority(AllocationAuthorityInfo aai) {
 
         if (this.isRunning) {
@@ -232,4 +191,5 @@ public class AlicaZMQCommunication extends AlicaCommunication {
             this.onSolverResult(sr);
         }
     }
+
 }
