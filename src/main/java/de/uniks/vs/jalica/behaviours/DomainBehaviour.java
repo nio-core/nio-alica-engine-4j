@@ -10,7 +10,7 @@ public abstract class DomainBehaviour extends BasicBehaviour {
 
     protected String agentName;
     protected SystemConfig systemConfig;
-    protected double maxTranslation;
+//    protected double maxTranslation;
     protected int ownID;
 
     public DomainBehaviour(String name, AlicaEngine ae) {

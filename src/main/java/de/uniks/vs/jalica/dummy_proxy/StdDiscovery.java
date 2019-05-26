@@ -56,12 +56,10 @@ public class StdDiscovery extends Discovery implements Runnable {
         multicastSocket = new MulticastSocket(MULTICAST_PORT);
         multicastSocket.setInterface(inetAddress);
         multicastSocket.setNetworkInterface(networkInterface);
-        multicastSocket.setTTL((byte) 25);
-        multicastSocket.setTimeToLive(20);
+        multicastSocket.setTimeToLive(0); //20 //[0;255]
         multicastSocket.setLoopbackMode(true);
         multicastSocket.setReuseAddress(true);
 
-        System.out.println("SD: TTL : " + multicastSocket.getTTL());
         System.out.println("SD: Time to Live : " + multicastSocket.getTimeToLive());
         System.out.println("SD: Interface : " + multicastSocket.getInterface());
         System.out.println("SD: Network Inteface : " + multicastSocket.getNetworkInterface());
