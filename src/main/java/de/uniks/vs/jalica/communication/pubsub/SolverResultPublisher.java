@@ -1,9 +1,9 @@
 package de.uniks.vs.jalica.communication.pubsub;
 
-import de.uniks.vs.jalica.unknown.CommonUtils;
-import de.uniks.vs.jalica.unknown.Message;
-import de.uniks.vs.jalica.unknown.SolverResult;
-import de.uniks.vs.jalica.unknown.SolverVar;
+import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.engine.containers.Message;
+import de.uniks.vs.jalica.engine.containers.SolverResult;
+import de.uniks.vs.jalica.engine.containers.SolverVar;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.zeromq.ZMQ;

@@ -1,7 +1,7 @@
 package de.uniks.vs.jalica.engine;
 
-import de.uniks.vs.jalica.unknown.Plan;
-import de.uniks.vs.jalica.unknown.PlanningProblem;
+import de.uniks.vs.jalica.engine.model.Plan;
+import de.uniks.vs.jalica.engine.common.PlanningProblem;
 
 /**
  * Created by alex on 21.07.17.

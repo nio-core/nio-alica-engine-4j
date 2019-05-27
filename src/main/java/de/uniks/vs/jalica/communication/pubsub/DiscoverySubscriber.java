@@ -1,9 +1,8 @@
 package de.uniks.vs.jalica.communication.pubsub;
 
 import de.uniks.vs.jalica.communication.AlicaZMQCommunication;
-import de.uniks.vs.jalica.communication.pubsub.ZMQSubscriber;
-import de.uniks.vs.jalica.unknown.CommonUtils;
-import de.uniks.vs.jalica.communication.messages.DiscoveryInfo;
+import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.engine.containers.messages.DiscoveryInfo;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
@@ -18,7 +17,7 @@ public class DiscoverySubscriber extends ZMQSubscriber {
         super(topic, subscriber);
         this.communication = communication;
 
-        System.out.println("AAI-Sub("+this.communication.getAe().getAgentName()+"): start");
+        System.out.println("DI-Sub("+this.communication.getAe().getAgentName()+"): start");
 
         Thread thread = new Thread() {
 

@@ -1,20 +1,23 @@
 package de.uniks.vs.jalica.engine;
 
-import de.uniks.vs.jalica.behaviours.BehaviourPool;
-import de.uniks.vs.jalica.behaviours.IBehaviourCreator;
-import de.uniks.vs.jalica.common.AssignmentCollection;
-import de.uniks.vs.jalica.common.Logger;
-import de.uniks.vs.jalica.common.UtilityFunction;
-import de.uniks.vs.jalica.behaviours.ConditionCreator;
-import de.uniks.vs.jalica.behaviours.ConstraintCreator;
-import de.uniks.vs.jalica.parser.PlanParser;
-import de.uniks.vs.jalica.reasoner.Solver;
-import de.uniks.vs.jalica.teamobserver.PlanRepository;
-import de.uniks.vs.jalica.teamobserver.TeamObserver;
+import de.uniks.vs.jalica.engine.common.AssignmentCollection;
+import de.uniks.vs.jalica.engine.IConditionCreator;
+import de.uniks.vs.jalica.engine.IConstraintCreator;
+import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.engine.common.DynamicRoleAssignment;
+import de.uniks.vs.jalica.engine.modelmanagement.parser.PlanParser;
+import de.uniks.vs.jalica.engine.constrainmodule.Solver;
 import de.uniks.vs.jalica.reasoner.CGSolver;
 import de.uniks.vs.jalica.supplementary.SystemConfig;
-import de.uniks.vs.jalica.unknown.*;
-import de.uniks.vs.jalica.behaviours.UtilityFunctionCreator;
+import de.uniks.vs.jalica.engine.IUtilityFunctionCreator;
+import de.uniks.vs.jalica.engine.model.Plan;
+import de.uniks.vs.jalica.engine.model.RoleSet;
+import de.uniks.vs.jalica.engine.authority.AuthorityManager;
+import de.uniks.vs.jalica.engine.constrainmodule.VariableSyncModule;
+import de.uniks.vs.jalica.engine.expressions.ExpressionHandler;
+import de.uniks.vs.jalica.engine.planselection.PartialAssignmentPool;
+import de.uniks.vs.jalica.engine.planselection.PlanSelector;
+import de.uniks.vs.jalica.engine.syncmodule.SyncModule;
 
 import java.util.HashMap;
 
@@ -39,7 +42,7 @@ public class AlicaEngine {
     private IBehaviourPool behaviourPool;
     private RoleSet roleSet;
     private RoleAssignment roleAssignment;
-    private SyncModul syncModul;
+    private SyncModule syncModul;
     private ExpressionHandler expressionHandler;
     private PartialAssignmentPool assignmentPool;
     private PlanBase planBase;
@@ -63,7 +66,7 @@ public class AlicaEngine {
         this.solver.put(identifier, solver);
     }
 
-    public boolean init(SystemConfig sc, IBehaviourCreator bc, ConditionCreator cc, UtilityFunctionCreator uc, ConstraintCreator crc,
+    public boolean init(SystemConfig sc, IBehaviourCreator bc, IConditionCreator cc, IUtilityFunctionCreator uc, IConstraintCreator crc,
                         String roleSetName, String masterPlanName, String roleSetDir, boolean stepEngine) {
 
         this.maySendMessages =  !Boolean.valueOf((String) sc.get("Alica").get("Alica.SilentStart"));
@@ -111,7 +114,7 @@ public class AlicaEngine {
         }
 
         if (this.syncModul == null) {
-            this.syncModul = new SyncModul(this);
+            this.syncModul = new SyncModule(this);
         }
 
         if (this.expressionHandler == null) {
@@ -191,7 +194,7 @@ public class AlicaEngine {
         return teamObserver;
     }
 
-    public SyncModul getSyncModul() {
+    public SyncModule getSyncModul() {
         return syncModul;
     }
 

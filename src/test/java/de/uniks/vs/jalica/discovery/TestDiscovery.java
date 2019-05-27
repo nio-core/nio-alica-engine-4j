@@ -1,6 +1,6 @@
 package de.uniks.vs.jalica.discovery;
 
-import de.uniks.vs.jalica.common.CommonNetworkUtils;
+import de.uniks.vs.jalica.engine.common.CommonNetworkUtils;
 import org.junit.Test;
 
 import java.io.IOException;

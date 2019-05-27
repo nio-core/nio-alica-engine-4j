@@ -1,6 +1,6 @@
 package de.uniks.vs.jalica.reasoner;
 
-import de.uniks.vs.jalica.unknown.CommonUtils;
+import de.uniks.vs.jalica.engine.common.CommonUtils;
 
 /**
  * Created by alex on 10.11.17.

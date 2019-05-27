@@ -1,7 +1,7 @@
 package de.uniks.vs.jalica.communication.pubsub;
 
-import de.uniks.vs.jalica.unknown.Message;
-import de.uniks.vs.jalica.unknown.RoleSwitch;
+import de.uniks.vs.jalica.engine.containers.Message;
+import de.uniks.vs.jalica.engine.containers.RoleSwitch;
 import org.json.simple.JSONObject;
 import org.zeromq.ZMQ;
 

@@ -1,12 +1,17 @@
 package de.uniks.vs.jalica.communication;
 
+import de.uniks.vs.jalica.engine.common.CommonUtils;
 import de.uniks.vs.jalica.communication.discovery.StdDiscovery;
 import de.uniks.vs.jalica.communication.pubsub.*;
+import de.uniks.vs.jalica.engine.AlicaCommunication;
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.unknown.*;
-import de.uniks.vs.jalica.communication.messages.AlicaEngineInfo;
-import de.uniks.vs.jalica.communication.messages.AllocationAuthorityInfo;
-import de.uniks.vs.jalica.communication.messages.PlanTreeInfo;
+import de.uniks.vs.jalica.engine.containers.messages.AlicaEngineInfo;
+import de.uniks.vs.jalica.engine.containers.messages.AllocationAuthorityInfo;
+import de.uniks.vs.jalica.engine.containers.messages.PlanTreeInfo;
+import de.uniks.vs.jalica.engine.containers.RoleSwitch;
+import de.uniks.vs.jalica.engine.containers.SolverResult;
+import de.uniks.vs.jalica.engine.containers.SyncReady;
+import de.uniks.vs.jalica.engine.containers.SyncTalk;
 import org.zeromq.*;
 
 import java.util.ArrayList;

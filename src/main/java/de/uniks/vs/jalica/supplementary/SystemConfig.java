@@ -1,7 +1,7 @@
 package de.uniks.vs.jalica.supplementary;
 
-import de.uniks.vs.jalica.common.config.ConfigPair;
-import de.uniks.vs.jalica.common.config.ConfigParser;
+import de.uniks.vs.jalica.engine.common.config.ConfigPair;
+import de.uniks.vs.jalica.engine.common.config.ConfigParser;
 
 import java.util.HashMap;
 

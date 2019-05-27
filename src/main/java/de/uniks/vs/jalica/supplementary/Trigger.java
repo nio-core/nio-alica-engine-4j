@@ -1,7 +1,7 @@
 package de.uniks.vs.jalica.supplementary;
 
-import de.uniks.vs.jalica.unknown.CommonUtils;
-import de.uniks.vs.jalica.unknown.ConditionVariable;
+import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.engine.common.ConditionVariable;
 
 import java.util.HashMap;
 

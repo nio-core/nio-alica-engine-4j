@@ -1,8 +1,7 @@
 package de.uniks.vs.jalica.communication.pubsub;
 
-import de.uniks.vs.jalica.communication.messages.DiscoveryInfo;
-import de.uniks.vs.jalica.communication.pubsub.ZMQPublisher;
-import de.uniks.vs.jalica.unknown.Message;
+import de.uniks.vs.jalica.engine.containers.messages.DiscoveryInfo;
+import de.uniks.vs.jalica.engine.containers.Message;
 import org.json.simple.JSONObject;
 import org.zeromq.ZMQ;
 

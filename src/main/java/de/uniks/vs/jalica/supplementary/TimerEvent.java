@@ -1,9 +1,7 @@
 package de.uniks.vs.jalica.supplementary;
 
-import de.uniks.vs.jalica.unknown.CommonUtils;
-import de.uniks.vs.jalica.unknown.ConditionVariable;
-
-import java.sql.SQLOutput;
+import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.engine.common.ConditionVariable;
 
 /**
  * Created by alex on 17.07.17.

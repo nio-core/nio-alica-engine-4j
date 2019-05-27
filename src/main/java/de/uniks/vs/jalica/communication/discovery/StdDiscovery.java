@@ -3,6 +3,7 @@ package de.uniks.vs.jalica.communication.discovery;
 import de.uniks.vs.jalica.communication.AlicaZMQCommunication;
 import de.uniks.vs.jalica.communication.NetworkNode;
 import de.uniks.vs.jalica.communication.MessageTopics;
+import de.uniks.vs.jalica.engine.common.CommonUtils;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
@@ -15,8 +16,8 @@ import java.util.*;
 
 public class StdDiscovery extends Discovery implements Runnable {
 
-    //    private static final String MULTICAST_INTERFACE = "en7"; //"en0" //"eth0";
-    protected static final String MULTICAST_INTERFACE = "en0"; //"en0" //"eth0";
+        private static final String MULTICAST_INTERFACE = "en7"; //"en0" //"eth0";
+//    protected static final String MULTICAST_INTERFACE = "en0"; //"en0" //"eth0";
     protected static final int MULTICAST_PORT = 4446;
     protected static final String MULTICAST_IP = "230.0.0.1";
 
@@ -63,10 +64,10 @@ public class StdDiscovery extends Discovery implements Runnable {
         multicastSocket.setLoopbackMode(true);
         multicastSocket.setReuseAddress(true);
 
-        System.out.println("SD: Time to Live : " + multicastSocket.getTimeToLive());
-        System.out.println("SD: Interface : " + multicastSocket.getInterface());
-        System.out.println("SD: Network Inteface : " + multicastSocket.getNetworkInterface());
-        System.out.println("SD: Loopback mode : " + multicastSocket.getLoopbackMode());
+        if(CommonUtils.COMM_D_DEBUG_debug) System.out.println("SD: Time to Live : " + multicastSocket.getTimeToLive());
+        if(CommonUtils.COMM_D_DEBUG_debug) System.out.println("SD: Interface : " + multicastSocket.getInterface());
+        if(CommonUtils.COMM_D_DEBUG_debug) System.out.println("SD: Network Inteface : " + multicastSocket.getNetworkInterface());
+        if(CommonUtils.COMM_D_DEBUG_debug) System.out.println("SD: Loopback mode : " + multicastSocket.getLoopbackMode());
 
         InetAddress group = InetAddress.getByName(MULTICAST_IP);
         multicastSocket.joinGroup(group);
