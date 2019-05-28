@@ -1,4 +1,4 @@
-package de.uniks.vs.jalica.supplementary;
+package de.uniks.vs.jalica.engine.common;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.BasicBehaviour;

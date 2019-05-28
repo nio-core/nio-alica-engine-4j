@@ -1,15 +1,12 @@
 package de.uniks.vs.jalica.engine;
 
 import de.uniks.vs.jalica.engine.common.AssignmentCollection;
-import de.uniks.vs.jalica.engine.IConditionCreator;
-import de.uniks.vs.jalica.engine.IConstraintCreator;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.DynamicRoleAssignment;
 import de.uniks.vs.jalica.engine.modelmanagement.parser.PlanParser;
 import de.uniks.vs.jalica.engine.constrainmodule.Solver;
 import de.uniks.vs.jalica.reasoner.CGSolver;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
-import de.uniks.vs.jalica.engine.IUtilityFunctionCreator;
+import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.engine.model.Plan;
 import de.uniks.vs.jalica.engine.model.RoleSet;
 import de.uniks.vs.jalica.engine.authority.AuthorityManager;
@@ -54,7 +51,7 @@ public class AlicaEngine {
     private IPlanner planner;
     private HashMap<Integer, Solver> solver = new HashMap<>();
 
-    public void setIAlicaClock(AlicaClock clock) {
+    public void setAlicaClock(AlicaClock clock) {
         this.alicaClock = clock;
     }
 

@@ -1,7 +1,7 @@
 package de.uniks.vs.jalica.engine;
 
 import de.uniks.vs.jalica.engine.common.AssignmentCollection;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.StateCollection;
 import de.uniks.vs.jalica.engine.containers.messages.AllocationAuthorityInfo;
 import de.uniks.vs.jalica.engine.model.EntryPoint;

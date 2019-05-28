@@ -1,4 +1,4 @@
-package de.uniks.vs.jalica.tests;
+package de.uniks.vs.jalica.newtests;
 
 import de.uniks.vs.jalica.Alica;
 import org.junit.Test;

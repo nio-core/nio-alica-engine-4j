@@ -1,7 +1,7 @@
 package de.uniks.vs.jalica.behaviours.helloworld.testcommunicationmaster1528124971225;
 
 import de.uniks.vs.jalica.behaviours.DomainCondition;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.RunningPlan;
 
 public class TransitionCondition1528125190720 extends DomainCondition {

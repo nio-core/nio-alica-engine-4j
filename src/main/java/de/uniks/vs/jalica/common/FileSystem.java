@@ -1,6 +1,6 @@
-package de.uniks.vs.jalica.supplementary;
+package de.uniks.vs.jalica.common;
 
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 
 import java.io.File;
 import java.nio.file.Paths;

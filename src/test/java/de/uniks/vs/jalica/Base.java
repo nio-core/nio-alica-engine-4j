@@ -12,7 +12,7 @@ import de.uniks.vs.jalica.engine.common.SolverType;
 import de.uniks.vs.jalica.communication.AlicaZMQCommunication;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.reasoner.CGSolver;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
+import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.engine.AlicaClock;
 
 /**
@@ -53,7 +53,7 @@ public class Base {
         uc = new UtilityFunctionCreator();
         crc = new ConstraintCreator();
 
-        ae.setIAlicaClock(new AlicaClock());
+        ae.setAlicaClock(new AlicaClock());
         ae.addSolver(SolverType.GRADIENTSOLVER.ordinal(), new CGSolver(ae));
         SystemConfig sc = new SystemConfig(this.id);
         ae.setCommunicator(new AlicaZMQCommunication(ae));

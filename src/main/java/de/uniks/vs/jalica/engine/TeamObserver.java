@@ -1,6 +1,6 @@
 package de.uniks.vs.jalica.engine;
 
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.config.ConfigPair;
 import de.uniks.vs.jalica.engine.containers.messages.PlanTreeInfo;
 import de.uniks.vs.jalica.engine.model.AbstractPlan;

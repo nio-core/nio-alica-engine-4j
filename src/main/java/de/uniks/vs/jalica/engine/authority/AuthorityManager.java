@@ -4,7 +4,7 @@ import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.containers.messages.AllocationAuthorityInfo;
 import de.uniks.vs.jalica.engine.Assignment;
 import de.uniks.vs.jalica.engine.RunningPlan;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.containers.EntryPointAgents;
 
 import java.util.Vector;

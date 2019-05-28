@@ -7,7 +7,7 @@ import de.uniks.vs.jalica.behaviours.utilfunctions.UtilityFunction1414403396328;
 import de.uniks.vs.jalica.behaviours.utilfunctions.UtilityFunction1414403413451;
 import de.uniks.vs.jalica.engine.BasicUtilityFunction;
 import de.uniks.vs.jalica.engine.IUtilityFunctionCreator;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.behaviours.utilfunctions.UtilityFunction1482486227468;
 
 /**

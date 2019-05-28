@@ -1,6 +1,6 @@
 package de.uniks.vs.jalica.communication;
 
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.communication.discovery.StdDiscovery;
 import de.uniks.vs.jalica.communication.pubsub.*;
 import de.uniks.vs.jalica.engine.AlicaCommunication;

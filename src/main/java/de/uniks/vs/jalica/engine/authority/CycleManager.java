@@ -3,14 +3,14 @@ package de.uniks.vs.jalica.engine.authority;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.Assignment;
 import de.uniks.vs.jalica.engine.RunningPlan;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
+import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.engine.PlanRepository;
 import de.uniks.vs.jalica.engine.containers.messages.AllocationAuthorityInfo;
 import de.uniks.vs.jalica.engine.model.AbstractPlan;
 import de.uniks.vs.jalica.engine.model.EntryPoint;
 import de.uniks.vs.jalica.engine.model.Plan;
 import de.uniks.vs.jalica.engine.AlicaTime;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.containers.EntryPointAgents;
 
 import java.util.Set;

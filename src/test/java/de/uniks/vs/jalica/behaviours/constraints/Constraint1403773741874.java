@@ -2,7 +2,7 @@ package de.uniks.vs.jalica.behaviours.constraints;
 
 import de.uniks.vs.jalica.engine.constrainmodule.ProblemDescriptor;
 import de.uniks.vs.jalica.engine.BasicConstraint;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.RunningPlan;
 
 public class Constraint1403773741874 extends BasicConstraint {

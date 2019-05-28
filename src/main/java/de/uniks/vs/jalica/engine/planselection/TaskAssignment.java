@@ -4,7 +4,7 @@ import de.uniks.vs.jalica.engine.Assignment;
 import de.uniks.vs.jalica.engine.SimplePlanTree;
 import de.uniks.vs.jalica.engine.ITeamObserver;
 import de.uniks.vs.jalica.engine.model.Plan;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;

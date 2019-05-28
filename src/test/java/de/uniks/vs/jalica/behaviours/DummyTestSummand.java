@@ -2,7 +2,7 @@ package de.uniks.vs.jalica.behaviours;
 
 import de.uniks.vs.jalica.engine.USummand;
 import de.uniks.vs.jalica.engine.UtilityInterval;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.planselection.IAssignment;
 import javafx.util.Pair;
 

@@ -1,5 +1,7 @@
 package de.uniks.vs.jalica.engine.common;
 
+import de.uniks.vs.jalica.common.utils.CommonUtils;
+
 import java.util.Vector;
 
 public class VotedSeed {

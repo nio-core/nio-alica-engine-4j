@@ -1,8 +1,8 @@
 package de.uniks.vs.jalica.engine.common;
 
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.config.ConfigPair;
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
 import de.uniks.vs.jalica.engine.model.AlicaElement;
 import de.uniks.vs.jalica.engine.model.Role;
 

@@ -2,7 +2,7 @@ package de.uniks.vs.jalica.behaviours.helloworld;
 
 import de.uniks.vs.jalica.behaviours.DomainBehaviour;
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;

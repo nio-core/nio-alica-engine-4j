@@ -6,7 +6,7 @@ import de.uniks.vs.jalica.engine.model.*;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.ITeamObserver;
 import de.uniks.vs.jalica.engine.collections.AgentProperties;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.PlanningProblem;
 
 import java.util.ArrayList;

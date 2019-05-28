@@ -5,17 +5,17 @@ import de.uniks.vs.jalica.behaviours.ConditionCreator;
 import de.uniks.vs.jalica.behaviours.ConstraintCreator;
 import de.uniks.vs.jalica.behaviours.DummyTestSummand;
 import de.uniks.vs.jalica.engine.USummand;
-import de.uniks.vs.jalica.supplementary.AlicaSystemClock;
+import de.uniks.vs.jalica.common.AlicaSystemClock;
 import de.uniks.vs.jalica.communication.AlicaZMQCommunication;
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.supplementary.FileSystem;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
+import de.uniks.vs.jalica.common.FileSystem;
+import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.behaviours.UtilityFunctionCreator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class Authority {
+public class AuthorityTest {
 
     private BehaviourCreator bc;
     private ConditionCreator cc;
@@ -43,7 +43,7 @@ public class Authority {
 //        cc = new alica::ConditionCreator();
 //        uc = new alica::UtilityFunctionCreator();
 //        crc = new alica::ConstraintCreator();
-//        ae->setIAlicaClock(new alicaRosProxy::AlicaROSClock());
+//        ae->setAlicaClock(new alicaRosProxy::AlicaROSClock());
 //        ae->setCommunicator(new alicaRosProxy::AlicaRosCommunication(ae));
 
         bc = new BehaviourCreator();
@@ -59,14 +59,14 @@ public class Authority {
 
         SystemConfig sc = new SystemConfig("nase");
         AlicaEngine alicaEngine1 = new AlicaEngine();
-        alicaEngine1.setIAlicaClock(new AlicaSystemClock());
+        alicaEngine1.setAlicaClock(new AlicaSystemClock());
         alicaEngine1.setCommunicator(new AlicaZMQCommunication(alicaEngine1));
         boolean result1 = alicaEngine1.init(sc, bc, cc, uc, crc, "RolesetTA", "AuthorityTestMaster", "roles/", false);
         Assertions.assertTrue(result1);
 
 //        sc = new SystemConfig("hairy");
 //        AlicaEngine alicaEngine2 = new AlicaEngine();
-//        alicaEngine2.setIAlicaClock(new AlicaSystemClock());
+//        alicaEngine2.setAlicaClock(new AlicaSystemClock());
 //        alicaEngine2.setCommunicator(new AlicaZMQCommunication(alicaEngine2));
 //        boolean result2 = alicaEngine2.init(sc, bc, cc, uc, crc, "RolesetTA", "AuthorityTestMaster", "roles/", false);
 //        Assertions.assertTrue(result2);

@@ -1,9 +1,9 @@
 package de.uniks.vs.jalica.engine;
 
-import de.uniks.vs.jalica.supplementary.SystemConfig;
+import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.engine.model.*;
 import de.uniks.vs.jalica.engine.authority.AllocationDifference;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.planselection.IPlanSelector;
 import de.uniks.vs.jalica.engine.syncmodule.ISyncModule;
 

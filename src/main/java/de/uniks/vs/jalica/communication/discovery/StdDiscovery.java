@@ -3,7 +3,8 @@ package de.uniks.vs.jalica.communication.discovery;
 import de.uniks.vs.jalica.communication.AlicaZMQCommunication;
 import de.uniks.vs.jalica.communication.NetworkNode;
 import de.uniks.vs.jalica.communication.MessageTopics;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonNetworkUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
@@ -17,6 +18,7 @@ import java.util.*;
 public class StdDiscovery extends Discovery implements Runnable {
 
         private static final String MULTICAST_INTERFACE = "en7"; //"en0" //"eth0";
+//        private static final String MULTICAST_INTERFACE = "lo0"; //"en0" //"eth0";
 //    protected static final String MULTICAST_INTERFACE = "en0"; //"en0" //"eth0";
     protected static final int MULTICAST_PORT = 4446;
     protected static final String MULTICAST_IP = "230.0.0.1";
@@ -52,8 +54,13 @@ public class StdDiscovery extends Discovery implements Runnable {
     }
 
     private void initMulticastListener() throws IOException {
-        NetworkInterface networkInterface = NetworkInterface.getByIndex(1);
-        networkInterface = NetworkInterface.getByName(MULTICAST_INTERFACE);
+        ArrayList<NetworkInterface> interfaces = CommonNetworkUtils.getAvailableMulticastNetworkInterfaces();
+        String interfaceName = MULTICAST_INTERFACE;
+
+        if(!interfaces.isEmpty()) {
+            interfaceName = interfaces.get(0).getName();
+        }
+        NetworkInterface networkInterface = NetworkInterface.getByName(interfaceName);
         Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
         InetAddress inetAddress = inetAddresses.nextElement();
 
@@ -70,6 +77,7 @@ public class StdDiscovery extends Discovery implements Runnable {
         if(CommonUtils.COMM_D_DEBUG_debug) System.out.println("SD: Loopback mode : " + multicastSocket.getLoopbackMode());
 
         InetAddress group = InetAddress.getByName(MULTICAST_IP);
+        System.out.println("SD: is multicast " +group.isMulticastAddress());
         multicastSocket.joinGroup(group);
     }
 

@@ -1,7 +1,7 @@
 package de.uniks.vs.jalica.engine;
 
 import de.uniks.vs.jalica.engine.model.Plan;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.planselection.IAssignment;
 
 import java.util.ArrayList;

@@ -1,11 +1,11 @@
 package de.uniks.vs.jalica.engine.modelmanagement.parser;
 
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.modelmanagement.parser.handler.json.*;
 import de.uniks.vs.jalica.engine.modelmanagement.parser.handler.xml.*;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
-import de.uniks.vs.jalica.supplementary.FileSystem;
+import de.uniks.vs.jalica.engine.common.SystemConfig;
+import de.uniks.vs.jalica.common.FileSystem;
 import de.uniks.vs.jalica.engine.PlanRepository;
 import de.uniks.vs.jalica.engine.model.AlicaElement;
 import de.uniks.vs.jalica.engine.model.Plan;

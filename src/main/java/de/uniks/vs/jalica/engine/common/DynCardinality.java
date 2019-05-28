@@ -1,5 +1,7 @@
 package de.uniks.vs.jalica.engine.common;
 
+import de.uniks.vs.jalica.common.utils.CommonUtils;
+
 /**
  * Created by alex on 31.07.17.
  */

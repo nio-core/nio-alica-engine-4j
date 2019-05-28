@@ -5,7 +5,7 @@ import de.uniks.vs.jalica.engine.model.ForallAgents;
 import de.uniks.vs.jalica.engine.model.Quantifier;
 import de.uniks.vs.jalica.engine.model.Role;
 import de.uniks.vs.jalica.engine.model.Variable;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;

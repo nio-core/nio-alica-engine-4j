@@ -3,7 +3,7 @@ package de.uniks.vs.jalica.engine.constrainmodule;
 import de.uniks.vs.jalica.engine.RunningPlan;
 import de.uniks.vs.jalica.engine.model.Condition;
 import de.uniks.vs.jalica.engine.model.Variable;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Vector;

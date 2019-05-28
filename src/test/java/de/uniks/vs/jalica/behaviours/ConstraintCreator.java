@@ -5,7 +5,7 @@ import de.uniks.vs.jalica.behaviours.helloworld.constraints.Constraint1470042926
 import de.uniks.vs.jalica.behaviours.helloworld.constraints.Constraint1528124971225;
 import de.uniks.vs.jalica.engine.BasicConstraint;
 import de.uniks.vs.jalica.engine.IConstraintCreator;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.expressions.DummyConstraint;
 
 /**

@@ -2,7 +2,7 @@ package de.uniks.vs.jalica.engine.collections;
 
 import de.uniks.vs.jalica.engine.common.config.ConfigPair;
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
+import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.engine.common.CapValue;
 import de.uniks.vs.jalica.engine.common.Capability;
 import de.uniks.vs.jalica.engine.common.Characteristic;

@@ -6,7 +6,7 @@ import de.uniks.vs.jalica.engine.SimplePlanTree;
 import de.uniks.vs.jalica.engine.model.EntryPoint;
 import de.uniks.vs.jalica.engine.model.Plan;
 import de.uniks.vs.jalica.engine.collections.SuccessCollection;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.DynCardinality;
 
 import java.util.ArrayList;

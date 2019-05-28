@@ -1,4 +1,4 @@
-package de.uniks.vs.jalica.tests;
+package de.uniks.vs.jalica.newtests;
 
 public class TestWorldModel {
 

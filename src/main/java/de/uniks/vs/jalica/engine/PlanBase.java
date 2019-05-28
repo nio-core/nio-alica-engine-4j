@@ -2,8 +2,8 @@ package de.uniks.vs.jalica.engine;
 
 //TODO: mutex check
 
-import de.uniks.vs.jalica.engine.common.CommonUtils;
-import de.uniks.vs.jalica.engine.common.ConditionVariable;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
+import de.uniks.vs.jalica.common.ConditionVariable;
 import de.uniks.vs.jalica.engine.containers.messages.AlicaEngineInfo;
 import de.uniks.vs.jalica.engine.model.Plan;
 import de.uniks.vs.jalica.engine.syncmodule.ISyncModule;

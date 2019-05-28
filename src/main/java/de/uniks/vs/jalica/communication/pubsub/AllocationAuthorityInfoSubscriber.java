@@ -1,7 +1,7 @@
 package de.uniks.vs.jalica.communication.pubsub;
 
 import de.uniks.vs.jalica.communication.AlicaZMQCommunication;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.containers.messages.AllocationAuthorityInfo;
 import de.uniks.vs.jalica.engine.containers.EntryPointAgents;
 import org.json.simple.JSONArray;

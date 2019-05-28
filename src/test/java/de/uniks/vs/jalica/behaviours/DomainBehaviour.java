@@ -2,7 +2,7 @@ package de.uniks.vs.jalica.behaviours;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.BasicBehaviour;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
+import de.uniks.vs.jalica.engine.common.SystemConfig;
 
 /**
  * Created by alex on 01.08.17.

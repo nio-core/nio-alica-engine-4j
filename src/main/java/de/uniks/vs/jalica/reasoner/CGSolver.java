@@ -1,7 +1,7 @@
 package de.uniks.vs.jalica.reasoner;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.SolverVariable;
 import de.uniks.vs.jalica.engine.model.Variable;
 import de.uniks.vs.jalica.engine.constrainmodule.ProblemDescriptor;

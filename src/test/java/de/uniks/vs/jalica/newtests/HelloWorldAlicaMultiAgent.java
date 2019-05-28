@@ -1,13 +1,13 @@
-package de.uniks.vs.jalica.tests;
+package de.uniks.vs.jalica.newtests;
 
 import de.uniks.vs.jalica.behaviours.BehaviourCreator;
 import de.uniks.vs.jalica.behaviours.ConditionCreator;
 import de.uniks.vs.jalica.behaviours.ConstraintCreator;
-import de.uniks.vs.jalica.supplementary.AlicaSystemClock;
+import de.uniks.vs.jalica.common.AlicaSystemClock;
 import de.uniks.vs.jalica.communication.AlicaZMQCommunication;
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.supplementary.FileSystem;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
+import de.uniks.vs.jalica.common.FileSystem;
+import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.behaviours.UtilityFunctionCreator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,14 +45,14 @@ public class HelloWorldAlicaMultiAgent {
      public void testHelloWorldMultiAgents() throws InterruptedException {
         SystemConfig sc = new SystemConfig("nio_zero", "HelloWorld/", "log/", "config/");
         AlicaEngine alicaEngine1 = new AlicaEngine();
-        alicaEngine1.setIAlicaClock(new AlicaSystemClock());
+        alicaEngine1.setAlicaClock(new AlicaSystemClock());
         alicaEngine1.setCommunicator(new AlicaZMQCommunication(alicaEngine1));
         boolean result = alicaEngine1.init(sc, bc, cc, uc, crc, "Roleset", "TestCommunicationMaster", "roles/", true);
         Assertions.assertTrue(result);
 
         SystemConfig sc2 = new SystemConfig("nio_one", "HelloWorld/", "log/", "config/");
         AlicaEngine alicaEngine2 = new AlicaEngine();
-        alicaEngine2.setIAlicaClock(new AlicaSystemClock());
+        alicaEngine2.setAlicaClock(new AlicaSystemClock());
         alicaEngine2.setCommunicator(new AlicaZMQCommunication(alicaEngine2));
         result = alicaEngine2.init(sc2, bc, cc, uc, crc, "Roleset", "TestCommunicationMaster", "roles/", true);
         Assertions.assertTrue(result);

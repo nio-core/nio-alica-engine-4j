@@ -1,7 +1,7 @@
 package de.uniks.vs.jalica.engine.constrainmodule;
 
 import de.uniks.vs.jalica.engine.model.Variable;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 
 import java.util.Vector;
 

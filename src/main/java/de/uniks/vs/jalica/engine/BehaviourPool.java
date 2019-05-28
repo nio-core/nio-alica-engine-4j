@@ -1,7 +1,6 @@
 package de.uniks.vs.jalica.engine;
 
-import de.uniks.vs.jalica.engine.IBehaviourCreator;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.model.BehaviourConfiguration;
 
 import java.util.HashMap;

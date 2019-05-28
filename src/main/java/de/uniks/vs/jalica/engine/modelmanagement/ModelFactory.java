@@ -1,6 +1,8 @@
 package de.uniks.vs.jalica.engine.modelmanagement;
 
 import com.sun.tools.javac.util.Pair;
+import de.uniks.vs.jalica.engine.common.Capability;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.*;
 import de.uniks.vs.jalica.engine.model.*;
 import de.uniks.vs.jalica.engine.AlicaEngine;
@@ -18,9 +20,9 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import static de.uniks.vs.jalica.engine.common.CommonUtils.stod;
-import static de.uniks.vs.jalica.engine.common.CommonUtils.stoi;
-import static de.uniks.vs.jalica.engine.common.CommonUtils.stol;
+import static de.uniks.vs.jalica.common.utils.CommonUtils.stod;
+import static de.uniks.vs.jalica.common.utils.CommonUtils.stoi;
+import static de.uniks.vs.jalica.common.utils.CommonUtils.stol;
 import static de.uniks.vs.jalica.engine.model.PlanningType.Interactive;
 import static de.uniks.vs.jalica.engine.model.PlanningType.Offline;
 import static de.uniks.vs.jalica.engine.model.PlanningType.Online;

@@ -1,10 +1,10 @@
 package de.uniks.vs.jalica.engine;
 
-import de.uniks.vs.jalica.supplementary.Trigger;
-import de.uniks.vs.jalica.supplementary.TimerEvent;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.Trigger;
+import de.uniks.vs.jalica.common.TimerEvent;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.model.Variable;
-import de.uniks.vs.jalica.engine.common.ConditionVariable;
+import de.uniks.vs.jalica.common.ConditionVariable;
 import de.uniks.vs.jalica.engine.model.BehaviourConfiguration;
 
 import java.util.ArrayList;

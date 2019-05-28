@@ -1,5 +1,6 @@
-package de.uniks.vs.jalica.supplementary;
+package de.uniks.vs.jalica.engine.common;
 
+import de.uniks.vs.jalica.common.FileSystem;
 import de.uniks.vs.jalica.engine.common.config.ConfigPair;
 import de.uniks.vs.jalica.engine.common.config.ConfigParser;
 

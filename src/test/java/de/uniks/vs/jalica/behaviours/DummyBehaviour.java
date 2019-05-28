@@ -1,7 +1,7 @@
 package de.uniks.vs.jalica.behaviours;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 
 /**
  * Created by alex on 01.08.17.

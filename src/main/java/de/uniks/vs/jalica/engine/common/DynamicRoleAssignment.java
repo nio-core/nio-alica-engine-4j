@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.engine.common;
 
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.RoleAssignment;
 import de.uniks.vs.jalica.engine.collections.AgentProperties;

@@ -1,7 +1,7 @@
-package de.uniks.vs.jalica.engine.common;
+package de.uniks.vs.jalica.common.utils;
 
+import de.uniks.vs.jalica.common.TimerEvent;
 import de.uniks.vs.jalica.engine.AlicaTime;
-import de.uniks.vs.jalica.supplementary.TimerEvent;
 
 import java.util.*;
 

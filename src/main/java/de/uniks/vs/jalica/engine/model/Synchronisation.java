@@ -1,6 +1,6 @@
 package de.uniks.vs.jalica.engine.model;
 
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.SyncData;
 import de.uniks.vs.jalica.engine.common.SyncTransition;
 import de.uniks.vs.jalica.engine.AlicaEngine;

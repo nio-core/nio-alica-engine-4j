@@ -1,7 +1,6 @@
-package de.uniks.vs.jalica.supplementary;
+package de.uniks.vs.jalica.common;
 
 import de.uniks.vs.jalica.engine.AlicaTime;
-import de.uniks.vs.jalica.supplementary.TimerEvent;
 import de.uniks.vs.jalica.engine.AlicaClock;
 
 /**

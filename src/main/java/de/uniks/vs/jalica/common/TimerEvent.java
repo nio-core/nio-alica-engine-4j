@@ -1,7 +1,6 @@
-package de.uniks.vs.jalica.supplementary;
+package de.uniks.vs.jalica.common;
 
-import de.uniks.vs.jalica.engine.common.CommonUtils;
-import de.uniks.vs.jalica.engine.common.ConditionVariable;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 
 /**
  * Created by alex on 17.07.17.

@@ -1,6 +1,6 @@
 package de.uniks.vs.jalica.engine;
 
-import de.uniks.vs.jalica.supplementary.TimerEvent;
+import de.uniks.vs.jalica.common.TimerEvent;
 
 /**
  * Created by alex on 13.07.17.

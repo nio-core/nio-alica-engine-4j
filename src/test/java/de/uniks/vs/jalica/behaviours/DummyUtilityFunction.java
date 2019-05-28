@@ -2,7 +2,7 @@ package de.uniks.vs.jalica.behaviours;
 
 import de.uniks.vs.jalica.engine.UtilityFunction;
 import de.uniks.vs.jalica.engine.BasicUtilityFunction;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.DefaultUtilityFunction;
 import de.uniks.vs.jalica.engine.model.Plan;
 

@@ -1,6 +1,6 @@
 package de.uniks.vs.jalica.engine.modelmanagement.parser.handler.xml;
 
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.modelmanagement.ModelFactory;
 import de.uniks.vs.jalica.engine.model.Plan;
 import org.w3c.dom.Element;

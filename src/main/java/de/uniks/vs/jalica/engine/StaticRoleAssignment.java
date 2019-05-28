@@ -2,7 +2,7 @@ package de.uniks.vs.jalica.engine;
 
 import de.uniks.vs.jalica.engine.model.Role;
 import de.uniks.vs.jalica.engine.collections.AgentProperties;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.containers.RoleSwitch;
 
 /**

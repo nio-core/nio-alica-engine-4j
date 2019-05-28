@@ -8,8 +8,8 @@ import de.uniks.vs.jalica.engine.AlicaClock;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.RunningPlan;
 import de.uniks.vs.jalica.engine.planselection.IPlanSelector;
-import de.uniks.vs.jalica.supplementary.FileSystem;
-import de.uniks.vs.jalica.supplementary.SystemConfig;
+import de.uniks.vs.jalica.common.FileSystem;
+import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.behaviours.UtilityFunctionCreator;
 import de.uniks.vs.jalica.engine.model.AbstractPlan;
 import de.uniks.vs.jalica.engine.model.Plan;
@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Vector;
 
-public class TaskAssignment {
+public class TaskAssignmentTest {
 
     private BehaviourCreator bc;
     private ConditionCreator cc;
@@ -49,7 +49,7 @@ public class TaskAssignment {
 //        cc = new alica::ConditionCreator();
 //        uc = new alica::UtilityFunctionCreator();
 //        crc = new alica::ConstraintCreator();
-//        ae->setIAlicaClock(new alicaRosProxy::AlicaROSClock());
+//        ae->setAlicaClock(new alicaRosProxy::AlicaROSClock());
 //        ae->init(bc, cc, uc, crc, "RolesetTA", "MasterPlanTaskAssignment", ".", false);
 
         bc = new BehaviourCreator();
@@ -65,7 +65,7 @@ public class TaskAssignment {
 
         SystemConfig sc = new SystemConfig("nase");
         AlicaEngine alicaEngine = new AlicaEngine();
-        alicaEngine.setIAlicaClock(new AlicaClock());
+        alicaEngine.setAlicaClock(new AlicaClock());
         alicaEngine.setCommunicator(new AlicaZMQCommunication(alicaEngine));
         boolean result = alicaEngine.init(sc, bc, cc, uc, crc, "RolesetTA", "MasterPlanTaskAssignment", "roles/", false);
         Assertions.assertTrue(result);

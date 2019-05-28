@@ -6,7 +6,7 @@ import de.uniks.vs.jalica.behaviours.helloworld.testcommunication1528124991817.T
 import de.uniks.vs.jalica.behaviours.helloworld.testcommunicationmaster1528124971225.TransitionCondition1528125190720;
 import de.uniks.vs.jalica.engine.BasicCondition;
 import de.uniks.vs.jalica.engine.IConditionCreator;
-import de.uniks.vs.jalica.engine.common.CommonUtils;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 
 /**
  * Created by alex on 13.07.17.
