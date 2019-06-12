@@ -37,8 +37,8 @@ public class RoleUtility {
         if (other.getUtilityValue() != this.getUtilityValue())
             return other.getUtilityValue() < this.getUtilityValue()? 1:-1;
 
-        if (other.getAgentProperties().getID() != this.getAgentProperties().getID())
-            return other.getAgentProperties().getID() < this.getAgentProperties().getID()? 1:-1;
+        if (other.getAgentProperties().extractID() != this.getAgentProperties().extractID())
+            return other.getAgentProperties().extractID() < this.getAgentProperties().extractID()? 1:-1;
 
         return 0;
     }

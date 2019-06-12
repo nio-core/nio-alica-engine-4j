@@ -72,12 +72,12 @@ public class AuthorityManager {
 //        RunningPlan parent = runningPlan.getParent();
 //
 //        if ((parent == null && allocationAuthorityInfo.parentState == -1) ||
-//                (parent != null && parent.getActiveState() != null && parent.getActiveState().getID() == allocationAuthorityInfo.parentState)) {
+//                (parent != null && parent.getActiveState() != null && parent.getActiveState().extractID() == allocationAuthorityInfo.parentState)) {
 //
-////        if (runningPlan.getActivePlan().getID() == allocationAuthorityInfo.planID) {
-//            if (runningPlan.getPlan().getID() == allocationAuthorityInfo.planID) {
+////        if (runningPlan.getActivePlan().extractID() == allocationAuthorityInfo.planID) {
+//            if (runningPlan.getPlan().extractID() == allocationAuthorityInfo.planID) {
 //                return true;
-//            } else if (allocationAuthorityInfo.planType != -1 && runningPlan.getPlanType() != null && runningPlan.getPlanType().getID() == allocationAuthorityInfo.planType) {
+//            } else if (allocationAuthorityInfo.planType != -1 && runningPlan.getPlanType() != null && runningPlan.getPlanType().extractID() == allocationAuthorityInfo.planType) {
 //                return true;
 //            }
 //        }

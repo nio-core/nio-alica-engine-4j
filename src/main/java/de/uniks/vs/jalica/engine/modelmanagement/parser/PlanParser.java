@@ -585,6 +585,10 @@ public class PlanParser {
         String temp2 = null;
         String locator = hashPos > 0 ? idString.substring(0, hashPos) : "";
 
+        while(locator.indexOf(".") < locator.lastIndexOf(".")) {
+            locator = locator.substring(0, locator.indexOf("."))+ "/" + locator.substring(locator.indexOf(".")+1);
+        }
+
         if (!locator.isEmpty())
         {
             if (!FileSystem.endsWith(this.currentDirectory, "/"))

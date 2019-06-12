@@ -57,20 +57,21 @@ public class TeamObserver implements ITeamObserver {
                 foundSelf = true;
                 this.me = new AgentEngineData(ae, rp);
                 this.me.setActive(true);
-                this.myId = rp.getID();
+                this.myId = rp.extractID();
             }
             else {
 
                 for (AgentEngineData red : this.allOtherAgents) {
 
-                    if (red.getProperties().getID() == rp.getID()) {
+                    if (red.getProperties().extractID() == rp.extractID()) {
                         String ss;
-                        ss = "TO: Found twice Agent ID " + rp.getID() + " in globals team section" + "\n";
+                        ss = "TO: Found twice Agent ID " + rp.extractID() + " in globals team section" + "\n";
                         ae.abort(ss);
                     }
-                    if (rp.getID() == myId) {
+
+                    if (rp.extractID() == myId) {
                         String ss2;
-                        ss2 = "TO: Found myself twice Agent ID " + rp.getID() + " in globals team section" + "\n";
+                        ss2 = "TO: Found myself twice Agent ID " + rp.extractID() + " in globals team section" + "\n";
                         ae.abort(ss2);
                     }
                 }
@@ -85,7 +86,7 @@ public class TeamObserver implements ITeamObserver {
         if (Boolean.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.TeamBlackList.InitiallyFull"))) {
 
             for (AgentEngineData r : this.allOtherAgents) {
-                this.ignoredAgents.add(r.getProperties().getID());
+                this.ignoredAgents.add(r.getProperties().extractID());
             }
         }
     }
@@ -122,10 +123,10 @@ public class TeamObserver implements ITeamObserver {
             if (spt != null) {
 
                 for (AgentEngineData agentEngineData : allOtherAgents) {
-                    if (CommonUtils.TO_DEBUG_debug) System.out.println("TO("+this.getOwnID()+"): agent:" + agentEngineData.getProperties().getID());
+                    if (CommonUtils.TO_DEBUG_debug) System.out.println("TO("+this.getOwnID()+"): agent:" + agentEngineData.getProperties().extractID());
 
-                    if (agentEngineData.getProperties().getID() == incoming.senderID) {
-                        if (CommonUtils.TO_DEBUG_debug) System.out.println("TO("+this.getOwnID()+"): agent:" + agentEngineData.getProperties().getID() + " == " +incoming.senderID);
+                    if (agentEngineData.getProperties().extractID() == incoming.senderID) {
+                        if (CommonUtils.TO_DEBUG_debug) System.out.println("TO("+this.getOwnID()+"): agent:" + agentEngineData.getProperties().extractID() + " == " +incoming.senderID);
 
                         synchronized (agentEngineData) {
                             agentEngineData.setLastMessageTime(ae.getAlicaClock().now().time);
@@ -269,7 +270,7 @@ public class TeamObserver implements ITeamObserver {
                 if (suc != null) {
 
                     for (EntryPoint ep : suc) {
-                        sc.setSuccess(r.getProperties().getID(), ep);
+                        sc.setSuccess(r.getProperties().extractID(), ep);
                     }
                 }
             }
@@ -320,7 +321,7 @@ public class TeamObserver implements ITeamObserver {
         {
             if (r.isActive())
             {
-                ret.add(r.getProperties().getID());
+                ret.add(r.getProperties().extractID());
             }
         }
         return CommonUtils.move(ret);
@@ -360,13 +361,13 @@ public class TeamObserver implements ITeamObserver {
 
             if (r.isActive()) {
 
-//                map<int, shared_ptr<SimplePlanTree> >::iterator iter = this.simplePlanTrees.find(r.getProperties().getID());
+//                map<int, shared_ptr<SimplePlanTree> >::iterator iter = this.simplePlanTrees.find(r.getProperties().extractID());
 
-                SimplePlanTree planTree = this.simplePlanTrees.get(r.getProperties().getID());
+                SimplePlanTree planTree = this.simplePlanTrees.get(r.getProperties().extractID());
 
                 if (planTree != null) {
 
-                    ret.put(r.getProperties().getID(), planTree);
+                    ret.put(r.getProperties().extractID(), planTree);
                 }
             }
         }
@@ -389,7 +390,7 @@ public class TeamObserver implements ITeamObserver {
                 {
                     for (EntryPoint ep : suc)
                     {
-                        ret.setSuccess(r.getProperties().getID(), ep);
+                        ret.setSuccess(r.getProperties().extractID(), ep);
                     }
                 }
             }
@@ -424,7 +425,7 @@ public class TeamObserver implements ITeamObserver {
                 r.setActive(false);
                 r.getSuccessMarks().clear();
 //                lock_guard<mutex> lock(this.simplePlanTreeMutex);
-                this.simplePlanTrees.remove(r.getProperties().getID());
+                this.simplePlanTrees.remove(r.getProperties().extractID());
             }
             else if (!r.isActive()) {
                 r.setActive(true);
@@ -432,7 +433,7 @@ public class TeamObserver implements ITeamObserver {
             }
 
             if (r.isActive()) {
-                agentsAvail.add(r.getProperties().getID());
+                agentsAvail.add(r.getProperties().extractID());
             }
         }
 
@@ -514,7 +515,7 @@ public class TeamObserver implements ITeamObserver {
 
         for (AgentEngineData r : this.allOtherAgents) {
 
-            if (r.getProperties().getID() == id) {
+            if (r.getProperties().extractID() == id) {
                 return r;
             }
         }
@@ -570,7 +571,7 @@ public class TeamObserver implements ITeamObserver {
 
         for (AgentEngineData re : this.allOtherAgents) {
 
-            if (re.getProperties().getID() == rID) {
+            if (re.getProperties().extractID() == rID) {
                 re.setLastMessageTime(ae.getAlicaClock().now().time);
                 break;
             }

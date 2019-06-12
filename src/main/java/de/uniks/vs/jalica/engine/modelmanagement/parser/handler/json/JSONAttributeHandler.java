@@ -12,7 +12,7 @@ public class JSONAttributeHandler extends JSONHandler {
 
     @Override
     public boolean handleIt(Object obj, Plan plan, ModelFactory modelFactory) {
-//        if (modelFactory.getRep().getPlans().containsKey(plan.getID()))
+//        if (modelFactory.getRep().getPlans().containsKey(plan.extractID()))
 //            return false;
         Map.Entry entry = (HashMap.Entry) obj;
 

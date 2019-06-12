@@ -13,7 +13,7 @@ public class CommonUtils {
     public static final boolean PP_DEBUG_debug = false;
     public static final boolean CM_DEBUG_debug = false;
     public static final boolean MF_DEBUG_debug = false;
-    public static final boolean RA_DEBUG_debug = false;
+    public static final boolean RA_DEBUG_debug = true;
     public static final boolean FS_DEBUG_debug = false;
     public static final boolean PS_DEBUG_debug = false;
     public static final boolean TA_DEBUG_debug = false;

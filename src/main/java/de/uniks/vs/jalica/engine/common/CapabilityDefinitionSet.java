@@ -7,6 +7,7 @@ import java.util.ArrayList;
 /**
  * Created by alex on 04.11.17.
  */
+@Deprecated
 public class CapabilityDefinitionSet extends AlicaElement {
     ArrayList<Capability> capabilities = new ArrayList<>();
 

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 /**
  * Created by alex on 13.07.17.
  */
+@Deprecated
 public class Capability extends AlicaElement {
     ArrayList<CapValue> capValues = new ArrayList<>();
 

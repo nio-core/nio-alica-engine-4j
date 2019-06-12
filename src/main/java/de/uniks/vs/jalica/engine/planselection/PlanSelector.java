@@ -225,7 +225,7 @@ public class PlanSelector implements IPlanSelector {
             // PLAN (needed for Conditionchecks)
             rp.setPlan(rp.getAssignment().getPlan());
 //#ifdef PSDEBUG
-            if (CommonUtils.PS_DEBUG_debug) System.out.println( "PS: rp.Assignment of Plan " + rp.getPlan().getName() + " from " + ownAgentProb.getID() + " is: " + rp.getAssignment().toString());
+            if (CommonUtils.PS_DEBUG_debug) System.out.println( "PS: rp.Assignment of Plan " + rp.getPlan().getName() + " from " + ownAgentProb.extractID() + " is: " + rp.getAssignment().toString());
 //#endif
             // CONDITIONCHECK
             if (!rp.evalPreCondition())
@@ -238,12 +238,12 @@ public class PlanSelector implements IPlanSelector {
             }
 
             // OWN ENTRYPOINT
-            ep = rp.getAssignment().getEntryPointOfAgent(ownAgentProb.getID());
+            ep = rp.getAssignment().getEntryPointOfAgent(ownAgentProb.extractID());
 
             if (ep == null)
             {
 //#ifdef PSDEBUG
-                if (CommonUtils.PS_DEBUG_debug) System.out.println( "PS: The agent " + ownAgentProb.getName() + "(Id: " + ownAgentProb.getID()
+                if (CommonUtils.PS_DEBUG_debug) System.out.println( "PS: The agent " + ownAgentProb.getName() + "(Id: " + ownAgentProb.extractID()
                         + ") is not assigned teamObserver enter the plan " + rp.getPlan().getName() + " and will IDLE!");
 //#endif
                 rp.setActiveState(null);

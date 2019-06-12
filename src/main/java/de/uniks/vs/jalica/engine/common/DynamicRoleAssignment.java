@@ -23,7 +23,7 @@ public class DynamicRoleAssignment extends RoleAssignment {
         this.roles = ae.getPlanRepository().getRoles();
 
         if (this.roleSet == null) {
-            System.err.println( "RA("+this.ownAgentProperties.getID()+"): The current Roleset is null!" );
+            System.err.println( "RA("+this.ownAgentProperties.extractID()+"): The current Roleset is null!" );
             try {
                 throw new Exception();
             } catch (Exception e) {
@@ -33,11 +33,11 @@ public class DynamicRoleAssignment extends RoleAssignment {
         this.availableAgents = ae.getTeamObserver().getAvailableAgentProperties();
 
         if (CommonUtils.RA_DEBUG_debug) {
-            System.out.print("RA("+this.ownAgentProperties.getID()+"): Available agents: " + this.availableAgents.size());
+            System.out.print("RA("+this.ownAgentProperties.extractID()+"): Available agents: " + this.availableAgents.size());
             System.out.print("   agent Ids: ");
 
             for (AgentProperties agentProperties : this.availableAgents) {
-                System.out.print(agentProperties.getID() + ":" + agentProperties.getName() + " , ");
+                System.out.print(agentProperties.extractID() + ":" + agentProperties.getName() + " , ");
             }
             System.out.println();
         }
@@ -59,7 +59,7 @@ public class DynamicRoleAssignment extends RoleAssignment {
 
                 HashMap<String, Characteristic> characteristics = this.roles.get(key).getCharacteristics();
 
-                if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.getID()+"): " + this.roles.get(key).getName());
+                if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.extractID()+"): " + this.roles.get(key).getName());
 
                 for ( String roleCharacKey : characteristics.keySet()) {
                     // find the characteristics object of a agent
@@ -78,14 +78,14 @@ public class DynamicRoleAssignment extends RoleAssignment {
 
                     if (rbChar != null) {
                         Characteristic characteristic       = characteristics.get(roleCharacKey);
-                        Capability capability               = characteristic.getCapability();
-                        CapValue characteristic1CapValue    = characteristic.getCapValue();
-                        CapValue charCapValue               = rbChar.getCapValue();
-                        double v                            = capability.similarityValue(characteristic1CapValue, charCapValue);
-                        if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.getID()+"): " + roleCharacName + "   " + charCapValue.getName() + "  " + characteristic1CapValue.getName());
+                        String capability               = characteristic.getName();
+                        String characteristic1CapValue    = characteristic.getValue();
+                        String charCapValue               = rbChar.getValue();
+                        double v                            = characteristic.similarityValue(characteristic1CapValue, charCapValue);
+                        if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.extractID()+"): " + roleCharacName + "   " + charCapValue + "  " + characteristic1CapValue);
 
-                        double individualUtility = characteristics.get(roleCharacKey)/*roleCharacEntry.second*/.getCapability().similarityValue(
-                                characteristics.get(roleCharacKey).getCapValue(),  rbChar.getCapValue());
+                        double individualUtility = characteristics.get(roleCharacKey)/*roleCharacEntry.second*/.similarityValue(
+                                characteristics.get(roleCharacKey).getValue(),  rbChar.getValue());
                         if (individualUtility == 0) {
                             dutility = 0;
                             break;
@@ -95,7 +95,7 @@ public class DynamicRoleAssignment extends RoleAssignment {
                     }
                 }
 
-                if (CommonUtils.RA_DEBUG_debug)  System.out.println("RA("+this.ownAgentProperties.getID()+"): chacteristic size:" + robProperties.getCharacteristics().size() + "    count " + y);
+                if (CommonUtils.RA_DEBUG_debug)  System.out.println("RA("+this.ownAgentProperties.extractID()+"): chacteristic size:" + robProperties.getCharacteristics().size() + "    count " + y);
 
                 if (y != 0) {
                     dutility /= y;
@@ -107,7 +107,7 @@ public class DynamicRoleAssignment extends RoleAssignment {
         }
 
         if (this.sortedAgents.size() == 0) {
-            ae.abort("RA("+this.ownAgentProperties.getID()+"): Could not establish a mapping between agents and roles. Please check capability definitions!");
+            ae.abort("RA("+this.ownAgentProperties.extractID()+"): Could not establish a mapping between agents and roles. Please check capability definitions!");
         }
         RolePriority rp = new RolePriority(ae);
         this.agentRoleMapping.clear();
@@ -135,42 +135,42 @@ public class DynamicRoleAssignment extends RoleAssignment {
                 if(otherOne.getUtilityValue() != thisOne.getUtilityValue())
                     return otherOne.getUtilityValue() < thisOne.getUtilityValue() ? -1 :1;
 
-                if(otherOne.getAgentProperties().getID() != thisOne.getAgentProperties().getID())
-                    return otherOne.getAgentProperties().getID() < thisOne.getAgentProperties().getID() ? -1 :1;
+                if(otherOne.getAgentProperties().extractID() != thisOne.getAgentProperties().extractID())
+                    return otherOne.getAgentProperties().extractID() < thisOne.getAgentProperties().extractID() ? -1 :1;
 
                 return 0;
             }
         });
 
         for (RoleUsage roleUsage : rp.getPriorityList()) {
-            //if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.getID()+"): role:" + roleUsage.getRole().getName() );
+            //if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.extractID()+"): role:" + roleUsage.getRole().getName() );
             for (RoleUtility agentRoleUtil : this.sortedAgents) {
-                //if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.getID()+"):    agentID:" + agentRoleUtil.getAgentProperties().getID());
-                //if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.getID()+"):    agent:" + agentRoleUtil.getAgentProperties().getName() + " " + roleUsage.getRole().getName() +"  "+ agentRoleUtil.getRole().getName());
+                //if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.extractID()+"):    agentID:" + agentRoleUtil.getAgentProperties().extractID());
+                //if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.extractID()+"):    agent:" + agentRoleUtil.getAgentProperties().getName() + " " + roleUsage.getRole().getName() +"  "+ agentRoleUtil.getRole().getName());
 
                 if (roleUsage.getRole() == agentRoleUtil.getRole()) {
-                    //if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.getID()+"):      role:" + roleUsage.getRole().getName() + " is equal");
+                    //if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.extractID()+"):      role:" + roleUsage.getRole().getName() + " is equal");
                     if (this.agentRoleMapping.size() != 0
-                            && (this.agentRoleMapping.get(agentRoleUtil.getAgentProperties().getID()) != null
+                            && (this.agentRoleMapping.get(agentRoleUtil.getAgentProperties().extractID()) != null
                             || agentRoleUtil.getUtilityValue() == 0)) {
-                        if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.getID()+"):        continue (" + this.agentRoleMapping.size()+ "!= 0)" +" && "+ this.agentRoleMapping.get(agentRoleUtil.getAgentProperties().getID()) +"!= null" +" || "+ agentRoleUtil.getUtilityValue() + "== 0");
+                        if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.extractID()+"):        continue (" + this.agentRoleMapping.size()+ "!= 0)" +" && "+ this.agentRoleMapping.get(agentRoleUtil.getAgentProperties().extractID()) +"!= null" +" || "+ agentRoleUtil.getUtilityValue() + "== 0");
                         continue;
                     }
-                    if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.getID()+"):          put to mapping (agentID:" + agentRoleUtil.getAgentProperties().getID() +" role:" + agentRoleUtil.getRole().getName() +")");
-                    this.agentRoleMapping.put(agentRoleUtil.getAgentProperties().getID(), agentRoleUtil.getRole());
+                    if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.extractID()+"):          put to mapping (agentID:" + agentRoleUtil.getAgentProperties().extractID() +" role:" + agentRoleUtil.getRole().getName() +")");
+                    this.agentRoleMapping.put(agentRoleUtil.getAgentProperties().extractID(), agentRoleUtil.getRole());
 
-                    if (this.ownAgentProperties.getID() == agentRoleUtil.getAgentProperties().getID())
+                    if (this.ownAgentProperties.extractID() == agentRoleUtil.getAgentProperties().extractID())
                     {
-                        if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.getID()+"):            set to own role (agentID:" + agentRoleUtil.getAgentProperties().getID() +" role:" + agentRoleUtil.getRole().getName()+")");
+                        if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.extractID()+"):            set to own role (agentID:" + agentRoleUtil.getAgentProperties().extractID() +" role:" + agentRoleUtil.getRole().getName()+")");
                         this.ownRole = agentRoleUtil.getRole();
                     }
 
-                    to.getAgentById(agentRoleUtil.getAgentProperties().getID()).setLastRole(agentRoleUtil.getRole());
+                    to.getAgentById(agentRoleUtil.getAgentProperties().extractID()).setLastRole(agentRoleUtil.getRole());
 
                     break;
                 }
                 else
-                if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.getID()+"):    fail (agentID:" + agentRoleUtil.getAgentProperties().getID() +" role:" + roleUsage.getRole().getName() +")");
+                if (CommonUtils.RA_DEBUG_debug) System.out.println("RA("+this.ownAgentProperties.extractID()+"):    fail (agentID:" + agentRoleUtil.getAgentProperties().extractID() +" role:" + roleUsage.getRole().getName() +")");
             }
         }
     }

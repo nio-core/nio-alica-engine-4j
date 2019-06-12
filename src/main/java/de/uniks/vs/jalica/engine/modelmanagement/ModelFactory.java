@@ -4,6 +4,7 @@ import com.sun.tools.javac.util.Pair;
 import de.uniks.vs.jalica.engine.common.Capability;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.*;
+import de.uniks.vs.jalica.engine.idmanagement.IDManager;
 import de.uniks.vs.jalica.engine.model.*;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.modelmanagement.parser.PlanParser;
@@ -279,14 +280,14 @@ public class ModelFactory {
             for (Pair<Long, Long> pairs : this.charCapReferences) {
                 Characteristic cha = this.rep.getCharacteristics().get(pairs.fst);
                 Capability cap = (Capability) this.elements.get(pairs.snd);
-                cha.setCapability(cap);
+                cha.setName(cap.getName());
             }
             this.charCapReferences.clear();
 
             for (Pair<Long, Long> pairs : this.charCapValReferences) {
                 Characteristic cha = this.rep.getCharacteristics().get(pairs.fst);
                 CapValue capVal = (CapValue) this.elements.get(pairs.snd);
-                cha.setCapValue(capVal);
+                cha.setName(capVal.getName());
             }
             this.charCapValReferences.clear();
 
@@ -512,7 +513,7 @@ public class ModelFactory {
 //                String val = curChild.getNodeName();
 //                long cid = this.parser.parserId(curChild);
 //                if (vars.equals(val)) {
-//                    this.conditionVarReferences.add(new Pair(runtimeCondition.getID(), cid));
+//                    this.conditionVarReferences.add(new Pair(runtimeCondition.extractID(), cid));
 //                } else if (quantifiers.equals(val)) {
 //                    Quantifier q = createQuantifier(curChild);
 //                    runtimeCondition.getQuantifiers().add(q);
@@ -701,7 +702,7 @@ public class ModelFactory {
 //                String val = curChild.getNodeName();
 //                long cid = this.parser.parserId(curChild);
 //                if (vars.equals(val)) {
-//                    this.conditionVarReferences.add(new Pair(pre.getID(), cid));
+//                    this.conditionVarReferences.add(new Pair(pre.extractID(), cid));
 //                } else if (quantifiers.equals(val)) {
 //                    Quantifier q = createQuantifier(curChild);
 //                    pre.getQuantifiers().add(q);
@@ -837,7 +838,7 @@ public class ModelFactory {
 //                long cid = this.parser.parserId(curChild);
 //
 //                if (inTransitions.equals(val)) {
-//                    this.stateInTransitionReferences.add(new Pair(fail.getID(), cid));
+//                    this.stateInTransitionReferences.add(new Pair(fail.extractID(), cid));
 //                } else if (postCondition.equals(val)) {
 //                    PostCondition postCon = createPostCondition(curChild);
 //                    fail.setPostCondition(postCon);
@@ -910,7 +911,7 @@ public class ModelFactory {
 //                long cid = this.parser.parserId(curChild);
 //
 //                if (inTransitions.equals(val)) {
-//                    this.stateInTransitionReferences.add(new Pair(suc.getID(), cid));
+//                    this.stateInTransitionReferences.add(new Pair(suc.extractID(), cid));
 //                } else if (postCondition.equals(val)) {
 //                    PostCondition postCon = createPostCondition(curChild);
 //                    suc.setPostCondition(postCon);
@@ -1114,11 +1115,11 @@ public class ModelFactory {
 //            long cid = this.parser.parserId(curChild);
 //
 //            if (subplan.equals(val)) {
-//                this.paramSubPlanReferences.add(new Pair(para.getID(), cid));
+//                this.paramSubPlanReferences.add(new Pair(para.extractID(), cid));
 //            } else if (subvar.equals(val)) {
-//                this.paramSubVarReferences.add(new Pair(para.getID(), cid));
+//                this.paramSubVarReferences.add(new Pair(para.extractID(), cid));
 //            } else if (var.equals(val)) {
-//                this.paramVarReferences.add(new Pair(para.getID(), cid));
+//                this.paramVarReferences.add(new Pair(para.extractID(), cid));
 //            } else {
 //                ae.abort("MF: Unhandled Parametrisation Child:", curChild.toString());
 //            }
@@ -1234,18 +1235,22 @@ public class ModelFactory {
         return false;
     }
 
-    public void addElement(AlicaElement ael) {
+    public void addElement(AlicaElement alicaElement) {
         //TODO: Fix
-        if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: add Element " + ael.getID() + "  " + ael.getName() + "  " + ae.getAgentName());
-//        if (this.elements.size()> 0 && this.elements.get(ael.getID()) != this.elements.values().toArray()[this.elements.values().size()-1])
-        if (this.elements.size() > 0 && this.elements.get(ael.getID()) != null && this.elements.get(ael.getID()) != ael) {
-            System.out.println("MF: ELEMENT >" + ael.getName() + "< >" + this.elements.get(ael.getID()).getName() + "<");
-            System.out.println("MF: ELEMENT >" + ael.getID() + "< >" + this.elements.get(ael.getID()).getID() + "<");
-            System.out.println("MF: ELEMENT >" + ael.hashCode() + "< >" + this.elements.get(ael.getID()).hashCode() + "<");
+        if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: add Element " + alicaElement.getID() + "  " + alicaElement.getName() + "  " + ae.getAgentName());
+//        if (this.elements.size()> 0 && this.elements.get(ael.extractID()) != this.elements.values().toArray()[this.elements.values().size()-1])
+        if (this.elements.size() > 0 && this.elements.get(alicaElement.getID()) != null && this.elements.get(alicaElement.getID()) != alicaElement) {
+
+            AlicaElement alicaElement1 = this.elements.get(alicaElement.getID());
+            AlicaElement alicaElement2 = alicaElement;
+
+            System.out.println("MF: ELEMENT >" + alicaElement.getName() + "< >" + this.elements.get(alicaElement.getID()).getName() + "<");
+            System.out.println("MF: ELEMENT > " + alicaElement.getID() + "< >" + this.elements.get(alicaElement.getID()).getID() + "<");
+            System.out.println("MF: ELEMENT > " + alicaElement.hashCode() + "< >" + this.elements.get(alicaElement.getID()).hashCode() + "<");
 //			cout << segfaultdebug::get_stacktrace() << endl;
-            ae.abort("MF: ERROR Double IDs: " + ael.getID());
+            ae.abort("MF: ERROR Double IDs: " + alicaElement.getID());
         }
-        elements.put(ael.getID(), ael);
+        elements.put(alicaElement.getID(), alicaElement);
     }
 
     private void setAlicaElementAttributes(AlicaElement ae, Node ele) {
@@ -1752,7 +1757,7 @@ public class ModelFactory {
 //        if (ignoreMasterPlanId) {
 //            isUseable = true;
 //        } else {
-//            isUseable = pidPtr != null && (pid == masterPlan.getID());
+//            isUseable = pidPtr != null && (pid == masterPlan.extractID());
 //        }
 //
 //        if (!isDefault && !isUseable) {
@@ -1819,26 +1824,11 @@ public class ModelFactory {
         return rtm;
     }
 
-    private Long generateUniqueId() {
-        long val = -1;
-
-        do {
-            final UUID uid = UUID.randomUUID();
-            final ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
-            buffer.putLong(uid.getLeastSignificantBits());
-            buffer.putLong(uid.getMostSignificantBits());
-            final BigInteger bi = new BigInteger(buffer.array());
-            val = bi.longValue();
-        }
-        // We also make sure that the ID is in positive space, if its not we simply repeat the process
-        while (val < 0);
-        return val;
-    }
-
     private RoleTaskMapping createRoleTaskMapping(JSONObject jsonObject) {
         RoleTaskMapping rtm = new RoleTaskMapping();
-//        long id = parser.fetchId(jsonObject.get("id").toString());
-        long id = generateUniqueId();
+        // role task mapping is only a list, hense a UUID is needed
+        long id = IDManager.generateUniqueID();
+//        long id = this.parser.fetchId(jsonObject.get("id").toString());
         rtm.setID(id);
         setAlicaElementAttributes(rtm, jsonObject);
         addElement(rtm);
@@ -1856,7 +1846,7 @@ public class ModelFactory {
             Double priority = (Double) priorities.get(taskEntry);
 
             rtm.getTaskPriorities().put(taskRef, priority);
-//            this.rtmRoleReferences.add(new Pair<Long, Long>(rtm.getID(), taskRef));
+//            this.rtmRoleReferences.add(new Pair<Long, Long>(rtm.extractID(), taskRef));
         }
 
 //        while (curChild != null) {
@@ -1870,7 +1860,7 @@ public class ModelFactory {
 //                }
 //            } else if (role.equals(val)) {
 //                long cid = this.parser.parserId(curChild);
-//                this.rtmRoleReferences.add(new Pair<>(rtm.getID(), cid));
+//                this.rtmRoleReferences.add(new Pair<>(rtm.extractID(), cid));
 //            } else {
 //                ae.abort("MF: Unhandled RoleTaskMapping Child ", curChild.getNodeValue());
 //            }
@@ -2041,15 +2031,30 @@ public class ModelFactory {
             JSONObject charObj = (JSONObject) obj;
 //
 //            if (ModelFactory.characteristics.equals(val)) {
-//                Characteristic cha = createCharacteristic(curChild);
-//                r.getCharacteristics().put(cha.getName(), cha);
+                Characteristic cha = createCharacteristic(charObj);
+                role.getCharacteristics().put(cha.getName(), cha);
 //            } else {
-                ae.abort("MF: Unhandled Role Characteristic: ", role.getName());
+//                ae.abort("MF: Unhandled Role Characteristic: ", role.getName());
 //            }
 //            curChild = getNextSilbing(curChild);
         }
 //        }
         return role;
+    }
+
+    private Characteristic createCharacteristic(JSONObject jsonObject) {
+        Characteristic cha = new Characteristic();
+        long id = this.parser.fetchId(jsonObject.get("id").toString());
+        cha.setID(id);
+        setAlicaElementAttributes(cha, jsonObject);
+        addElement(cha);
+
+        cha.setName(jsonObject.get("name").toString());
+        cha.setValue( jsonObject.get("value")!=null? jsonObject.get("value").toString() : "");
+        cha.setWeight(stod(jsonObject.get("weight").toString()));
+
+        this.rep.getCharacteristics().put(cha.getID(), cha);
+        return cha;
     }
 
     private Characteristic createCharacteristic(Node element) {

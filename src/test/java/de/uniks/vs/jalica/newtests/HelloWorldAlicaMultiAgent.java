@@ -75,8 +75,8 @@ public class HelloWorldAlicaMultiAgent {
 ////		}
 
             if (i < 10) {
-//                Assertions.assertEquals(alicaEngine1.getPlanBase().getRootNode().getActiveState().getID(), 1413200842974f);
-//                Assertions.assertEquals(alicaEngine2.getPlanBase().getRootNode().getActiveState().getID(), 1413200842974f);
+//                Assertions.assertEquals(alicaEngine1.getPlanBase().getRootNode().getActiveState().extractID(), 1413200842974f);
+//                Assertions.assertEquals(alicaEngine2.getPlanBase().getRootNode().getActiveState().extractID(), 1413200842974f);
             }
 //            if (i == 10)
 //            {

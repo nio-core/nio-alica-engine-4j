@@ -108,7 +108,7 @@ public class AgentEngineData {
 
     public long makeUniqueId(String s)
     {
-        long ret = (long)this.getProperties().getID() << 32;
+        long ret = (long)this.getProperties().extractID() << 32;
         ret +=  s.hashCode();
 
         if(this.ae.getPlanParser().getParsedElements().get(ret) != null) {

@@ -32,7 +32,7 @@ public class BehaviourPool implements IBehaviourPool {
 //            }
 //        }
 //        else {
-//            System.out.println("BP::stopBehaviour(): Cannot stop Behaviour of given RunningPlan! Plan Name: " + runningPlan.getPlan().getName() + " Plan Id: " + runningPlan.getPlan().getID() +"\n");
+//            System.out.println("BP::stopBehaviour(): Cannot stop Behaviour of given RunningPlan! Plan Name: " + runningPlan.getPlan().getName() + " Plan Id: " + runningPlan.getPlan().extractID() +"\n");
 //        }
 //    }
 

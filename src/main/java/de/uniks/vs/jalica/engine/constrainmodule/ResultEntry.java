@@ -84,7 +84,7 @@ public class ResultEntry {
 
 //        for(auto it = query.begin(); it != query.end(); it++, i++) {
 //
-//            ret.get(i) = getValue((it).getID(), ttl4Usage);
+//            ret.get(i) = getValue((it).extractID(), ttl4Usage);
 //            if(ret.get(i) == null) nans++;
 //        }
         for(int i = 0; i < query.size(); i++) {

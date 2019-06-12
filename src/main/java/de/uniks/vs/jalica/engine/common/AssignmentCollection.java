@@ -122,7 +122,7 @@ public class AssignmentCollection {
         //		cout << "<<<< Check Sort!!!!! " << endl;
 //		for (short i = 0; i < this.numEps; i++)
 //		{
-//			cout << i << ": " << entryPoints[i].getTask().getID() << endl;
+//			cout << i << ": " << entryPoints[i].getTask().extractID() << endl;
 //		}
 
         // Stopfers sort style
@@ -148,7 +148,7 @@ public class AssignmentCollection {
 //		cout << "<<<<< Nachher!!!! " << endl;
 //		for (short i = 0; i < this.numEps; i++)
 //		{
-//			cout << i << ": " << entryPoints[i].getTask().getID() << endl;
+//			cout << i << ": " << entryPoints[i].getTask().extractID() << endl;
 //		}
     }
 

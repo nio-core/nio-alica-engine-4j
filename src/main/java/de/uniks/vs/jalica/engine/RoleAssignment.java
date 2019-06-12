@@ -70,7 +70,7 @@ public abstract class RoleAssignment implements IRoleAssignment {
             if (role != null) {
                 return role;
             }
-            CommonUtils.aboutError( "RA("+this.ownAgentProperties.getID()+"): There is no role assigned for agent: " + agentID);
+            CommonUtils.aboutError( "RA("+this.ownAgentProperties.extractID()+"): There is no role assigned for agent: " + agentID);
         }
         return null;
     }
