@@ -1,8 +1,11 @@
 package de.uniks.vs.jalica.engine.idmanagement;
 
+import de.uniks.vs.jalica.common.utils.CommonUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.sql.SQLOutput;
 import java.util.UUID;
 
 public class ID {
@@ -37,15 +40,20 @@ public class ID {
     }
 
     public long asLong() {
-        long val = -1;
-
-        do {
-            final ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
-            buffer.putLong(uuid.getLeastSignificantBits());
-            buffer.putLong(uuid.getMostSignificantBits());
-            final BigInteger bi = new BigInteger(buffer.array());
-            val = bi.longValue();
-        } while (val < 0);
-        return val;
+        long longID = uuid.getMostSignificantBits() & Long.MAX_VALUE;
+        if (longID < 0) CommonUtils.aboutError("Negative long ID");
+        return longID;
+//        long longID = -1;
+//
+//        while (longID < 0) {
+//            final ByteBuffer buffer = ByteBuffer.wrap(new byte[16]);
+//            buffer.putLong(uuid.getLeastSignificantBits());
+//            buffer.putLong(uuid.getMostSignificantBits());
+//            final BigInteger bi = new BigInteger(buffer.array());
+//            val = bi.longValue();
+//            System.out.println(val);
+//            longID = uuid.getMostSignificantBits() & Long.MAX_VALUE;
+//            System.out.println(val);
+//        }
     }
 }

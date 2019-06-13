@@ -31,7 +31,7 @@ public class TaskAssignmentTest {
 
     @BeforeEach
     void beforeAll() {
-//// determine the path to the testsincpp config
+//// determine the path teamObserver the testsincpp config
 //        string path = supplementary::FileSystem::getSelfPath();
 //        int place = path.rfind("devel");
 //        path = path.substr(0, place);
@@ -81,7 +81,7 @@ public class TaskAssignmentTest {
         int i = 8;
 
         for (Role role : roles.values()) {
-            alicaEngine.getTeamObserver().getAgentById(i).setLastRole(role);
+            alicaEngine.getTeamObserver().getAgentById(i).setCurrentRole(role);
             i++;
             if (i > 11)
                 break;

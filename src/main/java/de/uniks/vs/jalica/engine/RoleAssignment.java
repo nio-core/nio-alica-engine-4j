@@ -15,13 +15,13 @@ import java.util.*;
 public abstract class RoleAssignment implements IRoleAssignment {
 
     protected HashMap<Long, Role> agentRoleMapping;
-    protected  Vector<RoleUtility> sortedAgents;
+    protected  Vector<RoleUtility> sortedAgentRoleUtility;
     protected AgentProperties ownAgentProperties;
     protected RoleSet roleSet;
     protected  Role ownRole;
     protected  ArrayList<AgentProperties> availableAgents;
     protected  AlicaEngine ae;
-    protected  TeamObserver to;
+    protected  TeamObserver teamObserver;
     protected  HashMap<Long, Role> roles;
     protected AlicaCommunication communication;
     protected  boolean updateRoles;
@@ -30,15 +30,15 @@ public abstract class RoleAssignment implements IRoleAssignment {
         this.ae = ae;
         this.updateRoles = false;
         this.agentRoleMapping = new HashMap<>();
-        this.sortedAgents = new Vector<>();
+        this.sortedAgentRoleUtility = new Vector<>();
     }
 
     @Override
     public void init() {
-        this.to = ae.getTeamObserver();
+        this.teamObserver = ae.getTeamObserver();
         //TODO delegates missing
-        //to.onTeamCHangedEvent += Update;
-        this.ownAgentProperties = to.getOwnAgentProperties();
+//        teamObserver.onTeamCHangedEvent += Update;
+        this.ownAgentProperties = teamObserver.getOwnAgentProperties();
 //        roleUtilities();
         this.calculateRoles();
     }
@@ -65,7 +65,7 @@ public abstract class RoleAssignment implements IRoleAssignment {
         if (role != null) {
             return role;
         } else {
-            role = this.to.getAgentById(agentID).getLastRole();
+            role = this.teamObserver.getAgentById(agentID).getCurrentRole();
 
             if (role != null) {
                 return role;

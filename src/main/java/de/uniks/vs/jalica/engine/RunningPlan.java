@@ -190,7 +190,7 @@ public class RunningPlan {
     public void setActiveState(State state) {
 
         if (CommonUtils.RP_DEBUG_debug) System.out.println("RP: set active state from " + (this.activeState != null? this.activeState.getName(): "null")
-                +" to " +state.getName());
+                +" teamObserver " +state.getName());
 
         if (this.activeState != state) {
             this.activeState = state;

@@ -23,13 +23,13 @@ public class UdpConnection {
         //  Create UDP socket
 //        this.handle = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
          this.handle = DatagramChannel.open();
-        //  Ask operating system to let us do broadcasts from socket
+        //  Ask operating system teamObserver let us do broadcasts from socket
 //        this.handle.setOption(StandardSocketOptions.SO_BROADCAST, true);
 
         NetworkInterface in = NetworkInterface.getByIndex(8);
         this.handle.setOption(StandardSocketOptions.IP_MULTICAST_IF, in);
-        //  Allow multiple processes to bind to socket; incoming
-        //  messages will come to each process
+        //  Allow multiple processes teamObserver bind teamObserver socket; incoming
+        //  messages will come teamObserver each process
         this.handle.setOption(StandardSocketOptions.SO_REUSEADDR, true);
         this.handle.configureBlocking(false);
 

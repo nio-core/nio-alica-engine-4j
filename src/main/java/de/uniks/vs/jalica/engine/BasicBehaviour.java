@@ -47,7 +47,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
 //        this.runCV = new ConditionVariable(this.runThread);
         this.runCV = new ConditionVariable(this);
         this.timer.addConditionVariable(this.runCV);
-        //TODO: change to start on demand
+        //TODO: change teamObserver start on demand
         this.runThread = new Thread(this);
         this.runThread.start();
     }
@@ -188,7 +188,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
 //#ifdef BEH_DEBUG
             long start = TimerEvent.getCurrentTimeInNanoSec();
 //#endif
-            // TODO: pass something like an eventarg (to be implemented) class-member, which could be set for an event triggered (to be implemented) behaviour.
+            // TODO: pass something like an eventarg (teamObserver be implemented) class-member, which could be set for an event triggered (teamObserver be implemented) behaviour.
             try {
                 if (CommonUtils.B_DEBUG_debug) CommonUtils.aboutCallNotification();
 

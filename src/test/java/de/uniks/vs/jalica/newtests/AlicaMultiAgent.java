@@ -24,7 +24,7 @@ public class AlicaMultiAgent {
 
     @BeforeEach
     void beforeAll() {
-        // determine the path to the testsincpp config
+        // determine the path teamObserver the testsincpp config
 //        String path = supplementary::FileSystem::getSelfPath();
 //        int place = path.rfind("devel");
 //        path = path.substr(0, place);
@@ -51,7 +51,7 @@ public class AlicaMultiAgent {
 //        ae->setAlicaClock(new alicaRosProxy::AlicaROSClock());
 //        ae->setCommunicator(new alicaRosProxy::AlicaRosCommunication(ae));
 //        ASSERT_TRUE(ae->init(bc, cc, uc, crc, "RolesetTA", "MultiAgentTestMaster", ".", true))
-//                << "Unable to initialise the Alica Engine!";
+//                << "Unable teamObserver initialise the Alica Engine!";
         SystemConfig sc = new SystemConfig("nase");
         AlicaEngine alicaEngine1 = new AlicaEngine();
         alicaEngine1.setAlicaClock(new AlicaSystemClock());
@@ -64,7 +64,7 @@ public class AlicaMultiAgent {
 //        ae2->setAlicaClock(new alicaRosProxy::AlicaROSClock());
 //        ae2->setCommunicator(new alicaRosProxy::AlicaRosCommunication(ae2));
 //        ASSERT_TRUE(ae2->init(bc, cc, uc, crc, "RolesetTA", "MultiAgentTestMaster", ".", true))
-//                << "Unable to initialise the Alica Engine!";
+//                << "Unable teamObserver initialise the Alica Engine!";
         SystemConfig sc2 = new SystemConfig("hairy");
         AlicaEngine alicaEngine2 = new AlicaEngine();
         alicaEngine2.setAlicaClock(new AlicaSystemClock());
@@ -134,7 +134,7 @@ public class AlicaMultiAgent {
                         }
                     }
                 }
-                System.out.println("2--------- Engagement to cooperative plan passed ---------" );
+                System.out.println("2--------- Engagement teamObserver cooperative plan passed ---------" );
             }
 //            if (i == 16)
 //            {

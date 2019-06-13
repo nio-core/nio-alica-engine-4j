@@ -28,9 +28,9 @@ public class StaticRoleAssignment extends RoleAssignment {
                 if (role.getName().equals(agent.getDefaultRole())) {
                     if (CommonUtils.RA_DEBUG_debug)  System.out.println("RA: Setting Role " + role.getName() + " for agent ID " + agent.extractID());
                     this.agentRoleMapping.put(agent.extractID(), role);
-                    this.to.getAgentById(agent.extractID()).setLastRole(role);
+                    this.teamObserver.getAgentById(agent.extractID()).setCurrentRole(role);
 
-                    if (agent.extractID() == this.to.getOwnID() && this.ownRole != role) {
+                    if (agent.extractID() == this.teamObserver.getOwnID() && this.ownRole != role) {
                         this.ownRole = role;
 
                         if (this.communication != null) {

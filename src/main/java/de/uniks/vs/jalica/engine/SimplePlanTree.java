@@ -22,7 +22,7 @@ public class SimplePlanTree {
     private State state;
     private EntryPoint entryPoint;
     /**
-     * The id of the agent to which this tree refers to
+     * The id of the agent teamObserver which this tree refers teamObserver
      */
     private long agentID = -1;
     private boolean newSimplePlanTree = true;

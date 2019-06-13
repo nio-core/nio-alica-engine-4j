@@ -208,7 +208,7 @@ public class Assignment extends IAssignment {
         }
         this.agentStateMapping.setState(agentID, state);
 
-        // TODO: fix -> this.epAgentsMapping.agents to LinkedHashSet
+        // TODO: fix -> this.epAgentsMapping.agents teamObserver LinkedHashSet
         if (!this.epAgentsMapping.getAgentsByEp(entryPoint).contains(agentID)) {
             this.epAgentsMapping.getAgentsByEp(entryPoint).add(agentID);
         }

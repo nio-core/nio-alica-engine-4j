@@ -10,7 +10,7 @@ import java.util.Vector;
  */
 public class SyncRow {
     SyncData syncData;
-    //this vector always has to be sorted
+    //this vector always has teamObserver be sorted
     Vector<Integer> receivedBy;
 
     SyncRow()  {}

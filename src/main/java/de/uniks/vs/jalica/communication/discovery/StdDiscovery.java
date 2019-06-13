@@ -71,7 +71,7 @@ public class StdDiscovery extends Discovery implements Runnable {
         multicastSocket.setLoopbackMode(true);
         multicastSocket.setReuseAddress(true);
 
-        if(CommonUtils.COMM_D_DEBUG_debug) System.out.println("SD: Time to Live : " + multicastSocket.getTimeToLive());
+        if(CommonUtils.COMM_D_DEBUG_debug) System.out.println("SD: Time teamObserver Live : " + multicastSocket.getTimeToLive());
         if(CommonUtils.COMM_D_DEBUG_debug) System.out.println("SD: Interface : " + multicastSocket.getInterface());
         if(CommonUtils.COMM_D_DEBUG_debug) System.out.println("SD: Network Inteface : " + multicastSocket.getNetworkInterface());
         if(CommonUtils.COMM_D_DEBUG_debug) System.out.println("SD: Loopback mode : " + multicastSocket.getLoopbackMode());

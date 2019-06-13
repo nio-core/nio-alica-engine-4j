@@ -22,7 +22,7 @@ public class IDManager {
     }
 
     public static Long generateUniqueID() {
-        Long val = -1l;
+        Long uniqueID = -1l;
 
         do {
             final UUID uuid = UUID.randomUUID();
@@ -30,10 +30,16 @@ public class IDManager {
             buffer.putLong(uuid.getLeastSignificantBits());
             buffer.putLong(uuid.getMostSignificantBits());
             final BigInteger bi = new BigInteger(buffer.array());
-            val = bi.longValue();
+            uniqueID = bi.longValue();
         }
-        while (val < 0 || uids.contains(val));
-        uids.add(val);
-        return val;
+        while (uniqueID < 0 || uids.contains(uniqueID));
+        uids.add(uniqueID);
+        return uniqueID;
+    }
+
+    public static Long generateUniqueID(String string) {
+        ID id = new ID();
+        uuids.put(id, string);
+        return id.asLong();
     }
 }

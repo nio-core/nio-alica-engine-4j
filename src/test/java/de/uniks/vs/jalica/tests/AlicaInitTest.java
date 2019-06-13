@@ -40,7 +40,7 @@ public class AlicaInitTest {
         boolean result = alicaEngine.init(sc, bc, cc, uc, crc, "Roleset", "MasterPlan", "roles/", false);
 
         if(!result)
-            System.out.println("Unable to initialise the Alica Engine!");
+            System.out.println("Unable teamObserver initialise the Alica Engine!");
         Assertions.assertTrue(result);
 
         Thread.sleep(2000);

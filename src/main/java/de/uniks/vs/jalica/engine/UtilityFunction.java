@@ -66,32 +66,30 @@ public class UtilityFunction {
         RoleSet roleSet = ae.getRoleSet();
         long taskId;
         long roleId;
-        double curPrio = 0.0;
+        Double curPriority;
 
-        for (RoleTaskMapping rtm : roleSet.getRoleTaskMappings()) {
-            roleId = rtm.getRole().getID();
+        for (RoleTaskMapping roleTaskMapping : roleSet.getRoleTaskMappings()) {
+            roleId = roleTaskMapping.getRole().getID();
             this.roleHighestPriorityMap.put(roleId, 0.0);
 
-            for (EntryPoint epIter : this.plan.getEntryPoints().values()) {
-                taskId = epIter.getTask().getID();
-                Double iter = rtm.getTaskPriorities().get(taskId);
+            for (EntryPoint entryPoint : this.plan.getEntryPoints().values()) {
+                taskId = entryPoint.getTask().getID();
+                curPriority = roleTaskMapping.getTaskPriorities().get(taskId);
 
-                if (iter == null) {
-                    System.out.println("UF: There is no priority for the task " + taskId + " in the roleTaskMapping of the role "
-                            + rtm.getRole().getName() + " with id " + roleId
-                        + "!\n We are in the UF for the plan " + this.plan.getName() + "!" );
+                if (curPriority == null) {
+                    curPriority = roleSet.getDefaultPriority();
+//                    System.out.println("UF: There is no priority for the task " + taskId + " in the roleTaskMapping of the role "
+//                            + roleTaskMapping.getRole().getName() + " with id " + roleId
+//                        + "!\n We are in the UF for the plan " + this.plan.getName() + "!" );
                 }
-                else {
-                    curPrio = iter;
-                }
-                TaskRoleStruct trs = new TaskRoleStruct(taskId, roleId);
+                TaskRoleStruct taskRoleStruct = new TaskRoleStruct(taskId, roleId);
 
-                if (this.priorityMartix.get(trs) == null) {
-                    this.priorityMartix.put(trs, curPrio);
+                if (this.priorityMartix.get(taskRoleStruct) == null) {
+                    this.priorityMartix.put(taskRoleStruct, curPriority);
                 }
 
-                if (this.roleHighestPriorityMap.get(roleId) < curPrio) {
-                    this.roleHighestPriorityMap.put(roleId, curPrio);
+                if (this.roleHighestPriorityMap.get(roleId) < curPriority) {
+                    this.roleHighestPriorityMap.put(roleId, curPriority);
                 }
             }
             // Add Priority for Idle-EntryPoint
@@ -155,7 +153,7 @@ public class UtilityFunction {
             sumOfWeights += this.similarityWeight;
         }
 
-        // Normalize to 0..1
+        // Normalize teamObserver 0..1
         if (sumOfWeights > 0.0)
         {
             sumOfUI.setMax(sumOfUI.getMax() / sumOfWeights);
@@ -175,7 +173,7 @@ public class UtilityFunction {
     protected UtilityInterval getSimilarity(IAssignment newAss, IAssignment oldAss) {
         simUI.setMax(0.0);
         simUI.setMin(0.0);
-        // Calculate the similarity to the old Assignment
+        // Calculate the similarity teamObserver the old Assignment
         int numOldAssignedAgents = 0;
         //shared_ptr<vector<EntryPoint*> > oldAssEps = oldAss.getEntryPoints();
         EntryPoint ep;

@@ -86,7 +86,7 @@ public class PlanBase implements Runnable {
         }
 
         if (minBroadcastFrequency > maxBroadcastFrequency) {
-            ae.abort( "PB: Alica.conf: Minimal broadcast frequency must be lower or equal to maximal broadcast frequency!");
+            ae.abort( "PB: Alica.conf: Minimal broadcast frequency must be lower or equal teamObserver maximal broadcast frequency!");
         }
 
 //        this.loopTime        = new AlicaTime(Math.max(1000000, Math.round(1.0 / frequency *      1000000000)));
@@ -201,7 +201,7 @@ public class PlanBase implements Runnable {
                 beginTime = alicaClock.now();
             }
 
-            //Send tick to other modules
+            //Send tick teamObserver other modules
 //            System.out.println(Thread.currentThread().getId());
             try {
                 this.ae.getCommunicator().tick();

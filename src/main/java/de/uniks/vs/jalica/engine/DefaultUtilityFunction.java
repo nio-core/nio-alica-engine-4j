@@ -19,7 +19,7 @@ public class DefaultUtilityFunction extends UtilityFunction {
             System.out.println("DefUF: The Assignment of the RunningPlan is null!" );
             CommonUtils.aboutError("");
         }
-        // Invalid Assignments have an Utility of -1 changed from 0 according to specs
+        // Invalid Assignments have an Utility of -1 changed from 0 according teamObserver specs
         if (!newRP.getAssignment().isValid())
         {
             return -1.0;
@@ -42,7 +42,7 @@ public class DefaultUtilityFunction extends UtilityFunction {
             sumOfWeights += this.similarityWeight;
         }
 
-        // Normalize to 0..1
+        // Normalize teamObserver 0..1
         if (sumOfWeights > 0.0)
         {
             sumOfUI.setMax(sumOfUI.getMax() / sumOfWeights);
@@ -83,7 +83,7 @@ public class DefaultUtilityFunction extends UtilityFunction {
             sumOfWeights += this.similarityWeight;
         }
 
-        // Normalize to 0..1
+        // Normalize teamObserver 0..1
         if (sumOfWeights > 0.0)
         {
             sumOfUI.setMax(sumOfUI.getMax() / sumOfWeights);

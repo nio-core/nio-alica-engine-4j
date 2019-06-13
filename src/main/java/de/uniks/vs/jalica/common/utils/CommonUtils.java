@@ -35,11 +35,12 @@ public class CommonUtils {
     public static final boolean CM_REASON_DEBUG_debug = false;
     public static final boolean SUCDEBUG_debug = false;
     public static final boolean CS_DEBUG_debug = false;
+    public static final boolean C_DEBUG_debug = false;
     public static final boolean TO_DEBUG_debug = false;
     public static final boolean RP_DEBUG_debug = false;
     public static final boolean AC_DEBUG_debug = false;
     public static final boolean TE_DEBUG_debug = false;
-    public static final boolean B_DEBUG_debug = false;
+    public static final boolean B_DEBUG_debug = true;
     public static final boolean CV_DEBUG_debug = false;
     public static final boolean AED_DEBUG_debug = false;
     public static final boolean XTH_DEBUG_debug = false;
@@ -251,4 +252,12 @@ public class CommonUtils {
         System.err.println((new AlicaTime().inNanoseconds(TimerEvent.getCurrentTimeInNanoSec()).time - start.time));
     }
 
+    public static boolean isNumeric(String value) {
+        try {
+             Double.parseDouble(value);
+        } catch (NumberFormatException | NullPointerException e) {
+            return false;
+        }
+        return true;
+    }
 }

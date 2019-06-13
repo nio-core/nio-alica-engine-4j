@@ -1,6 +1,7 @@
 package de.uniks.vs.jalica.engine.collections;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
+import de.uniks.vs.jalica.engine.idmanagement.IDManager;
 import de.uniks.vs.jalica.engine.model.ForallAgents;
 import de.uniks.vs.jalica.engine.model.Quantifier;
 import de.uniks.vs.jalica.engine.model.Role;
@@ -16,26 +17,16 @@ import java.util.LinkedHashMap;
 public class AgentEngineData {
 
     private AlicaEngine ae;
-    /**
-     * The robot's AgentProperties
-     */
     private AgentProperties properties;
-    /**
-     * Whether or not the robot is considered active
-     */
-    private boolean active;
-    /**
-     * The SuccessMarks of the robot, indicating which EntryPoints it completed.
-     */
+    private Role currentRole;
+
+    // indicating which EntryPoints it completed.
     private SuccessMarks successMarks;
-    /**
-     * The timestamp of the last message event from this robot
-     */
-    double lastMessageTime;
-
     HashMap<String, Variable> domainVariables = new HashMap<>();
-    Role lastRole;
 
+    //agent is considered active
+    private boolean active;
+    private double lastMessageTime;
 
     public AgentEngineData(AlicaEngine ae, AgentProperties properties) {
         this.ae = ae;
@@ -44,7 +35,7 @@ public class AgentEngineData {
         this.properties = properties;
         this.initDomainVariables();
         this.successMarks = new SuccessMarks(ae);
-        this.lastRole = null;
+        this.currentRole = null;
     }
 
     public boolean isActive() {
@@ -84,7 +75,7 @@ public class AgentEngineData {
             {
                 for (String s : qs.get(key).getDomainIdentifiers())
                 {
-                    Variable v = new Variable(makeUniqueId(s), this.getProperties().getName() + "." + s,"");
+                    Variable v = new Variable(IDManager.generateUniqueID(s), this.getProperties().getName() + "." + s,"");
                     this.domainVariables.put(s,v);
                 }
             }
@@ -106,29 +97,29 @@ public class AgentEngineData {
     }
 
 
-    public long makeUniqueId(String s)
-    {
-        long ret = (long)this.getProperties().extractID() << 32;
-        ret +=  s.hashCode();
-
-        if(this.ae.getPlanParser().getParsedElements().get(ret) != null) {
-            ae.abort("TO: Hash Collision in generating unique ID: ", ""+ret);
-        }
-
-//        iterator = this.ae.getPlanParser().getParsedElements().find(ret);
-//        if(iterator != ae.getPlanParser().getParsedElements().end())
-//        {
+//    public long makeUniqueId(String s)
+//    {
+//        long ret = (long)this.getProperties().extractID() << 32;
+//        ret +=  s.hashCode();
+//
+//        if(this.ae.getPlanParser().getParsedElements().get(ret) != null) {
 //            ae.abort("TO: Hash Collision in generating unique ID: ", ""+ret);
 //        }
-        return ret;
+//
+////        iterator = this.ae.getPlanParser().getParsedElements().find(ret);
+////        if(iterator != ae.getPlanParser().getParsedElements().end())
+////        {
+////            ae.abort("TO: Hash Collision in generating unique ID: ", ""+ret);
+////        }
+//        return ret;
+//    }
+
+    public Role getCurrentRole() {
+        return currentRole;
     }
 
-    public Role getLastRole() {
-        return lastRole;
-    }
-
-    public void setLastRole(Role lastRole) {
-        this.lastRole = lastRole;
+    public void setCurrentRole(Role currentRole) {
+        this.currentRole = currentRole;
     }
 
     public double getLastMessageTime() { return lastMessageTime; }

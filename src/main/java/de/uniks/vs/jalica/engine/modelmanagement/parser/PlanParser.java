@@ -606,8 +606,8 @@ public class PlanParser {
             temp = FileSystem.realpath(path, null);
             String pathNew = temp;
 //            free(temp);
-            //This is not very efficient but necessary to keep the paths as they are
-            //Here we have to check whether the file has already been parsed / is in the list for toparse files
+            //This is not very efficient but necessary teamObserver keep the paths as they are
+            //Here we have teamObserver check whether the file has already been parsed / is in the list for toparse files
             //problem is the normalization /home/etc/plans != /home/etc/misc/../plans
             //list<string>::iterator findIterParsed = find(filesParsed.begin(), filesParsed.end(), pathNew);
             boolean found = false;
@@ -637,7 +637,7 @@ public class PlanParser {
 
             if (!found)
             {
-                if (CommonUtils.PP_DEBUG_debug) System.out.println("PP: Adding " + path + " to parse queue ");
+                if (CommonUtils.PP_DEBUG_debug) System.out.println("PP: Adding " + path + " teamObserver parse queue ");
                 filesToParse.add(path);
             }
         }
@@ -648,7 +648,7 @@ public class PlanParser {
         }
         catch (Exception e)
         {
-            ae.abort("PP: Cannot convert ID to long: " + tokenId + " WHAT?? " + e.getMessage());
+            ae.abort("PP: Cannot convert ID teamObserver long: " + tokenId + " WHAT?? " + e.getMessage());
         }
         return id;
     }
@@ -673,7 +673,7 @@ public class PlanParser {
             }
             catch (Exception e)
             {
-                ae.abort("PP: Cannot convert ID to long: " + idString1 + " WHAT?? " + e.getMessage());
+                ae.abort("PP: Cannot convert ID teamObserver long: " + idString1 + " WHAT?? " + e.getMessage());
             }
             return id;
         }

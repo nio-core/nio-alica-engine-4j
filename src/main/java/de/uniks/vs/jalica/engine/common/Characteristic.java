@@ -1,5 +1,7 @@
 package de.uniks.vs.jalica.engine.common;
 
+import de.uniks.vs.jalica.common.utils.CommonMetrics;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.model.AlicaElement;
 
 /**
@@ -24,9 +26,31 @@ public class Characteristic extends AlicaElement {
         this.weight = weight;
     }
 
-    public double similarityValue(String value1, String value2) {
-        return 0;
+    public float calculateSimilarityTo(Characteristic characteristic) {
+        float similarity = 1.0f -
+                        (CommonMetrics.levenshteinDistance(this.name, characteristic.getName())
+                                / (this.name.length() > characteristic.getName().length() ? this.name.length() : characteristic.getName().length()));
+
+        if (CommonUtils.isNumeric(this.value) ^ CommonUtils.isNumeric(characteristic.getValue())) {
+            similarity = 0;
+        }
+        else {
+            similarity += 1.0f -
+                    (CommonMetrics.levenshteinDistance(this.value, characteristic.getValue())
+                            / (this.value.length() > characteristic.getValue().length() ? this.value.length() : characteristic.getValue().length()));
+            similarity/=2;
+        }
+
+        if (CommonUtils.C_DEBUG_debug) System.out.println("C: " + CommonUtils.isNumeric(this.value) +" " + CommonUtils.isNumeric(characteristic.getValue()));
+        if (CommonUtils.C_DEBUG_debug) System.out.println("C: " + this.name + ":" + this.value + "     " + characteristic.getName() + ":" + characteristic.getValue() +   "     " + similarity );
+
+        return similarity;
     }
+
+//    public double similarityValue(String value1, String value2) {
+//        System.out.println("C: similarity of " + value1 + " and " + value2);
+//        return 0;
+//    }
 
 //    private Capability capability;
 //    private CapValue capValue;

@@ -13,26 +13,22 @@ import java.util.Vector;
 /**
  * Created by alex on 14.07.17.
  */
+@Deprecated
 public class RolePriority extends AlicaElement {
 
     Role role;
     HashMap<Long, Role> roles = new HashMap<>();
     ArrayList<RoleUsage> priorityList = new ArrayList<>();
 
-
     public RolePriority(AlicaEngine ae) {
-
         SystemConfig sc = ae.getSystemConfig();
         this.roles = ae.getPlanRepository().getRoles();
-
         Vector<String> priorities = new Vector<>(((ConfigPair)sc.get("Globals").get("RolePriority")).getKeys());
-//        Vector<String> priorities = (systemConfig)["Globals"].getNames("Globals", "RolePriority", NULL);
         int order = 0;
 
         for (String priority : priorities)
         {
             order = Integer.valueOf((String) sc.get("Globals").get("RolePriority."+priority));
-//            order = (systemConfig)["Globals"].get<int>("Globals", "RolePriority", priority, null);
             for (long key : this.roles.keySet())
             {
                 if (this.roles.get(key).getName().equals(priority))

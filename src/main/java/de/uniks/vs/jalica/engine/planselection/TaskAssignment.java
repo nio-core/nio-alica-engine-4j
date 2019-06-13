@@ -108,7 +108,7 @@ public class TaskAssignment implements ITaskAssignment {
 
         Assignment newAss = new Assignment(calculatedPartialAssignment);
 //#ifdef TA_DEBUG
-        if (CommonUtils.TA_DEBUG_debug) System.out.println("TA: Return this Assignment to PS:" + newAss.toString());
+        if (CommonUtils.TA_DEBUG_debug) System.out.println("TA: Return this Assignment teamObserver PS:" + newAss.toString());
 //#endif
 
         return newAss;
@@ -164,7 +164,7 @@ public class TaskAssignment implements ITaskAssignment {
 
                 if (partialAssignment.getMax() != -1) // add this partial assignment only, if all assigned robots does not have a priority of -1 for any task
                 {
-                    // Add to search fringe
+                    // Add teamObserver search fringe
                     this.fringe.add(partialAssignment);
                 }
             }

@@ -307,7 +307,7 @@ public class ModelFactory {
         this.rep.getPlans().put(plan.getID(), plan);
 //        Node curChild = element.getFirstChild();
 
-//        //TODO: move to parser
+//        //TODO: move teamObserver parser
 //        Vector<Element> nodes = extractToList(element, plans);
 //        nodes.addAll(extractToList(element,inTransitions));
 //        nodes.addAll(extractToList(element,outTransitions));
@@ -335,7 +335,7 @@ public class ModelFactory {
         // insert into plan repository map
         this.rep.getPlans().put(plan.getID(), plan);
 
-        //TODO: move to parser
+        //TODO: move teamObserver parser
         for (Object entry: jsonObject.entrySet() ) {
             if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Entry " + ((HashMap.Entry)entry).getKey());
             parser.handleEntry(entry, plan, this);
@@ -455,7 +455,7 @@ public class ModelFactory {
         Node curChild = element.getFirstChild();
 
         while (curChild != null) {
-            // TODO: FIXME skip #text (extract to method)
+            // TODO: FIXME skip #text (extract teamObserver method)
             if ("#text".equals(curChild.getNodeName()))
                 curChild = curChild.getNextSibling();
             else {
@@ -506,7 +506,7 @@ public class ModelFactory {
 //        Node curChild = element.getFirstChild();
 //
 //        while (curChild != null) {
-//            // TODO: FIXME skip #text (extract to method)
+//            // TODO: FIXME skip #text (extract teamObserver method)
 //            if ("#text".equals(curChild.getNodeName()))
 //                curChild = curChild.getNextSibling();
 //            else {
@@ -537,7 +537,7 @@ public class ModelFactory {
         this.rep.getTransitions().put(tran.getID(), tran);
 //        Node curChild = element.getFirstChild();
 
-        //        //TODO: move to parser
+        //        //TODO: move teamObserver parser
         Vector<Element> nodes = extractToList(element, outState);
         nodes.addAll(extractToList(element, inState));
         nodes.addAll(extractToList(element, preCondition));
@@ -630,7 +630,7 @@ public class ModelFactory {
         }
         Node curChild = element.getFirstChild();
         while (curChild != null) {
-            // TODO: FIXME skip #text (extract to method)
+            // TODO: FIXME skip #text (extract teamObserver method)
             if ("#text".equals(curChild.getNodeName()))
                 curChild = curChild.getNextSibling();
             else {
@@ -695,7 +695,7 @@ public class ModelFactory {
         }
 //        Node curChild = element.getFirstChild();
 //        while (curChild != null) {
-//            // TODO: FIXME skip #text (extract to method)
+//            // TODO: FIXME skip #text (extract teamObserver method)
 //            if ("#text".equals(curChild.getNodeName()))
 //                curChild = curChild.getNextSibling();
 //            else {
@@ -763,7 +763,7 @@ public class ModelFactory {
         Node curChild = element.getFirstChild();
 
         while (curChild != null) {
-            // TODO: FIXME skip #text (extract to method)
+            // TODO: FIXME skip #text (extract teamObserver method)
             if ("#text".equals(curChild.getNodeName()))
                 curChild = curChild.getNextSibling();
             else {
@@ -789,7 +789,7 @@ public class ModelFactory {
         Node curChild = element.getFirstChild();
 
         while (curChild != null) {
-            // TODO: FIXME skip #text (extract to method)
+            // TODO: FIXME skip #text (extract teamObserver method)
             if ("#text".equals(curChild.getNodeName()))
                 curChild = curChild.getNextSibling();
             else {
@@ -830,7 +830,7 @@ public class ModelFactory {
         state.setPostCondition(postCon);
 //
 //        while (curChild != null) {
-//            // TODO: FIXME skip #text (extract to method)
+//            // TODO: FIXME skip #text (extract teamObserver method)
 //            if ("#text".equals(curChild.getNodeName()))
 //                curChild = curChild.getNextSibling();
 //            else {
@@ -861,7 +861,7 @@ public class ModelFactory {
         Node curChild = element.getFirstChild();
 
         while (curChild != null) {
-            // TODO: FIXME skip #text (extract to method)
+            // TODO: FIXME skip #text (extract teamObserver method)
             if ("#text".equals(curChild.getNodeName()))
                 curChild = curChild.getNextSibling();
             else {
@@ -903,7 +903,7 @@ public class ModelFactory {
 //        Node curChild = element.getFirstChild();
 //
 //        while (curChild != null) {
-//            // TODO: FIXME skip #text (extract to method)
+//            // TODO: FIXME skip #text (extract teamObserver method)
 //            if ("#text".equals(curChild.getNodeName()))
 //                curChild = curChild.getNextSibling();
 //            else {
@@ -995,7 +995,7 @@ public class ModelFactory {
         addElement(s);
         this.rep.getStates().put(s.getID(), s);
 
-        //TODO: move to parser
+        //TODO: move teamObserver parser
         Vector<Element> nodes = extractToList(element, plans);
         nodes.addAll(extractToList(element, inTransitions));
         nodes.addAll(extractToList(element, outTransitions));
@@ -1063,7 +1063,7 @@ public class ModelFactory {
         return state;
     }
 
-    //  TODO: move to parser
+    //  TODO: move teamObserver parser
     private Vector extractToList(Node element, String tagName) {
         NodeList nodes = ((Element) element).getElementsByTagName(tagName);
         Vector newNodes = new Vector();
@@ -1154,7 +1154,7 @@ public class ModelFactory {
         boolean haveState = false;
         long curChildId;
 
-        //TODO: move to parser
+        //TODO: move teamObserver parser
         Vector<Element> nodes = extractToList(element, state);
         nodes.addAll(extractToList(element, task));
 
@@ -1764,26 +1764,28 @@ public class ModelFactory {
 //            ae.abort("MF:Selected RoleSet is not default, nor useable with current masterplan");
 //        }
 
-        RoleSet rs = new RoleSet();
+        RoleSet roleSet = new RoleSet();
 
-        rs.setID(parser.fetchId(jsonObject.get("id").toString()));
-        setAlicaElementAttributes(rs, jsonObject);
-        rs.setIsDefault(isDefault);
+        roleSet.setID(parser.fetchId(jsonObject.get("id").toString()));
+        setAlicaElementAttributes(roleSet, jsonObject);
+        roleSet.setIsDefault(isDefault);
 //        rs.setUsableWithPlanId(pid);
-        rs.setUsableWithPlanId(masterPlan.getID());
-        addElement(rs);
+        roleSet.setUsableWithPlanId(masterPlan.getID());
+        addElement(roleSet);
 
+        String defaultPriority = jsonObject.get("defaultPriority").toString();
+        roleSet.setDefaultPriority(Double.parseDouble(defaultPriority));
         JSONArray roles = (JSONArray) jsonObject.get("roles");
 
         for (Object obj : roles) {
             JSONObject role = (JSONObject) obj;
             RoleTaskMapping rtm = createRoleTaskMapping(role);
-             rs.getRoleTaskMappings().add(rtm);
+             roleSet.getRoleTaskMappings().add(rtm);
 //            } else {
 //                ae.abort("MF: Unhandled RoleSet Child:", curChild.getNodeValue());
 //            }
         }
-        return rs;
+        return roleSet;
     }
 
     private Node getNodeChild(Node element) {
@@ -2271,7 +2273,7 @@ public class ModelFactory {
 
         while (curChild != null) {
             String val = curChild.getNodeName();
-            // TODO: FIXME skip #text (extract to method)
+            // TODO: FIXME skip #text (extract teamObserver method)
             if ("#text".equals(curChild.getNodeName()))
                 curChild = curChild.getNextSibling();
             else {

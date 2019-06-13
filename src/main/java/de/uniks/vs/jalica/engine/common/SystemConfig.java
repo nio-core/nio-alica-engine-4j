@@ -3,6 +3,7 @@ package de.uniks.vs.jalica.engine.common;
 import de.uniks.vs.jalica.common.FileSystem;
 import de.uniks.vs.jalica.engine.common.config.ConfigPair;
 import de.uniks.vs.jalica.engine.common.config.ConfigParser;
+import de.uniks.vs.jalica.engine.idmanagement.IDManager;
 
 import java.util.HashMap;
 
@@ -18,7 +19,7 @@ public class SystemConfig {
     protected String rootPath;
     protected String logPath;
     protected String configPath;
-    protected String id= "nio_zero";
+    protected String id;
 
     private HashMap<String, ConfigPair> configurations;
 
@@ -88,18 +89,24 @@ public class SystemConfig {
     public String getHostname() {return id;}
 
     /**
-     * Looks up the own robot's ID with the system config's local hostname.
-     * @return The own robot's ID
+     * Looks up the own agent's ID with the system config's local hostname.
+     * @return The own agent's ID
      */
-    public int getOwnAgentID() {
-        return this.getRobotID(this.getHostname());
+    public long getOwnAgentID() {
+        return this.getAgentID(this.getHostname());
     }
+
     /**
-     * Looks up the robot's ID with the given name.
-     * @return The robot's ID
+     * Looks up the agent's ID with the given name.
+     * @return The agent's ID
      */
-    int getRobotID(String name) {
-        return Integer.valueOf((String) this.get("Globals").get("Team." + name +".ID"));
+    long getAgentID(String name) {
+        Object id = this.get("Globals").get("Team." + name + ".ID");
+
+        if (id != null)
+            return Integer.valueOf((String) this.get("Globals").get("Team." + name +".ID"));
+        else
+            return IDManager.generateUUID(name).asLong();
     }
 
     public String getRootPath() {

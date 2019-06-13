@@ -22,7 +22,7 @@ public class HelloWorldAlicaMultiAgent {
 
     @BeforeEach
     void beforeAll() {
-        // determine the path to the testsincpp config
+        // determine the path teamObserver the testsincpp config
 //        String path = supplementary::FileSystem::getSelfPath();
 //        int place = path.rfind("devel");
 //        path = path.substr(0, place);
@@ -109,7 +109,7 @@ public class HelloWorldAlicaMultiAgent {
 //                        }
 //                    }
 //                }
-//                cout << "2--------- Engagement to cooperative plan passed ---------" << endl;
+//                cout << "2--------- Engagement teamObserver cooperative plan passed ---------" << endl;
 //            }
 //            if (i == 16)
 //            {

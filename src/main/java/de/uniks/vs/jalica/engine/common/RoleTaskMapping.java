@@ -10,7 +10,7 @@ import java.util.HashMap;
  */
 public class RoleTaskMapping extends AlicaElement {
     private Role role;
-    HashMap<Long,Double> taskPriorities = new HashMap<>();
+    private HashMap<Long,Double> taskPriorities = new HashMap<>();
 
     public Role getRole() {
         return role;

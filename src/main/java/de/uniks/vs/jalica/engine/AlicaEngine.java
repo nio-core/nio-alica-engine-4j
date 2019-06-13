@@ -176,7 +176,7 @@ public class AlicaEngine {
     }
 
     /**
-     * Register with this EngineTrigger to be called after an engine iteration is complete.
+     * Register with this EngineTrigger teamObserver be called after an engine iteration is complete.
      */
     public void iterationComplete() {
         //TODO: implement the trigger function for iteration complete

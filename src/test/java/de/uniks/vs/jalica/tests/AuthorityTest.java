@@ -25,7 +25,7 @@ public class AuthorityTest {
     @BeforeEach
     void beforeAll() {
 
-//        // determine the path to the testsincpp config
+//        // determine the path teamObserver the testsincpp config
 //        string path = supplementary::FileSystem::getSelfPath();
 //        int place = path.rfind("devel");
 //        path = path.substr(0, place);

@@ -437,7 +437,7 @@ public class TeamObserver implements ITeamObserver {
             }
         }
 
-        // notifications for teamchanges, you can add some code below if you want to be notified when the team changed
+        // notifications for teamchanges, you can add some code below if you want teamObserver be notified when the team changed
         if (changed) {
             ae.getRoleAssignment().update();
             this.log.eventOccured("TeamChanged");
@@ -457,12 +457,12 @@ public class TeamObserver implements ITeamObserver {
                     if (second.isNewSimplePlanTree())
                     {
                         updatePlanTrees.add(second);
-                        if (CommonUtils.TO_DEBUG_debug)  System.out.println( "TO("+this.getOwnID()+"): added to update");
+                        if (CommonUtils.TO_DEBUG_debug)  System.out.println( "TO("+this.getOwnID()+"): added teamObserver update");
                         second.setNewSimplePlanTree(false);
                     }
                     else
                     {
-                        if (CommonUtils.TO_DEBUG_debug)  System.out.println("TO: added to no_update" );
+                        if (CommonUtils.TO_DEBUG_debug)  System.out.println("TO: added teamObserver no_update" );
                         noUpdates.add(second.getAgentID());
                     }
                 }

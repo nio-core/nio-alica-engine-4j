@@ -9,12 +9,13 @@ import java.util.ArrayList;
  */
 public class RoleSet extends AlicaElement {
 
-    ArrayList<RoleTaskMapping> roleTaskMappings = new ArrayList<>();
-    boolean isDefault;
+    private ArrayList<RoleTaskMapping> roleTaskMappings = new ArrayList<>();
+    private double defaultPriority;
     /**
      * the plan ID this roleset is defined for
      */
-    long usableWithPlanID;
+    private long usableWithPlanID;
+    private boolean isDefault;
 
     public void setIsDefault(boolean isDefault) {
         this.isDefault = isDefault;
@@ -26,6 +27,13 @@ public class RoleSet extends AlicaElement {
 
     public ArrayList<RoleTaskMapping> getRoleTaskMappings() {
         return roleTaskMappings;
+    }
+
+    public double getDefaultPriority() {
+        return defaultPriority;
+    }
+    public void setDefaultPriority(double defaultPriority) {
+        this.defaultPriority = defaultPriority;
     }
 }
 

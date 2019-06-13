@@ -109,7 +109,7 @@ public class AssignmentCollection {
         }
 		else
         {
-            System.out.println( "AssCol: Index to HIGH!!!!!! ########################################");
+            System.out.println( "AssCol: Index teamObserver HIGH!!!!!! ########################################");
             return false;
         }
     }

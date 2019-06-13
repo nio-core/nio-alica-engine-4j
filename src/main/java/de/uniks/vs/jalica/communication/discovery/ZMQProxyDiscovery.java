@@ -73,7 +73,7 @@ public class ZMQProxyDiscovery extends Discovery {
         @Override
         public void run(Object[] args, ZContext ctx, ZMQ.Socket pipe)
         {
-            //  Subscribe to "A" and "B"
+            //  Subscribe teamObserver "A" and "B"
             ZMQ.Socket subscriber = ctx.createSocket(SocketType.SUB);
             subscriber.connect("tcp://localhost:6001");
             subscriber.subscribe("A".getBytes(ZMQ.CHARSET));

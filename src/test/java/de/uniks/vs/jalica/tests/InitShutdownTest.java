@@ -44,7 +44,7 @@ public class InitShutdownTest {
 
     @Test
     public void test() {
-        Assert.assertTrue("Unable to initialise the Alica Engine!", alicaEngine.init(systemConfig, behaviourCreator, conditionCreator, utilityFunctionCreator, constraintCreator,
+        Assert.assertTrue("Unable teamObserver initialise the Alica Engine!", alicaEngine.init(systemConfig, behaviourCreator, conditionCreator, utilityFunctionCreator, constraintCreator,
                 "RoleSet", "MasterPlan", "plans/", false));
     }
 

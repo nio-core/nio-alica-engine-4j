@@ -171,7 +171,7 @@ public class PartialAssignment extends IAssignment implements Comparable<Partial
         if (this.unassignedAgents.size() > 0) {
             return false;
         }
-        // Every EntryPoint should be satisfied according to his minCar
+        // Every EntryPoint should be satisfied according teamObserver his minCar
         for (int i = 0; i < this.epAgentsMapping.getSize(); i++) {
 
             if (CommonUtils.PA_DEBUG_debug) System.out.println("PA:  Nr "+ i +" - " + this.dynCardinalities[i].getMin());
@@ -187,7 +187,7 @@ public class PartialAssignment extends IAssignment implements Comparable<Partial
     public ArrayList<PartialAssignment> expand() {
         ArrayList<PartialAssignment> newPas = new ArrayList<PartialAssignment>();
         if (this.unassignedAgents.size() == 0) {
-            // No robot left to expand
+            // No robot left teamObserver expand
             return newPas;
         }
         // Robot which should be assigned next
@@ -291,7 +291,7 @@ public class PartialAssignment extends IAssignment implements Comparable<Partial
                     Long iter = CommonUtils.find(this.unassignedAgents, 0, this.unassignedAgents.size() - 1, agent);
 
                     if (this.unassignedAgents.remove(this.unassignedAgents.indexOf(iter)) == this.unassignedAgents.lastElement()) {
-                        System.err.println( "PA: Tried to assign agent " + agent + ", but it was NOT UNassigned!");
+                        System.err.println( "PA: Tried teamObserver assign agent " + agent + ", but it was NOT UNassigned!");
                         try {
                             throw new Exception();
                         } catch (Exception e) {
@@ -343,7 +343,7 @@ public class PartialAssignment extends IAssignment implements Comparable<Partial
 
     @Override
     public int compareTo(PartialAssignment newPa) {
-        //TODO has perhaps to be changed
+        //TODO has perhaps teamObserver be changed
         // 0 , -1 = false
         // 1 true
         if (this == newPa) { // Same reference . same object
