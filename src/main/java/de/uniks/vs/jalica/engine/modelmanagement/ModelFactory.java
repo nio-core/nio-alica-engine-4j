@@ -9,6 +9,8 @@ import de.uniks.vs.jalica.engine.model.*;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.modelmanagement.parser.PlanParser;
 import de.uniks.vs.jalica.engine.PlanRepository;
+import de.uniks.vs.jalica.engine.planselection.RoleTaskMapping;
+import de.uniks.vs.jalica.engine.model.Characteristic;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.w3c.dom.Document;
@@ -17,8 +19,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
 import java.util.*;
 
 import static de.uniks.vs.jalica.common.utils.CommonUtils.stod;
@@ -65,13 +65,15 @@ public class ModelFactory {
     private static final String waitPlan = "waitPlan";
     private static final String alternativePlan = "alternativePlan";
 
-    private AlicaEngine ae;
-    private PlanParser parser;
-    private PlanRepository rep;
+    private AlicaEngine alicaEngine;
+    private PlanParser planParser;
+    private PlanRepository planRepository;
     private String subplan;
     private boolean ignoreMasterPlanId;
 
     private LinkedHashMap<Long, AlicaElement> elements = new LinkedHashMap<>();
+
+    // Reference listss
     private List<Pair<Long, Long>> epStateReferences = new ArrayList<>();
     private List<Pair<Long, Long>> epTaskReferences = new ArrayList<>();
     private List<Pair<Long, Long>> stateInTransitionReferences = new ArrayList<>();
@@ -95,15 +97,15 @@ public class ModelFactory {
 
 
     public ModelFactory(AlicaEngine ae, PlanParser parser, PlanRepository rep) {
-        this.ae = ae;
-        this.parser = parser;
-        this.rep = rep;
+        this.alicaEngine = ae;
+        this.planParser = parser;
+        this.planRepository = rep;
     }
 
     public void computeReachabilities() {
         if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Computing Reachability sets...");
 
-        for (Plan plan : this.rep.getPlans().values()) {
+        for (Plan plan : this.planRepository.getPlans().values()) {
             for (EntryPoint entryPoint : plan.getEntryPoints().values()) {
                 entryPoint.computeReachabilitySet();
             }
@@ -115,7 +117,7 @@ public class ModelFactory {
     public void attachRoleReferences() {
         if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Attaching Role references..." );
         for (Pair<Long, Long> pairs : this.rtmRoleReferences) {
-            Role  r = this.rep.getRoles().get(pairs.snd);//find(pairs.second).second;
+            Role  r = this.planRepository.getRoles().get(pairs.snd);//find(pairs.second).second;
             RoleTaskMapping rtm = (RoleTaskMapping) this.elements.get(pairs.fst);//find(pairs.first).second;
             r.setRoleTaskMapping(rtm);
             rtm.setRole(r);
@@ -141,7 +143,7 @@ public class ModelFactory {
 //            Transition t = (Transition) this.elements.get(pairs.fst);
 //            State st = (State) this.elements.get(pairs.snd);
 //            if (st == null) {
-//                ae.abort("MF: Cannot resolve transitionAimReferences target: ", "" + pairs.fst);
+//                alicaEngine.abort("MF: Cannot resolve transitionAimReferences target: ", "" + pairs.fst);
 //            }
 //            t.setOutState(st);
 //            st.getInTransitions().add(t);
@@ -162,7 +164,7 @@ public class ModelFactory {
 //            Transition t = (Transition) this.elements.get(pairs.snd);
 //            State st = (State) this.elements.get(pairs.fst);
 //            if (st != t.getOutState()) {
-//                ae.abort("MF: Unexpected reference in a transition! ", "" + pairs.fst);
+//                alicaEngine.abort("MF: Unexpected reference in a transition! ", "" + pairs.fst);
 //            }
 //        }
 //        this.stateInTransitionReferences.clear();
@@ -259,9 +261,9 @@ public class ModelFactory {
 //
 //        //quantifierScopeReferences
 //        for (Pair<Long, Long> pairs : this.quantifierScopeReferences) {
-//            AlicaElement ae = (AlicaElement) this.elements.get(pairs.snd);
+//            AlicaElement alicaEngine = (AlicaElement) this.elements.get(pairs.snd);
 //            Quantifier q = (Quantifier) this.elements.get(pairs.fst);
-//            q.setScope(this.ae, ae);
+//            q.setScope(this.alicaEngine, alicaEngine);
 //        }
 //        this.quantifierScopeReferences.clear();
 //
@@ -278,14 +280,14 @@ public class ModelFactory {
             if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Attaching Characteristics references...");
 
             for (Pair<Long, Long> pairs : this.charCapReferences) {
-                Characteristic cha = this.rep.getCharacteristics().get(pairs.fst);
+                Characteristic cha = this.planRepository.getCharacteristics().get(pairs.fst);
                 Capability cap = (Capability) this.elements.get(pairs.snd);
                 cha.setName(cap.getName());
             }
             this.charCapReferences.clear();
 
             for (Pair<Long, Long> pairs : this.charCapValReferences) {
-                Characteristic cha = this.rep.getCharacteristics().get(pairs.fst);
+                Characteristic cha = this.planRepository.getCharacteristics().get(pairs.fst);
                 CapValue capVal = (CapValue) this.elements.get(pairs.snd);
                 cha.setName(capVal.getName());
             }
@@ -297,17 +299,17 @@ public class ModelFactory {
 
     public Plan createPlan(Document doc) {
         Node element = doc.getDocumentElement();
-        long id = this.parser.parserId(element);
-        Plan plan = new Plan(id, ae);
-        plan.setFileName(this.parser.getCurrentFile());
+        long id = this.planParser.parserId(element);
+        Plan plan = new Plan(id, alicaEngine);
+        plan.setFileName(this.planParser.getCurrentFile());
         setAlicaElementAttributes(plan, element);
         // insert into elements ma
         addElement(plan);
         // insert into plan repository map
-        this.rep.getPlans().put(plan.getID(), plan);
+        this.planRepository.getPlans().put(plan.getID(), plan);
 //        Node curChild = element.getFirstChild();
 
-//        //TODO: move teamObserver parser
+//        //TODO: move teamObserver planParser
 //        Vector<Element> nodes = extractToList(element, plans);
 //        nodes.addAll(extractToList(element,inTransitions));
 //        nodes.addAll(extractToList(element,outTransitions));
@@ -318,7 +320,7 @@ public class ModelFactory {
         while (curChild != null) {
             if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Nodename " +curChild.getNodeName());
 
-            parser.handleTag(curChild, plan, this);
+            planParser.handleTag(curChild, plan, this);
             curChild = curChild.getNextSibling();
         }
         return plan;
@@ -326,26 +328,26 @@ public class ModelFactory {
 
     public Plan createPlan(JSONObject jsonObject) {
 //        long id = (long) jsonObject.get("id");
-        long id = this.parser.fetchId(jsonObject.get("id").toString());
-        Plan plan = new Plan(id, ae);
-        plan.setFileName(this.parser.getCurrentFile());
+        long id = this.planParser.fetchId(jsonObject.get("id").toString());
+        Plan plan = new Plan(id, alicaEngine);
+        plan.setFileName(this.planParser.getCurrentFile());
         setAlicaElementAttributes(plan, jsonObject);
         // insert into elements ma
         addElement(plan);
         // insert into plan repository map
-        this.rep.getPlans().put(plan.getID(), plan);
+        this.planRepository.getPlans().put(plan.getID(), plan);
 
-        //TODO: move teamObserver parser
+        //TODO: move teamObserver planParser
         for (Object entry: jsonObject.entrySet() ) {
             if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Entry " + ((HashMap.Entry)entry).getKey());
-            parser.handleEntry(entry, plan, this);
+            planParser.handleEntry(entry, plan, this);
         }
         return plan;
     }
 
     public SyncTransition createSyncTransition(Node element) {
         SyncTransition s = new SyncTransition();
-        s.setID(this.parser.parserId(element));
+        s.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(s, element);
         String talkTimeoutPtr = element.getAttributes().getNamedItem("talkTimeout").getTextContent();
         if (talkTimeoutPtr != null) {
@@ -357,16 +359,16 @@ public class ModelFactory {
         }
 
         addElement(s);
-        this.rep.getSyncTransitions().put(s.getID(), s);
+        this.planRepository.getSyncTransitions().put(s.getID(), s);
         if (element.getFirstChild() != null) {
-            ae.abort("MF: Unhandled Synchtransition Child:", element.getFirstChild().toString());
+            alicaEngine.abort("MF: Unhandled Synchtransition Child:", element.getFirstChild().toString());
         }
         return s;
     }
 
     public SyncTransition createSyncTransition(JSONObject jsonObject) {
         SyncTransition s = new SyncTransition();
-        long id = this.parser.fetchId(jsonObject.get("id").toString());
+        long id = this.planParser.fetchId(jsonObject.get("id").toString());
         s.setID(id);
         setAlicaElementAttributes(s, jsonObject);
         String talkTimeoutPtr = jsonObject.get("talkTimeout").toString();
@@ -380,10 +382,10 @@ public class ModelFactory {
             s.setSyncTimeOut(stol(syncTimeoutPtr));
         }
         addElement(s);
-        this.rep.getSyncTransitions().put(s.getID(), s);
+        this.planRepository.getSyncTransitions().put(s.getID(), s);
 
 //        if (element.getFirstChild() != null) {
-//            ae.abort("MF: Unhandled Synchtransition Child:", element.getFirstChild().toString());
+//            alicaEngine.abort("MF: Unhandled Synchtransition Child:", element.getFirstChild().toString());
 //        }
         return s;
     }
@@ -399,10 +401,10 @@ public class ModelFactory {
         if (namePtr != null) {
             name = namePtr;
         }
-        Variable v = new Variable(this.parser.parserId(element), name, type);
+        Variable v = new Variable(this.planParser.parserId(element), name, type);
         setAlicaElementAttributes(v, element);
         addElement(v);
-        this.rep.getVariables().put(v.getID(), v);
+        this.planRepository.getVariables().put(v.getID(), v);
         return v;
     }
 
@@ -419,17 +421,17 @@ public class ModelFactory {
         if (namePtr != null) {
             name = namePtr;
         }
-        long id =  this.parser.fetchId(jsonObject.get("id").toString());
+        long id =  this.planParser.fetchId(jsonObject.get("id").toString());
         Variable v = new Variable(id, name, type);
         setAlicaElementAttributes(v, jsonObject);
         addElement(v);
-        this.rep.getVariables().put(v.getID(), v);
+        this.planRepository.getVariables().put(v.getID(), v);
         return v;
     }
 
     public RuntimeCondition createRuntimeCondition(Node element) {
         RuntimeCondition r = new RuntimeCondition();
-        r.setID(this.parser.parserId(element));
+        r.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(r, element);
         addElement(r);
 
@@ -460,7 +462,7 @@ public class ModelFactory {
                 curChild = curChild.getNextSibling();
             else {
                 String val = curChild.getNodeName();
-                long cid = this.parser.parserId(curChild);
+                long cid = this.planParser.parserId(curChild);
                 if (vars.equals(val)) {
                     this.conditionVarReferences.add(new Pair(r.getID(), cid));
                 } else if (quantifiers.equals(val)) {
@@ -470,7 +472,7 @@ public class ModelFactory {
                     Parameter p = createParameter(curChild);
                     r.getParameters().add(p);
                 } else {
-                    ae.abort("MF: Unhandled RuntimeCondition Child", curChild.toString());
+                    alicaEngine.abort("MF: Unhandled RuntimeCondition Child", curChild.toString());
                 }
                 curChild = curChild.getNextSibling();
             }
@@ -480,7 +482,7 @@ public class ModelFactory {
 
     public RuntimeCondition createRuntimeCondition(JSONObject jsonObject) {
         RuntimeCondition runtimeCondition = new RuntimeCondition();
-        long id = this.parser.fetchId(jsonObject.get("id").toString());
+        long id = this.planParser.fetchId(jsonObject.get("id").toString());
         runtimeCondition.setID(id);
         setAlicaElementAttributes(runtimeCondition, jsonObject);
         addElement(runtimeCondition);
@@ -511,7 +513,7 @@ public class ModelFactory {
 //                curChild = curChild.getNextSibling();
 //            else {
 //                String val = curChild.getNodeName();
-//                long cid = this.parser.parserId(curChild);
+//                long cid = this.planParser.parserId(curChild);
 //                if (vars.equals(val)) {
 //                    this.conditionVarReferences.add(new Pair(runtimeCondition.extractID(), cid));
 //                } else if (quantifiers.equals(val)) {
@@ -521,7 +523,7 @@ public class ModelFactory {
 //                    Parameter p = createParameter(curChild);
 //                    runtimeCondition.getParameters().add(p);
 //                } else {
-//                    ae.abort("MF: Unhandled RuntimeCondition Child", curChild.toString());
+//                    alicaEngine.abort("MF: Unhandled RuntimeCondition Child", curChild.toString());
 //                }
 //                curChild = curChild.getNextSibling();
 //            }
@@ -531,13 +533,13 @@ public class ModelFactory {
 
     public Transition createTransition(Node element, Plan plan) {
         Transition tran = new Transition();
-        tran.setID(this.parser.parserId(element));
+        tran.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(tran, element);
         addElement(tran);
-        this.rep.getTransitions().put(tran.getID(), tran);
+        this.planRepository.getTransitions().put(tran.getID(), tran);
 //        Node curChild = element.getFirstChild();
 
-        //        //TODO: move teamObserver parser
+        //        //TODO: move teamObserver planParser
         Vector<Element> nodes = extractToList(element, outState);
         nodes.addAll(extractToList(element, inState));
         nodes.addAll(extractToList(element, preCondition));
@@ -547,7 +549,7 @@ public class ModelFactory {
         for (Element curChild : nodes) {
 //			String val = curChild.getNodeValue();
             String val = curChild.getTagName();
-            long cid = this.parser.parserId(curChild);
+            long cid = this.planParser.parserId(curChild);
             if (inState.equals(val)) {
                 //silently ignore
             } else if (outState.equals(val)) {
@@ -559,7 +561,7 @@ public class ModelFactory {
             } else if (synchronisation.equals(val)) {
                 this.transitionSynchReferences.add(new Pair(tran.getID(), cid));
             } else {
-                ae.abort("MF: Unhandled Transition Child:", curChild.toString());
+                alicaEngine.abort("MF: Unhandled Transition Child:", curChild.toString());
             }
 //            curChild = curChild.getNextSibling();
         }
@@ -568,11 +570,11 @@ public class ModelFactory {
 
     public Transition createTransition(JSONObject jsonObject, Plan plan) {
         Transition transition = new Transition();
-        long id = this.parser.fetchId(jsonObject.get("id").toString());
+        long id = this.planParser.fetchId(jsonObject.get("id").toString());
         transition.setID(id);
         setAlicaElementAttributes(transition, jsonObject);
         addElement(transition);
-        this.rep.getTransitions().put(transition.getID(), transition);
+        this.planRepository.getTransitions().put(transition.getID(), transition);
 
         long outStateID = (long) jsonObject.get("outState");
         this.transitionAimReferences.add(new Pair(transition.getID(), outStateID));
@@ -594,7 +596,7 @@ public class ModelFactory {
 
     public PreCondition createPreCondition(Node element) {
         PreCondition pre = new PreCondition();
-        pre.setID(this.parser.parserId(element));
+        pre.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(pre, element);
         addElement(pre);
         String conditionString = "";
@@ -635,7 +637,7 @@ public class ModelFactory {
                 curChild = curChild.getNextSibling();
             else {
                 String val = curChild.getNodeName();
-                long cid = this.parser.parserId(curChild);
+                long cid = this.planParser.parserId(curChild);
                 if (vars.equals(val)) {
                     this.conditionVarReferences.add(new Pair(pre.getID(), cid));
                 } else if (quantifiers.equals(val)) {
@@ -645,7 +647,7 @@ public class ModelFactory {
                     Parameter p = createParameter(curChild);
                     pre.getParameters().add(p);
                 } else {
-                    ae.abort("MF: Unhandled PreCondition Child:", curChild.getNodeValue());
+                    alicaEngine.abort("MF: Unhandled PreCondition Child:", curChild.getNodeValue());
                 }
                 curChild = curChild.getNextSibling();
             }
@@ -654,7 +656,7 @@ public class ModelFactory {
     }
     public PreCondition createPreCondition(JSONObject jsonObject) {
         PreCondition pre = new PreCondition();
-        long id =  this.parser.fetchId(jsonObject.get("id").toString());
+        long id =  this.planParser.fetchId(jsonObject.get("id").toString());
         pre.setID(id);
         setAlicaElementAttributes(pre, jsonObject);
         addElement(pre);
@@ -700,7 +702,7 @@ public class ModelFactory {
 //                curChild = curChild.getNextSibling();
 //            else {
 //                String val = curChild.getNodeName();
-//                long cid = this.parser.parserId(curChild);
+//                long cid = this.planParser.parserId(curChild);
 //                if (vars.equals(val)) {
 //                    this.conditionVarReferences.add(new Pair(pre.extractID(), cid));
 //                } else if (quantifiers.equals(val)) {
@@ -710,7 +712,7 @@ public class ModelFactory {
 //                    Parameter p = createParameter(curChild);
 //                    pre.getParameters().add(p);
 //                } else {
-//                    ae.abort("MF: Unhandled PreCondition Child:", curChild.getNodeValue());
+//                    alicaEngine.abort("MF: Unhandled PreCondition Child:", curChild.getNodeValue());
 //                }
 //                curChild = curChild.getNextSibling();
 //            }
@@ -720,7 +722,7 @@ public class ModelFactory {
 
     private Parameter createParameter(Node element) {
         Parameter p = new Parameter();
-        long id = this.parser.parserId(element);
+        long id = this.planParser.parserId(element);
         p.setID(id);
         addElement(p);
         setAlicaElementAttributes(p, element);
@@ -733,24 +735,24 @@ public class ModelFactory {
 
     private Quantifier createQuantifier(Node element) {
         Quantifier q = null;
-        long id = this.parser.parserId(element);
+        long id = this.planParser.parserId(element);
 
         String typeString = "";
         String typePtr = element.getAttributes().getNamedItem("xsi:type").getTextContent();
         if (typePtr != null) {
             typeString = typePtr;
             if ("alica:ForallAgents".equals(typeString)) {
-                q = new ForallAgents(this.ae);
+                q = new ForallAgents(this.alicaEngine);
                 q.setID(id);
             } else {
-                ae.abort("MF: Unsupported quantifier type! !", typeString);
+                alicaEngine.abort("MF: Unsupported quantifier type! !", typeString);
             }
         } else {
-            ae.abort("MF: Quantifier without type!", String.valueOf(id));
+            alicaEngine.abort("MF: Quantifier without type!", String.valueOf(id));
         }
 
         addElement(q);
-        this.rep.getQuantifiers().put(q.getID(), q);
+        this.planRepository.getQuantifiers().put(q.getID(), q);
         setAlicaElementAttributes(q, element);
 
         String scopePtr = element.getAttributes().getNamedItem("scope").getTextContent();
@@ -772,7 +774,7 @@ public class ModelFactory {
                 if (sorts.equals(val)) {
                     q.getDomainIdentifiers().add(curChild.getFirstChild().getNodeValue());
                 } else {
-                    ae.abort("MF: Unhandled Quantifier Child:", curChild.toString());
+                    alicaEngine.abort("MF: Unhandled Quantifier Child:", curChild.toString());
                 }
                 curChild = curChild.getNextSibling();
             }
@@ -782,10 +784,10 @@ public class ModelFactory {
 
     public FailureState createFailureState(Node element) {
         FailureState fail = new FailureState();
-        fail.setID(this.parser.parserId(element));
+        fail.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(fail, element);
         addElement(fail);
-        this.rep.getStates().put(fail.getID(), fail);
+        this.planRepository.getStates().put(fail.getID(), fail);
         Node curChild = element.getFirstChild();
 
         while (curChild != null) {
@@ -794,7 +796,7 @@ public class ModelFactory {
                 curChild = curChild.getNextSibling();
             else {
                 String val = curChild.getNodeName();
-                long cid = this.parser.parserId(curChild);
+                long cid = this.planParser.parserId(curChild);
 
                 if (inTransitions.equals(val)) {
                     this.stateInTransitionReferences.add(new Pair(fail.getID(), cid));
@@ -802,7 +804,7 @@ public class ModelFactory {
                     PostCondition postCon = createPostCondition(curChild);
                     fail.setPostCondition(postCon);
                 } else {
-                    ae.abort("MF: Unhandled FaulireState Child: ", curChild.getNodeValue());
+                    alicaEngine.abort("MF: Unhandled FaulireState Child: ", curChild.getNodeValue());
                 }
 
                 curChild = curChild.getNextSibling();
@@ -812,16 +814,16 @@ public class ModelFactory {
     }
     public FailureState createFailureState(JSONObject jsonObject) {
         FailureState state = new FailureState();
-        long id =  this.parser.fetchId(jsonObject.get("id").toString());
+        long id =  this.planParser.fetchId(jsonObject.get("id").toString());
         state.setID(id);
         setAlicaElementAttributes(state, jsonObject);
         addElement(state);
-        this.rep.getStates().put(state.getID(), state);
+        this.planRepository.getStates().put(state.getID(), state);
 
         JSONArray inTransitions = (JSONArray) jsonObject.get("inTransitions");
 
         for (Object obj : inTransitions) {
-            long objID = this.parser.fetchId(obj.toString());
+            long objID = this.planParser.fetchId(obj.toString());
             this.stateInTransitionReferences.add(new Pair(state.getID(), objID));
         }
 
@@ -835,7 +837,7 @@ public class ModelFactory {
 //                curChild = curChild.getNextSibling();
 //            else {
 //                String val = curChild.getNodeName();
-//                long cid = this.parser.parserId(curChild);
+//                long cid = this.planParser.parserId(curChild);
 //
 //                if (inTransitions.equals(val)) {
 //                    this.stateInTransitionReferences.add(new Pair(fail.extractID(), cid));
@@ -843,7 +845,7 @@ public class ModelFactory {
 //                    PostCondition postCon = createPostCondition(curChild);
 //                    fail.setPostCondition(postCon);
 //                } else {
-//                    ae.abort("MF: Unhandled FaulireState Child: ", curChild.getNodeValue());
+//                    alicaEngine.abort("MF: Unhandled FaulireState Child: ", curChild.getNodeValue());
 //                }
 //
 //                curChild = curChild.getNextSibling();
@@ -854,10 +856,10 @@ public class ModelFactory {
 
     public SuccessState createSuccessState(Node element) {
         SuccessState suc = new SuccessState();
-        suc.setID(this.parser.parserId(element));
+        suc.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(suc, element);
         addElement(suc);
-        this.rep.getStates().put(suc.getID(), suc);
+        this.planRepository.getStates().put(suc.getID(), suc);
         Node curChild = element.getFirstChild();
 
         while (curChild != null) {
@@ -866,7 +868,7 @@ public class ModelFactory {
                 curChild = curChild.getNextSibling();
             else {
                 String val = curChild.getNodeName();
-                long cid = this.parser.parserId(curChild);
+                long cid = this.planParser.parserId(curChild);
 
                 if (inTransitions.equals(val)) {
                     this.stateInTransitionReferences.add(new Pair(suc.getID(), cid));
@@ -874,7 +876,7 @@ public class ModelFactory {
                     PostCondition postCon = createPostCondition(curChild);
                     suc.setPostCondition(postCon);
                 } else {
-                    ae.abort("MF: Unhandled SuccesState Child:", curChild.getNodeValue());
+                    alicaEngine.abort("MF: Unhandled SuccesState Child:", curChild.getNodeValue());
                 }
                 curChild = curChild.getNextSibling();
             }
@@ -884,16 +886,16 @@ public class ModelFactory {
 
     public SuccessState createSuccessState(JSONObject jsonObject) {
         SuccessState state = new SuccessState();
-        long id =  this.parser.fetchId(jsonObject.get("id").toString());
+        long id =  this.planParser.fetchId(jsonObject.get("id").toString());
         state.setID(id);
         setAlicaElementAttributes(state, jsonObject);
         addElement(state);
-        this.rep.getStates().put(state.getID(), state);
+        this.planRepository.getStates().put(state.getID(), state);
 
         JSONArray inTransitions = (JSONArray) jsonObject.get("inTransitions");
 
         for (Object obj : inTransitions) {
-            long objID = this.parser.fetchId(obj.toString());
+            long objID = this.planParser.fetchId(obj.toString());
             this.stateInTransitionReferences.add(new Pair(state.getID(), objID));
         }
 
@@ -908,7 +910,7 @@ public class ModelFactory {
 //                curChild = curChild.getNextSibling();
 //            else {
 //                String val = curChild.getNodeName();
-//                long cid = this.parser.parserId(curChild);
+//                long cid = this.planParser.parserId(curChild);
 //
 //                if (inTransitions.equals(val)) {
 //                    this.stateInTransitionReferences.add(new Pair(suc.extractID(), cid));
@@ -916,7 +918,7 @@ public class ModelFactory {
 //                    PostCondition postCon = createPostCondition(curChild);
 //                    suc.setPostCondition(postCon);
 //                } else {
-//                    ae.abort("MF: Unhandled SuccesState Child:", curChild.getNodeValue());
+//                    alicaEngine.abort("MF: Unhandled SuccesState Child:", curChild.getNodeValue());
 //                }
 //                curChild = curChild.getNextSibling();
 //            }
@@ -926,7 +928,7 @@ public class ModelFactory {
 
     public PostCondition createPostCondition(Node element) {
         PostCondition pos = new PostCondition();
-        pos.setID(this.parser.parserId(element));
+        pos.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(pos, element);
         addElement(pos);
 
@@ -949,7 +951,7 @@ public class ModelFactory {
         }
 
         if (element.getFirstChild() != null) {
-            ae.abort("MF: Unhandled Result child", element.getFirstChild().toString());
+            alicaEngine.abort("MF: Unhandled Result child", element.getFirstChild().toString());
         }
 
         return pos;
@@ -957,7 +959,7 @@ public class ModelFactory {
 
     public PostCondition createPostCondition(JSONObject jsonObject) {
         PostCondition pos = new PostCondition();
-        long id =  this.parser.fetchId(jsonObject.get("id").toString());
+        long id =  this.planParser.fetchId(jsonObject.get("id").toString());
         pos.setID(id);
         setAlicaElementAttributes(pos, jsonObject);
         addElement(pos);
@@ -981,7 +983,7 @@ public class ModelFactory {
         }
 
 //        if (element.getFirstChild() != null) {
-//            ae.abort("MF: Unhandled Result child", element.getFirstChild().toString());
+//            alicaEngine.abort("MF: Unhandled Result child", element.getFirstChild().toString());
 //        }
 
         return pos;
@@ -989,13 +991,13 @@ public class ModelFactory {
 
     public State createState(Node element) {
         State s = new State();
-        s.setID(this.parser.parserId(element));
+        s.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(s, element);
 
         addElement(s);
-        this.rep.getStates().put(s.getID(), s);
+        this.planRepository.getStates().put(s.getID(), s);
 
-        //TODO: move teamObserver parser
+        //TODO: move teamObserver planParser
         Vector<Element> nodes = extractToList(element, plans);
         nodes.addAll(extractToList(element, inTransitions));
         nodes.addAll(extractToList(element, outTransitions));
@@ -1005,7 +1007,7 @@ public class ModelFactory {
 //        while (curChild != null)
         for (Element curChild : nodes) {
             String val = curChild.getTagName();
-            long cid = this.parser.parserId(curChild);
+            long cid = this.planParser.parserId(curChild);
 
             if (inTransitions.equals(val)) {
                 this.stateInTransitionReferences.add(new Pair(s.getID(), cid));
@@ -1017,7 +1019,7 @@ public class ModelFactory {
                 Parametrisation para = createParametrisation(curChild);
                 s.getParametrisation().add(para);
             } else {
-                ae.abort("MF: Unhandled State Child: ", val);
+                alicaEngine.abort("MF: Unhandled State Child: ", val);
             }
 
 //            curChild = curChild.getNextSibling();
@@ -1027,35 +1029,35 @@ public class ModelFactory {
 
     public State createState(JSONObject jsonObject) {
         State state = new State();
-        long id =  this.parser.fetchId(jsonObject.get("id").toString());
+        long id =  this.planParser.fetchId(jsonObject.get("id").toString());
         state.setID(id);
         setAlicaElementAttributes(state, jsonObject);
 
         addElement(state);
-        this.rep.getStates().put(state.getID(), state);
+        this.planRepository.getStates().put(state.getID(), state);
 
         JSONArray inTransitions = (JSONArray) jsonObject.get("inTransitions");
 
         for (Object obj : inTransitions) {
-            long objID = this.parser.fetchId(obj.toString());
+            long objID = this.planParser.fetchId(obj.toString());
             this.stateInTransitionReferences.add(new Pair(state.getID(), objID));
         }
         JSONArray outTransitions = (JSONArray) jsonObject.get("outTransitions");
 
         for (Object obj : outTransitions) {
-            long objID = this.parser.fetchId(obj.toString());
+            long objID = this.planParser.fetchId(obj.toString());
             this.stateOutTransitionReferences.add(new Pair(state.getID(), objID));
         }
         JSONArray planObjects = (JSONArray) jsonObject.get("abstractPlans");
 
         for (Object obj : planObjects) {
-            long objID = this.parser.fetchId(obj.toString());
+            long objID = this.planParser.fetchId(obj.toString());
             this.statePlanReferences.add(new Pair(state.getID(), objID));
         }
         JSONArray variableBindings = (JSONArray) jsonObject.get("variableBindings");
 
         for (Object obj : variableBindings) {
-            long objID = this.parser.fetchId(obj.toString());
+            long objID = this.planParser.fetchId(obj.toString());
             this.stateInTransitionReferences.add(new Pair(state.getID(), objID));
             Parametrisation para = createParametrisation(((JSONObject)obj));
             state.getParametrisation().add(para);
@@ -1063,7 +1065,7 @@ public class ModelFactory {
         return state;
     }
 
-    //  TODO: move teamObserver parser
+    //  TODO: move teamObserver planParser
     private Vector extractToList(Node element, String tagName) {
         NodeList nodes = ((Element) element).getElementsByTagName(tagName);
         Vector newNodes = new Vector();
@@ -1077,14 +1079,14 @@ public class ModelFactory {
 
     private Parametrisation createParametrisation(Node element) {
         Parametrisation para = new Parametrisation();
-        para.setID(this.parser.parserId(element));
+        para.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(para, element);
 
         addElement(para);
         Node curChild = element.getFirstChild();
         while (curChild != null) {
             String val = curChild.getNodeValue();
-            long cid = this.parser.parserId(curChild);
+            long cid = this.planParser.parserId(curChild);
 
             if (subplan.equals(val)) {
                 this.paramSubPlanReferences.add(new Pair(para.getID(), cid));
@@ -1093,7 +1095,7 @@ public class ModelFactory {
             } else if (var.equals(val)) {
                 this.paramVarReferences.add(new Pair(para.getID(), cid));
             } else {
-                ae.abort("MF: Unhandled Parametrisation Child:", curChild.toString());
+                alicaEngine.abort("MF: Unhandled Parametrisation Child:", curChild.toString());
             }
 
             curChild = curChild.getNextSibling();
@@ -1103,7 +1105,7 @@ public class ModelFactory {
 
     private Parametrisation createParametrisation(JSONObject jsonObject) {
         Parametrisation para = new Parametrisation();
-        long id = this.parser.fetchId(jsonObject.get("id").toString());
+        long id = this.planParser.fetchId(jsonObject.get("id").toString());
         para.setID(id);
         setAlicaElementAttributes(para, jsonObject);
 
@@ -1112,7 +1114,7 @@ public class ModelFactory {
 //
 //        while (curChild != null) {
 //            String val = curChild.getNodeValue();
-//            long cid = this.parser.parserId(curChild);
+//            long cid = this.planParser.parserId(curChild);
 //
 //            if (subplan.equals(val)) {
 //                this.paramSubPlanReferences.add(new Pair(para.extractID(), cid));
@@ -1121,7 +1123,7 @@ public class ModelFactory {
 //            } else if (var.equals(val)) {
 //                this.paramVarReferences.add(new Pair(para.extractID(), cid));
 //            } else {
-//                ae.abort("MF: Unhandled Parametrisation Child:", curChild.toString());
+//                alicaEngine.abort("MF: Unhandled Parametrisation Child:", curChild.toString());
 //            }
 //
 //            curChild = curChild.getNextSibling();
@@ -1131,7 +1133,7 @@ public class ModelFactory {
 
     public EntryPoint createEntryPoint(Node element) {
         EntryPoint ep = new EntryPoint();
-        ep.setID(this.parser.parserId(element));
+        ep.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(ep, element);
         String attr = element.getAttributes().getNamedItem("minCardinality").getTextContent();
         if (!attr.isEmpty()) {
@@ -1149,19 +1151,19 @@ public class ModelFactory {
         }
 
         addElement(ep);
-        this.rep.getEntryPoints().put(ep.getID(), ep);
+        this.planRepository.getEntryPoints().put(ep.getID(), ep);
 //        Node curChild = element.getFirstChild();
         boolean haveState = false;
         long curChildId;
 
-        //TODO: move teamObserver parser
+        //TODO: move teamObserver planParser
         Vector<Element> nodes = extractToList(element, state);
         nodes.addAll(extractToList(element, task));
 
 //        while (curChild != null)
         for (Element curChild : nodes) {
             String val = curChild.getTagName();
-            curChildId = this.parser.parserId(curChild);
+            curChildId = this.planParser.parserId(curChild);
 
             if (state.equals(val)) {
                 this.epStateReferences.add(new Pair(ep.getID(), curChildId));
@@ -1169,13 +1171,13 @@ public class ModelFactory {
             } else if (task.equals(val)) {
                 this.epTaskReferences.add(new Pair(ep.getID(), curChildId));
             } else {
-                ae.abort("MF: Unhandled EntryPoint Child: ", val);
+                alicaEngine.abort("MF: Unhandled EntryPoint Child: ", val);
             }
 //            curChild = curChild.getNextSibling();
         }
 
         if (!haveState) {
-            ae.abort("MF: No initial state identified for EntryPoint: ", String.valueOf(ep.getID()));
+            alicaEngine.abort("MF: No initial state identified for EntryPoint: ", String.valueOf(ep.getID()));
         }
 
         return ep;
@@ -1183,7 +1185,7 @@ public class ModelFactory {
 
     public EntryPoint createEntryPoint(JSONObject jsonObject) {
         EntryPoint ep = new EntryPoint();
-        long id = this.parser.fetchId(jsonObject.get("id").toString());
+        long id = this.planParser.fetchId(jsonObject.get("id").toString());
         ep.setID(id);
         setAlicaElementAttributes(ep, jsonObject);
         String attr = jsonObject.get("minCardinality").toString();
@@ -1203,20 +1205,20 @@ public class ModelFactory {
             ep.setSuccessRequired("true".equals(attr));
         }
         addElement(ep);
-        this.rep.getEntryPoints().put(ep.getID(), ep);
+        this.planRepository.getEntryPoints().put(ep.getID(), ep);
         attr = jsonObject.get(task).toString();
-        id = parser.fetchId(attr);
+        id = planParser.fetchId(attr);
 
         if (!attr.isEmpty()) {
             this.epTaskReferences.add(new Pair(ep.getID(), id));
         }
         attr = jsonObject.get(state).toString();
-        id = parser.fetchId(attr);
+        id = planParser.fetchId(attr);
 
         if (!attr.isEmpty()) {
             this.epStateReferences.add(new Pair(ep.getID(), id));
         } else {
-            ae.abort("MF: No initial state identified for EntryPoint: ", String.valueOf(ep.getID()));
+            alicaEngine.abort("MF: No initial state identified for EntryPoint: ", String.valueOf(ep.getID()));
         }
         return ep;
     }
@@ -1237,7 +1239,7 @@ public class ModelFactory {
 
     public void addElement(AlicaElement alicaElement) {
         //TODO: Fix
-        if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: add Element " + alicaElement.getID() + "  " + alicaElement.getName() + "  " + ae.getAgentName());
+        if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: add Element " + alicaElement.getID() + "  " + alicaElement.getName() + "  " + alicaEngine.getAgentName());
 //        if (this.elements.size()> 0 && this.elements.get(ael.extractID()) != this.elements.values().toArray()[this.elements.values().size()-1])
         if (this.elements.size() > 0 && this.elements.get(alicaElement.getID()) != null && this.elements.get(alicaElement.getID()) != alicaElement) {
 
@@ -1248,7 +1250,7 @@ public class ModelFactory {
             System.out.println("MF: ELEMENT > " + alicaElement.getID() + "< >" + this.elements.get(alicaElement.getID()).getID() + "<");
             System.out.println("MF: ELEMENT > " + alicaElement.hashCode() + "< >" + this.elements.get(alicaElement.getID()).hashCode() + "<");
 //			cout << segfaultdebug::get_stacktrace() << endl;
-            ae.abort("MF: ERROR Double IDs: " + alicaElement.getID());
+            alicaEngine.abort("MF: ERROR Double IDs: " + alicaElement.getID());
         }
         elements.put(alicaElement.getID(), alicaElement);
     }
@@ -1283,11 +1285,11 @@ public class ModelFactory {
     }
 
     public AlicaEngine getAE() {
-        return ae;
+        return alicaEngine;
     }
 
-    public PlanRepository getRep() {
-        return rep;
+    public PlanRepository getPlanRepository() {
+        return planRepository;
     }
 
     public void attachPlanReferences() {
@@ -1306,7 +1308,7 @@ public class ModelFactory {
             State state = (State) this.elements.get(pairs.snd);
 
             if (state == null) {
-                ae.abort("MF: Cannot resolve transitionAimReferences target: ", "" + pairs.fst);
+                alicaEngine.abort("MF: Cannot resolve transitionAimReferences target: ", "" + pairs.fst);
             }
             transition.setOutState(state);
             state.addInTransition(transition);
@@ -1330,7 +1332,7 @@ public class ModelFactory {
             State state = (State) this.elements.get(pairs.fst);
 
             if (state != transition.getOutState()) {
-                ae.abort("MF: Unexpected reference in a transition! ", "" + pairs.fst);
+                alicaEngine.abort("MF: Unexpected reference in a transition! ", "" + pairs.fst);
             }
         }
         this.stateInTransitionReferences.clear();
@@ -1431,7 +1433,7 @@ public class ModelFactory {
         for (Pair<Long, Long> pairs : this.quantifierScopeReferences) {
             AlicaElement ae = (AlicaElement) this.elements.get(pairs.snd);
             Quantifier q = (Quantifier) this.elements.get(pairs.fst);
-            q.setScope(this.ae, ae);
+            q.setScope(this.alicaEngine, ae);
         }
         this.quantifierScopeReferences.clear();
 
@@ -1440,7 +1442,7 @@ public class ModelFactory {
     }
 
     private void removeRedundancy() {
-        for (Plan plan : this.rep.getPlans().values()) {
+        for (Plan plan : this.planRepository.getPlans().values()) {
             ArrayList<Transition> transToRemove = new ArrayList<>();
             for (Transition tran : plan.getTransitions()) {
                 if (tran.getInState() == null) {
@@ -1456,25 +1458,25 @@ public class ModelFactory {
 
     public void createBehaviour(Document node) {
         Element element = node.getDocumentElement();
-        long id = this.parser.parserId(element);
+        long id = this.planParser.parserId(element);
         Behaviour beh = new Behaviour();
         beh.setID(id);
 
         setAlicaElementAttributes(beh, element);
         addElement(beh);
-        this.rep.getBehaviours().put(beh.getID(), beh);
+        this.planRepository.getBehaviours().put(beh.getID(), beh);
         Node curChild = element.getFirstChild().getNextSibling();
         while (curChild != null) {
             String val = curChild.getNodeName();
-            long cid = this.parser.parserId(curChild);
+            long cid = this.planParser.parserId(curChild);
 
             if (configurations.equals(val)) {
                 BehaviourConfiguration bc = createBehaviourConfiguration(curChild);
-                this.rep.getBehaviourConfigurations().put(bc.getID(), bc);
+                this.planRepository.getBehaviourConfigurations().put(bc.getID(), bc);
                 bc.setBehaviour(beh);
                 beh.getConfigurations().add(bc);
             } else {
-                ae.abort("MF: Unhandled Behaviour Child:", curChild.getNodeValue());
+                alicaEngine.abort("MF: Unhandled Behaviour Child:", curChild.getNodeValue());
             }
             curChild = curChild.getNextSibling();
 
@@ -1485,12 +1487,12 @@ public class ModelFactory {
     }
 
     public void createBehaviour(JSONObject jsonObject) {
-        long id = parser.fetchId(jsonObject.get("id").toString());
-        Behaviour beh = new Behaviour(this.ae);
+        long id = planParser.fetchId(jsonObject.get("id").toString());
+        Behaviour beh = new Behaviour(this.alicaEngine);
         beh.setID(id);
         setAlicaElementAttributes(beh, jsonObject);
         addElement(beh);
-        this.rep.getBehaviours().put(beh.getID(), beh);
+        this.planRepository.getBehaviours().put(beh.getID(), beh);
 
 //        Node curChild = element.getFirstChild().getNextSibling();
         JSONArray configurations = (JSONArray) jsonObject.get("configurations");
@@ -1500,17 +1502,17 @@ public class ModelFactory {
 //        while (curChild != null) {
         for (Object obj : configurations) {
 //            String val = curChild.getNodeName();
-//            long cid = this.parser.parserId(curChild);
+//            long cid = this.planParser.parserId(curChild);
             JSONObject confObj = (JSONObject) obj;
-            long confID = parser.fetchId(confObj.get("id").toString());
+            long confID = planParser.fetchId(confObj.get("id").toString());
 //
 //            if (configurations.equals(val)) {
                 BehaviourConfiguration bc = createBehaviourConfiguration(confObj);
-                this.rep.getBehaviourConfigurations().put(bc.getID(), bc);
+                this.planRepository.getBehaviourConfigurations().put(bc.getID(), bc);
                 bc.setBehaviour(beh);
                 beh.getConfigurations().add(bc);
 //            } else {
-//                ae.abort("MF: Unhandled Behaviour Child:", curChild.getNodeValue());
+//                alicaEngine.abort("MF: Unhandled Behaviour Child:", curChild.getNodeValue());
 //            }
 //            curChild = curChild.getNextSibling();
 //
@@ -1522,9 +1524,9 @@ public class ModelFactory {
     }
 
     private BehaviourConfiguration createBehaviourConfiguration(Node element) {
-        BehaviourConfiguration b = new BehaviourConfiguration(ae);
-        b.setID(this.parser.parserId(element));
-        b.setFileName(this.parser.getCurrentFile());
+        BehaviourConfiguration b = new BehaviourConfiguration(alicaEngine);
+        b.setID(this.planParser.parserId(element));
+        b.setFileName(this.planParser.getCurrentFile());
 
         String attr = element.getAttributes().getNamedItem("masterPlan").getTextContent();
         String attrString = "";
@@ -1584,7 +1586,7 @@ public class ModelFactory {
 
         while (curChild != null) {
             String val = curChild.getNodeValue();
-            long cid = this.parser.parserId(curChild);
+            long cid = this.planParser.parserId(curChild);
             if (vars.endsWith(val)) {
                 Variable v = createVariable(curChild);
                 b.getVariables().add(v);
@@ -1596,7 +1598,7 @@ public class ModelFactory {
                     b.getParameters().put(key, value);
                 }
             } else {
-                ae.abort("MF: Unhandled BehaviourConfiguration Child: " + curChild);
+                alicaEngine.abort("MF: Unhandled BehaviourConfiguration Child: " + curChild);
             }
             curChild = curChild.getNextSibling();
         }
@@ -1605,10 +1607,10 @@ public class ModelFactory {
     }
 
     private BehaviourConfiguration createBehaviourConfiguration(JSONObject jsonObject) {
-        BehaviourConfiguration behaviourConfiguration = new BehaviourConfiguration(ae);
-        long id = this.parser.fetchId(jsonObject.get("id").toString());
+        BehaviourConfiguration behaviourConfiguration = new BehaviourConfiguration(alicaEngine);
+        long id = this.planParser.fetchId(jsonObject.get("id").toString());
         behaviourConfiguration.setID(id);
-        behaviourConfiguration.setFileName(this.parser.getCurrentFile());
+        behaviourConfiguration.setFileName(this.planParser.getCurrentFile());
 
 //        String attr = (String)jsonObject.get("masterPlan");
 //        String attrString = "";
@@ -1668,7 +1670,7 @@ public class ModelFactory {
 //
 //        while (curChild != null) {
 //            String val = curChild.getNodeValue();
-//            long cid = this.parser.parserId(curChild);
+//            long cid = this.planParser.parserId(curChild);
 //            if (vars.endsWith(val)) {
 //                Variable v = createVariable(curChild);
 //                b.getVariables().add(v);
@@ -1680,7 +1682,7 @@ public class ModelFactory {
 //                    b.getParameters().put(key, value);
 //                }
 //            } else {
-//                ae.abort("MF: Unhandled BehaviourConfiguration Child: " + curChild);
+//                alicaEngine.abort("MF: Unhandled BehaviourConfiguration Child: " + curChild);
 //            }
 //            curChild = curChild.getNextSibling();
 //        }
@@ -1715,11 +1717,11 @@ public class ModelFactory {
         }
 
         if (!isDefault && !isUseable) {
-            ae.abort("MF:Selected RoleSet is not default, nor useable with current masterplan");
+            alicaEngine.abort("MF:Selected RoleSet is not default, nor useable with current masterplan");
         }
 
         RoleSet rs = new RoleSet();
-        rs.setID(this.parser.parserId(element));
+        rs.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(rs, element);
         rs.setIsDefault(isDefault);
         rs.setUsableWithPlanId(pid);
@@ -1734,7 +1736,7 @@ public class ModelFactory {
                 RoleTaskMapping rtm = createRoleTaskMapping(curChild);
                 rs.getRoleTaskMappings().add(rtm);
             } else {
-                ae.abort("MF: Unhandled RoleSet Child:", curChild.getNodeValue());
+                alicaEngine.abort("MF: Unhandled RoleSet Child:", curChild.getNodeValue());
             }
             curChild = getNextSilbing(curChild);
         }
@@ -1761,12 +1763,12 @@ public class ModelFactory {
 //        }
 //
 //        if (!isDefault && !isUseable) {
-//            ae.abort("MF:Selected RoleSet is not default, nor useable with current masterplan");
+//            alicaEngine.abort("MF:Selected RoleSet is not default, nor useable with current masterplan");
 //        }
 
         RoleSet roleSet = new RoleSet();
 
-        roleSet.setID(parser.fetchId(jsonObject.get("id").toString()));
+        roleSet.setID(planParser.fetchId(jsonObject.get("id").toString()));
         setAlicaElementAttributes(roleSet, jsonObject);
         roleSet.setIsDefault(isDefault);
 //        rs.setUsableWithPlanId(pid);
@@ -1782,7 +1784,7 @@ public class ModelFactory {
             RoleTaskMapping rtm = createRoleTaskMapping(role);
              roleSet.getRoleTaskMappings().add(rtm);
 //            } else {
-//                ae.abort("MF: Unhandled RoleSet Child:", curChild.getNodeValue());
+//                alicaEngine.abort("MF: Unhandled RoleSet Child:", curChild.getNodeValue());
 //            }
         }
         return roleSet;
@@ -1800,7 +1802,7 @@ public class ModelFactory {
 
     private RoleTaskMapping createRoleTaskMapping(Node element) {
         RoleTaskMapping rtm = new RoleTaskMapping();
-        rtm.setID(this.parser.parserId(element));
+        rtm.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(rtm, element);
         addElement(rtm);
 
@@ -1815,10 +1817,10 @@ public class ModelFactory {
                     rtm.getTaskPriorities().put(stol(keyPtr), stod(valuePtr));
                 }
             } else if (role.equals(val)) {
-                long cid = this.parser.parserId(curChild);
+                long cid = this.planParser.parserId(curChild);
                 this.rtmRoleReferences.add(new Pair<>(rtm.getID(), cid));
             } else {
-                ae.abort("MF: Unhandled RoleTaskMapping Child ", curChild.getNodeValue());
+                alicaEngine.abort("MF: Unhandled RoleTaskMapping Child ", curChild.getNodeValue());
             }
             curChild = getNextSilbing(curChild);
         }
@@ -1830,7 +1832,7 @@ public class ModelFactory {
         RoleTaskMapping rtm = new RoleTaskMapping();
         // role task mapping is only a list, hense a UUID is needed
         long id = IDManager.generateUniqueID();
-//        long id = this.parser.fetchId(jsonObject.get("id").toString());
+//        long id = this.planParser.fetchId(jsonObject.get("id").toString());
         rtm.setID(id);
         setAlicaElementAttributes(rtm, jsonObject);
         addElement(rtm);
@@ -1844,7 +1846,7 @@ public class ModelFactory {
         Set set = priorities.keySet();
 
         for (Object taskEntry : set) {
-            long taskRef = this.parser.extractID((String) taskEntry);
+            long taskRef = this.planParser.extractID((String) taskEntry);
             Double priority = (Double) priorities.get(taskEntry);
 
             rtm.getTaskPriorities().put(taskRef, priority);
@@ -1861,10 +1863,10 @@ public class ModelFactory {
 //                    rtm.getTaskPriorities().put(stol(keyPtr), stod(valuePtr));
 //                }
 //            } else if (role.equals(val)) {
-//                long cid = this.parser.parserId(curChild);
+//                long cid = this.planParser.parserId(curChild);
 //                this.rtmRoleReferences.add(new Pair<>(rtm.extractID(), cid));
 //            } else {
-//                ae.abort("MF: Unhandled RoleTaskMapping Child ", curChild.getNodeValue());
+//                alicaEngine.abort("MF: Unhandled RoleTaskMapping Child ", curChild.getNodeValue());
 //            }
 //            curChild = getNextSilbing(curChild);
 //        }
@@ -1883,11 +1885,11 @@ public class ModelFactory {
     public void createTasks(Document doc) {
         Element element = doc.getDocumentElement();
         TaskRepository tr = new TaskRepository();
-        tr.setID(this.parser.parserId(element));
-        tr.setFileName(this.parser.getCurrentFile());
+        tr.setID(this.planParser.parserId(element));
+        tr.setFileName(this.planParser.getCurrentFile());
         addElement(tr);
         setAlicaElementAttributes(tr, element);
-        this.rep.getTaskRepositorys().put(tr.getID(), tr);
+        this.planRepository.getTaskRepositorys().put(tr.getID(), tr);
         long id = 0;
         String defaultTaskPtr = element.getAttribute("defaultTask");
         if (defaultTaskPtr != null) {
@@ -1901,7 +1903,7 @@ public class ModelFactory {
             curChild = curChild.getNextSibling();
 
         while (curChild != null) {
-            long cid = this.parser.parserId(curChild);
+            long cid = this.planParser.parserId(curChild);
 
             Task task = new Task(cid == id);
             task.setID(cid);
@@ -1912,7 +1914,7 @@ public class ModelFactory {
                 task.setDescription(descriptionkPtr);
             }
             addElement(task);
-            this.rep.getTasks().put(task.getID(), task);
+            this.planRepository.getTasks().put(task.getID(), task);
             task.setTaskRepository(tr);
             tr.getTasks().add(task);
 
@@ -1924,12 +1926,12 @@ public class ModelFactory {
 
     public void createTasks(JSONObject jsonObject) {
         TaskRepository tr = new TaskRepository();
-        long id = parser.fetchId(jsonObject.get("id").toString());
+        long id = planParser.fetchId(jsonObject.get("id").toString());
         tr.setID(id);
-        tr.setFileName(this.parser.getCurrentFile());
+        tr.setFileName(this.planParser.getCurrentFile());
         addElement(tr);
         setAlicaElementAttributes(tr, jsonObject);
-        this.rep.getTaskRepositorys().put(tr.getID(), tr);
+        this.planRepository.getTaskRepositorys().put(tr.getID(), tr);
         Object defaultTaskObj = jsonObject.get("defaultTask");
 
         if (defaultTaskObj != null) {
@@ -1945,9 +1947,9 @@ public class ModelFactory {
 //
 //        while (curChild != null) {
         for (Object obj  : tasks) {
-//            long cid = this.parser.parserId(curChild);
+//            long cid = this.planParser.parserId(curChild);
             JSONObject taskObj = (JSONObject) obj;
-            long taskID = parser.fetchId(taskObj.get("id").toString());
+            long taskID = planParser.fetchId(taskObj.get("id").toString());
 //            Task task = new Task(cid == id);
             Task task = new Task(taskID == id);
             task.setID(taskID);
@@ -1958,7 +1960,7 @@ public class ModelFactory {
 //                task.setDescription(descriptionkPtr);
 //            }
             addElement(task);
-            this.rep.getTasks().put(task.getID(), task);
+            this.planRepository.getTasks().put(task.getID(), task);
             task.setTaskRepository(tr);
             tr.getTasks().add(task);
 //
@@ -1972,11 +1974,11 @@ public class ModelFactory {
     public void createRoleDefinitionSet(Document node) {
         Element element = node.getDocumentElement();
         RoleDefinitionSet r = new RoleDefinitionSet();
-        r.setID(this.parser.parserId(element));
-        r.setFileName(this.parser.getCurrentFile());
+        r.setID(this.planParser.parserId(element));
+        r.setFileName(this.planParser.getCurrentFile());
         setAlicaElementAttributes(r, element);
         addElement(r);
-        this.rep.getRoleDefinitionSets().put(r.getID(), r);
+        this.planRepository.getRoleDefinitionSets().put(r.getID(), r);
 
         Node curChild = getNodeChild(element);
 
@@ -1988,7 +1990,7 @@ public class ModelFactory {
                 r.getRoles().add(role);
                 role.setRoleDefinitionSet(r);
             } else {
-                ae.abort("MF: Unhandled RoleDefinitionSet Child:", curChild.getNodeValue());
+                alicaEngine.abort("MF: Unhandled RoleDefinitionSet Child:", curChild.getNodeValue());
             }
             curChild = getNextSilbing(curChild);
         }
@@ -1996,10 +1998,10 @@ public class ModelFactory {
 
     private Role createRole(Node element) {
         Role r = new Role();
-        r.setID(this.parser . parserId(element));
+        r.setID(this.planParser. parserId(element));
         setAlicaElementAttributes(r, element);
         addElement(r);
-        this.rep.getRoles().put(r.getID(), r);
+        this.planRepository.getRoles().put(r.getID(), r);
         Node curChild = getNodeChild(element);
 
         while (curChild != null) {
@@ -2009,7 +2011,7 @@ public class ModelFactory {
                 Characteristic  cha = createCharacteristic(curChild);
                 r.getCharacteristics().put(cha.getName(), cha);
             } else {
-                ae.abort("MF: Unhandled Role Child:", curChild.getNodeValue());
+                alicaEngine.abort("MF: Unhandled Role Child:", curChild.getNodeValue());
             }
             curChild = getNextSilbing(curChild);
         }
@@ -2018,11 +2020,11 @@ public class ModelFactory {
 
     private Role createRole(JSONObject jsonObject) {
         Role role = new Role();
-        long id = parser.fetchId(jsonObject.get("id").toString());
+        long id = planParser.fetchId(jsonObject.get("id").toString());
         role.setID(id);
         setAlicaElementAttributes(role, jsonObject);
         addElement(role);
-        this.rep.getRoles().put(role.getID(), role);
+        this.planRepository.getRoles().put(role.getID(), role);
 //        Node curChild = getNodeChild(element);
 
         JSONArray characteristics = (JSONArray) jsonObject.get("characteristics");
@@ -2036,7 +2038,7 @@ public class ModelFactory {
                 Characteristic cha = createCharacteristic(charObj);
                 role.getCharacteristics().put(cha.getName(), cha);
 //            } else {
-//                ae.abort("MF: Unhandled Role Characteristic: ", role.getName());
+//                alicaEngine.abort("MF: Unhandled Role Characteristic: ", role.getName());
 //            }
 //            curChild = getNextSilbing(curChild);
         }
@@ -2046,7 +2048,7 @@ public class ModelFactory {
 
     private Characteristic createCharacteristic(JSONObject jsonObject) {
         Characteristic cha = new Characteristic();
-        long id = this.parser.fetchId(jsonObject.get("id").toString());
+        long id = this.planParser.fetchId(jsonObject.get("id").toString());
         cha.setID(id);
         setAlicaElementAttributes(cha, jsonObject);
         addElement(cha);
@@ -2055,13 +2057,13 @@ public class ModelFactory {
         cha.setValue( jsonObject.get("value")!=null? jsonObject.get("value").toString() : "");
         cha.setWeight(stod(jsonObject.get("weight").toString()));
 
-        this.rep.getCharacteristics().put(cha.getID(), cha);
+        this.planRepository.getCharacteristics().put(cha.getID(), cha);
         return cha;
     }
 
     private Characteristic createCharacteristic(Node element) {
         Characteristic cha = new Characteristic();
-        cha.setID(this.parser.parserId(element));
+        cha.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(cha, element);
 		String attr = element.getAttributes().getNamedItem("weight").getTextContent();
         if (attr != null)
@@ -2070,7 +2072,7 @@ public class ModelFactory {
         }
 
         addElement(cha);
-        this.rep.getCharacteristics().put(cha.getID(), cha);
+        this.planRepository.getCharacteristics().put(cha.getID(), cha);
         Node curChild = getNodeChild(element);
 
         while (curChild != null)
@@ -2079,17 +2081,17 @@ public class ModelFactory {
 
             if (capability.equals(val))
             {
-                long capid = this.parser.parserId(curChild);
+                long capid = this.planParser.parserId(curChild);
                 this.charCapReferences.add(new Pair<Long, Long>(cha.getID(), capid));
             }
             else if (value.equals(val))
             {
-                long capValid = this.parser.parserId(curChild);
+                long capValid = this.planParser.parserId(curChild);
                 this.charCapValReferences.add(new Pair<Long, Long>(cha.getID(), capValid));
             }
             else
             {
-                ae.abort("MF: Unhandled Characteristic Child:", curChild.getNodeValue());
+                alicaEngine.abort("MF: Unhandled Characteristic Child:", curChild.getNodeValue());
             }
             curChild = getNextSilbing(curChild);
         }
@@ -2099,7 +2101,7 @@ public class ModelFactory {
     public void createCapabilityDefinitionSet(Document node) {
         Element element = node.getDocumentElement();
         CapabilityDefinitionSet capSet = new CapabilityDefinitionSet();
-        capSet.setID(this.parser.parserId(element));
+        capSet.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(capSet, element);
         addElement(capSet);
 
@@ -2115,7 +2117,7 @@ public class ModelFactory {
             }
             else
             {
-                ae.abort("MF: Unhandled Behaviour Child:", curChild.getNodeValue());
+                alicaEngine.abort("MF: Unhandled Behaviour Child:", curChild.getNodeValue());
             }
             curChild = getNextSilbing(curChild);
         }
@@ -2123,10 +2125,10 @@ public class ModelFactory {
 
     private Capability createCapability(Node element) {
         Capability cap = new Capability();
-        cap.setID(this.parser.parserId(element));
+        cap.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(cap, element);
         addElement(cap);
-        this.rep.getCapabilities().put(cap.getID(), cap);
+        this.planRepository.getCapabilities().put(cap.getID(), cap);
 
         Node curChild = getNodeChild(element);
 
@@ -2136,14 +2138,14 @@ public class ModelFactory {
             if (capValues.equals(val))
             {
                 CapValue cval = new CapValue();
-                cval.setID(this.parser.parserId(curChild));
+                cval.setID(this.planParser.parserId(curChild));
                 setAlicaElementAttributes(cval, curChild);
                 addElement(cval);
                 cap.getCapValues().add(cval);
             }
             else
             {
-                ae.abort("MF: Unhandled Capability Child:", curChild.getNodeValue());
+                alicaEngine.abort("MF: Unhandled Capability Child:", curChild.getNodeValue());
             }
             curChild = getNextSilbing(curChild);
         }
@@ -2154,9 +2156,9 @@ public class ModelFactory {
     public PlanningProblem createPlanningProblem(Document node) {
 //        tinyxml2::XMLElement* element = node->FirstChildElement();
         Element element = node.getDocumentElement();
-        PlanningProblem p = new PlanningProblem(ae);
-        p.setID(this.parser.parserId(element));
-        p.setFileName(this.parser.getCurrentFile());
+        PlanningProblem p = new PlanningProblem(alicaEngine);
+        p.setID(this.planParser.parserId(element));
+        p.setFileName(this.planParser.getCurrentFile());
         setAlicaElementAttributes(p, element);
         addElement(p);
 
@@ -2210,7 +2212,7 @@ public class ModelFactory {
             p.setRequirements("");
         }
 
-        this.rep.getPlanningProblems().put(p.getID(), p);
+        this.planRepository.getPlanningProblems().put(p.getID(), p);
 
 //        tinyxml2::XMLElement curChild = element.FirstChildElement();
         Node curChild = element.getFirstChild();
@@ -2221,7 +2223,7 @@ public class ModelFactory {
             if ("#text".equals(curChild.getNodeName()))
                 curChild = curChild.getNextSibling();
             else {
-                long cid = this.parser.parserId(curChild);
+                long cid = this.planParser.parserId(curChild);
 
                 if (plans.equals(val)) {
                     this.planningProblemPlanReferences.add(new Pair(p.getID(), cid));
@@ -2243,7 +2245,7 @@ public class ModelFactory {
                             p.setRuntimeCondition(pa);
                         }
                     } else {
-                        ae.abort("MF: Unknown Condition type:", curChild.getNodeValue());
+                        alicaEngine.abort("MF: Unknown Condition type:", curChild.getNodeValue());
                     }
                 } else if (waitPlan.equals(val)) {
                     this.planningProblemPlanWaitReferences.add(new Pair(p.getID(), cid));
@@ -2263,12 +2265,12 @@ public class ModelFactory {
 
     public void createPlanType(Document node) {
         Element element = node.getDocumentElement();
-        PlanType pt = new PlanType(ae);
-        pt.setID(this.parser.parserId(element));
-        pt.setFileName(this.parser.getCurrentFile());
+        PlanType pt = new PlanType(alicaEngine);
+        pt.setID(this.planParser.parserId(element));
+        pt.setFileName(this.planParser.getCurrentFile());
         setAlicaElementAttributes(pt, element);
         addElement(pt);
-        this.rep.getPlanTypes().put(pt.getID(), pt);
+        this.planRepository.getPlanTypes().put(pt.getID(), pt);
         Node curChild = element.getFirstChild();
 
         while (curChild != null) {
@@ -2288,7 +2290,7 @@ public class ModelFactory {
                         activated = activated.toLowerCase();
 
                         if (activated.equals("true")) {
-                            long cid = this.parser.parserId(curChild.getFirstChild().getNextSibling());
+                            long cid = this.planParser.parserId(curChild.getFirstChild().getNextSibling());
                             this.planTypePlanReferences.add(new Pair(pt.getID(), cid));
                         }
                     } else {
@@ -2301,7 +2303,7 @@ public class ModelFactory {
                     Parametrisation para = createParametrisation(curChild);
                     pt.getParametrisation().add(para);
                 } else {
-                    ae.abort("MF: Unhandled PlanType Child:", val);
+                    alicaEngine.abort("MF: Unhandled PlanType Child:", val);
                 }
                 curChild = curChild.getNextSibling();
             }

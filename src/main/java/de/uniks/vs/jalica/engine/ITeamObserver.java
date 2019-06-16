@@ -1,5 +1,7 @@
 package de.uniks.vs.jalica.engine;
 
+import de.uniks.vs.jalica.engine.RunningPlan;
+import de.uniks.vs.jalica.engine.SimplePlanTree;
 import de.uniks.vs.jalica.engine.containers.messages.PlanTreeInfo;
 import de.uniks.vs.jalica.engine.model.AbstractPlan;
 import de.uniks.vs.jalica.engine.model.Plan;

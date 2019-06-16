@@ -1,20 +1,27 @@
 package de.uniks.vs.jalica.engine;
 
-import de.uniks.vs.jalica.engine.common.AssignmentCollection;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
-import de.uniks.vs.jalica.engine.common.DynamicRoleAssignment;
-import de.uniks.vs.jalica.engine.modelmanagement.parser.PlanParser;
-import de.uniks.vs.jalica.engine.constrainmodule.Solver;
-import de.uniks.vs.jalica.reasoner.CGSolver;
-import de.uniks.vs.jalica.engine.common.SystemConfig;
-import de.uniks.vs.jalica.engine.model.Plan;
-import de.uniks.vs.jalica.engine.model.RoleSet;
 import de.uniks.vs.jalica.engine.authority.AuthorityManager;
+import de.uniks.vs.jalica.engine.blackboard.Blackboard;
+import de.uniks.vs.jalica.engine.common.AssignmentCollection;
+import de.uniks.vs.jalica.engine.common.SystemConfig;
+import de.uniks.vs.jalica.engine.constrainmodule.Solver;
 import de.uniks.vs.jalica.engine.constrainmodule.VariableSyncModule;
 import de.uniks.vs.jalica.engine.expressions.ExpressionHandler;
+import de.uniks.vs.jalica.engine.idmanagement.IDManager;
+import de.uniks.vs.jalica.engine.model.Plan;
+import de.uniks.vs.jalica.engine.model.RoleSet;
+import de.uniks.vs.jalica.engine.modelmanagement.ModelManager;
+import de.uniks.vs.jalica.engine.modelmanagement.parser.PlanParser;
 import de.uniks.vs.jalica.engine.planselection.PartialAssignmentPool;
 import de.uniks.vs.jalica.engine.planselection.PlanSelector;
+import de.uniks.vs.jalica.engine.roleassignment.DynamicRoleAssignment;
+import de.uniks.vs.jalica.engine.roleassignment.RoleAssignment;
+import de.uniks.vs.jalica.engine.roleassignment.StaticRoleAssignment;
 import de.uniks.vs.jalica.engine.syncmodule.SyncModule;
+import de.uniks.vs.jalica.engine.teammanagement.TeamManager;
+import de.uniks.vs.jalica.engine.teammanagement.TeamObserver;
+import de.uniks.vs.jalica.reasoner.CGSolver;
 
 import java.util.HashMap;
 
@@ -23,33 +30,40 @@ import java.util.HashMap;
  */
 public class AlicaEngine {
 
-    private SystemConfig sc;
-
-    private boolean maySendMessages;
-    private boolean useStaticRoles;
-    private boolean terminating;
-    private boolean stepEngine;
-    private boolean stepCalled;
-
-    private AlicaCommunication communicator;
-    private PlanRepository planRepository;
-    private PlanParser planParser;
-    private Plan masterPlan;
+    private PlanBase planBase;
     private TeamObserver teamObserver;
+    private ExpressionHandler expressionHandler;
     private IBehaviourPool behaviourPool;
     private RoleSet roleSet;
-    private RoleAssignment roleAssignment;
-    private SyncModule syncModul;
-    private ExpressionHandler expressionHandler;
-    private PartialAssignmentPool assignmentPool;
-    private PlanBase planBase;
-    private PlanSelector planSelector;
-    private AuthorityManager authorityManager;
-    private Logger logger;
     private VariableSyncModule variableSyncModule;
+    private AuthorityManager authorityManager;
+    private TeamManager teamManager;
+    private SyncModule syncModul;
+    private PlanRepository planRepository;
+    private Blackboard blackboard;
+
+    private IDManager idManager;
+    private Logger logger;
+    private ModelManager modelManager;
+
+    private RoleAssignment roleAssignment;
+    private AlicaCommunication communicator;
     private AlicaClock alicaClock;
-    private IPlanner planner;
+
+    private Plan masterPlan;
     private HashMap<Integer, Solver> solver = new HashMap<>();
+    private SystemConfig systemConfig;
+
+    private boolean maySendMessages;
+    private boolean stepEngine;
+    private boolean terminating;
+    private boolean useStaticRoles;
+    private boolean stepCalled;
+
+    private PlanParser planParser;
+    private PartialAssignmentPool assignmentPool;
+    private PlanSelector planSelector;
+    private IPlanner planner;
 
     public void setAlicaClock(AlicaClock clock) {
         this.alicaClock = clock;
@@ -74,7 +88,7 @@ public class AlicaEngine {
         this.terminating = false;
         this.stepEngine = stepEngine;
 
-        this.sc = sc;
+        this.systemConfig = sc;
 
         if (this.planRepository == null) {
             this.planRepository = new PlanRepository();
@@ -126,15 +140,17 @@ public class AlicaEngine {
         this.roleAssignment.init();
 
         if (this.assignmentPool == null) {
-            assignmentPool = new PartialAssignmentPool();
+            assignmentPool = new PartialAssignmentPool(10100);
         }
 
         if (planSelector == null) {
-            this.planSelector = new PlanSelector(this, assignmentPool);
+            this.planSelector = new PlanSelector(this, planBase, assignmentPool);
         }
 
         this.authorityManager.init();
         this.planBase = new PlanBase(this, this.masterPlan);
+        this.planSelector.setPlanBase(this.planBase);
+
         this.expressionHandler.attachAll();
         UtilityFunction.initDataStructures(this);
         this.syncModul.init();
@@ -211,6 +227,8 @@ public class AlicaEngine {
         return stepEngine;
     }
 
+    public void shutDown() { CommonUtils.aboutNoImpl(); }
+
     public void abort(String msg) {
         CommonUtils.aboutError("ABORT: " + msg);
         System.exit(CommonUtils.EXIT_FAILURE);
@@ -232,7 +250,7 @@ public class AlicaEngine {
         return planRepository;
     }
 
-    public String getAgentName() { return sc.getHostname(); }
+    public String getAgentName() { return systemConfig.getHostname(); }
 
     public RoleSet getRoleSet() {
         return roleSet;
@@ -283,6 +301,8 @@ public class AlicaEngine {
     }
 
     public SystemConfig getSystemConfig() {
-        return sc;
+        return systemConfig;
     }
+
+    public TeamManager getTeamManager() { return teamManager; }
 }

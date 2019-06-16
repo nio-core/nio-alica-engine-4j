@@ -35,6 +35,8 @@ public class RunningPlan {
     private IBehaviourPool behaviourPool;
     private ITeamObserver teamObserver;
     private PlanStatus status;
+//    private PlanStateTriple activeTriple;
+//    private PlanStatusInfo status;
     private PlanType planType;
     private RunningPlan parent;
     private State activeState;
@@ -139,10 +141,28 @@ public class RunningPlan {
         CommonUtils.aboutNoImpl();
     }
 
+    public void preTick() {
+
+        if(isRetired())
+            return;
+
+        evalRuntimeCondition();
+
+        for (RunningPlan plan :this.children) {
+            plan.preTick();
+        }
+    }
+
     public PlanChange tick(RuleBook rules) {
+//        if (isRetired()) {
+//            return PlanChange.NoChange;
+//        }
         this.cycleManagement.update();
 
         PlanChange myChange = rules.visit(this);
+//        if (isRetired()) {
+//            return myChange;
+//        }
         PlanChange childChange = PlanChange.NoChange;
 
         //attention: do not use for each here: children are modified
@@ -161,6 +181,8 @@ public class RunningPlan {
     public boolean isActive() {
         return active;
     }
+
+    public boolean isRetired() { /*return status.active == PlanActivity.Retired;*/ return true; }
 
     public boolean isBehaviour() {
         return behaviour;

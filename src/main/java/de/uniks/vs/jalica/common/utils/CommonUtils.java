@@ -13,50 +13,50 @@ public class CommonUtils {
     public static final boolean PP_DEBUG_debug = false;
     public static final boolean CM_DEBUG_debug = false;
     public static final boolean MF_DEBUG_debug = false;
-    public static final boolean RA_DEBUG_debug = true;
+    public static final boolean RA_DEBUG_debug = false;
     public static final boolean FS_DEBUG_debug = false;
-    public static final boolean PS_DEBUG_debug = false;
     public static final boolean TA_DEBUG_debug = false;
     public static final boolean AM_DEBUG_debug = false;
     public static final boolean PA_DEBUG_debug = false;
     public static final boolean AE_DEBUG_debug = false;
     public static final boolean SC_DEBUG_debug = false;
     public static final boolean BP_DEBUG_debug = false;
+    public static final boolean PS_DEBUG_debug = false;
 
     // Communication
-    public static final boolean COMM_debug = false;
-    public static final boolean COMM_D_DEBUG_debug = false;
+    public static final boolean COMM_debug              = false;
+    public static final boolean COMM_D_DEBUG_debug      = false;
 
-    public static final boolean RULE_debug = false;
-    public static final boolean SM_FAILURE_debug = false;
-    public static final boolean SM_MESSAGES_debug = false;
-    public static final boolean UFDEBUG_debug = false;
-    public static final boolean PB_DEBUG_debug = false;
-    public static final boolean CM_REASON_DEBUG_debug = false;
-    public static final boolean SUCDEBUG_debug = false;
-    public static final boolean CS_DEBUG_debug = false;
-    public static final boolean C_DEBUG_debug = false;
-    public static final boolean TO_DEBUG_debug = false;
-    public static final boolean RP_DEBUG_debug = false;
-    public static final boolean AC_DEBUG_debug = false;
-    public static final boolean TE_DEBUG_debug = false;
-    public static final boolean B_DEBUG_debug = true;
-    public static final boolean CV_DEBUG_debug = false;
-    public static final boolean AED_DEBUG_debug = false;
-    public static final boolean XTH_DEBUG_debug = false;
-    public static final boolean DC_debug = false;
+    public static final boolean B_DEBUG_debug           = false;
+    public static final boolean RULE_debug              = false;
+    public static final boolean SM_FAILURE_debug        = false;
+    public static final boolean SM_MESSAGES_debug       = false;
+    public static final boolean UFDEBUG_debug           = false;
+    public static final boolean PB_DEBUG_debug          = false;
+    public static final boolean CM_REASON_DEBUG_debug   = false;
+    public static final boolean SUCDEBUG_debug          = false;
+    public static final boolean CS_DEBUG_debug          = false;
+    public static final boolean C_DEBUG_debug           = false;
+    public static final boolean TO_DEBUG_debug          = false;
+    public static final boolean RP_DEBUG_debug          = false;
+    public static final boolean AC_DEBUG_debug          = false;
+    public static final boolean TE_DEBUG_debug          = false;
+    public static final boolean CV_DEBUG_debug          = false;
+    public static final boolean AED_DEBUG_debug         = false;
+    public static final boolean XTH_DEBUG_debug         = false;
+    public static final boolean CU_DEBUG_debug          = false;
+    public static final boolean VSM_DEBUG_debug         = false;
+    public static final boolean DC_debug                = false;
 
     // DEBUG Extension
-    public static final boolean VERBOSE_ARRAY_LIST_DEBUG = false;
-    public static final boolean MISSING_IMPLEMENTATION_debug = true;
+    public static final boolean VERBOSE_ARRAY_LIST_DEBUG        = false;
+    public static final boolean MISSING_IMPLEMENTATION_debug    = true;
     public static final boolean IMPLEMENTATION_INCOMPLETE_debug = true;
-    public static final boolean CALL_debug = true;
-    public static final boolean ERROR_debug = true;
+    public static final boolean CALL_debug                      = true;
+    public static final boolean ERROR_debug                     = true;
 
     public static final int EXIT_FAILURE = 1;
     public static final int EXIT_SUCCESS = 0;
-
-    public static final boolean CU_DEBUG_debug = false;
 
 
     public static <T> T find(ArrayList<T> list, int start, int end, Object obj) {
@@ -222,13 +222,13 @@ public class CommonUtils {
         }
     }
 
-    public static void stable_sort(Vector vector, int start, int end) {
+    public static void stable_sort(ArrayList list, int start, int end) {
 
         if (end < start) {
             if (CommonUtils.CU_DEBUG_debug) System.out.println("CU: sort start > end" );
             return;
         }
-        Collections.sort(vector.subList(start,end));
+        Collections.sort(list.subList(start, end));
     }
 
     public static double round(double d) {

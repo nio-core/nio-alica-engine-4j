@@ -1,7 +1,9 @@
 package de.uniks.vs.jalica.engine.constrainmodule;
 
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.AlicaCommunication;
 import de.uniks.vs.jalica.engine.AlicaEngine;
+import de.uniks.vs.jalica.engine.AlicaTime;
 import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.engine.model.Variable;
 import de.uniks.vs.jalica.engine.common.NotifyTimer;
@@ -18,51 +20,55 @@ import java.util.Vector;
  */
 public class VariableSyncModule {
 
+    protected AlicaTime ttl4Communication;
+    protected AlicaTime ttl4Usage;
+    protected Vector<ResultEntry> store;
+    protected ResultEntry ownResults;
+    protected SolverResult publishData;
+
+    protected AlicaEngine ae;
+    protected AlicaCommunication communicator;
     protected NotifyTimer timer;
-    protected long ttl4Communication;
-    protected long ttl4Usage;
-
-    AlicaEngine ae;
-    long ownId;
-    AlicaCommunication communicator;
-    boolean running;
-    boolean communicationEnabled;
-
-
-
-    Vector<ResultEntry> store;
-    ResultEntry ownResults;
-    double distThreshold;
+    protected long ownID;
+    protected double distThreshold;
+    protected boolean running;
+    protected boolean communicationEnabled;
 
     public VariableSyncModule(AlicaEngine ae) {
-        running = false;
+        this.running = false;
         this.ae = ae;
         this.timer = null;
+        this.publishData = new SolverResult();
         this.store = new Vector<>();
     }
 
     public void init() {
 
-        if (running) {
+        if (running)
             return;
-        }
-
         running = true;
+
         SystemConfig sc = ae.getSystemConfig();
+//        ttl4Communication = 1000000 * (Long.valueOf((String) sc.get("Alica").get("Alica.CSPSolving.SeedTTL4Communication")));
+//        ttl4Usage = 1000000 * (Long.valueOf((String) sc.get("Alica").get("Alica.CSPSolving.SeedTTL4Usage")));
         communicationEnabled = (Boolean.valueOf((String) sc.get("Alica").get("Alica.CSPSolving.EnableCommunication")));
-        ttl4Communication = 1000000 * (Long.valueOf((String) sc.get("Alica").get("Alica.CSPSolving.SeedTTL4Communication")));
-        ttl4Usage = 1000000 * (Long.valueOf((String) sc.get("Alica").get("Alica.CSPSolving.SeedTTL4Usage")));
-        ownId = ae.getTeamObserver().getOwnID();
-        ownResults = new ResultEntry(ownId, ae);
-        store.add(ownResults);
+        ttl4Communication = new AlicaTime().inMilliseconds(Long.valueOf((String) sc.get("Alica").get("Alica.CSPSolving.SeedTTL4Communication")));
+        ttl4Usage = new AlicaTime().inMilliseconds(Long.valueOf((String) sc.get("Alica").get("Alica.CSPSolving.SeedTTL4Usage")));
         distThreshold = (Double.valueOf((String) sc.get("Alica").get("Alica.CSPSolving.SeedMergingThreshold")));
+
+        ownID = ae.getTeamObserver().getOwnID();
+        ownResults = new ResultEntry(ownID, ae);
+        store.add(ownResults);
+
+        this.publishData.senderID = ownID;
 
         if (communicationEnabled) {
             communicator = ae.getCommunicator();
-            int interval = (int) Math.round(1000.0 / (Double.valueOf((String) sc.get("Alica").get("Alica.CSPSolving.CommunicationFrequency"))));
-            // TODO: implementation
-//            timer = new NotifyTimer<VariableSyncModule>(interval, VariableSyncModule::publishContent, this);
-            timer = new NotifyTimer(interval, this);
+//            int interval = (int) Math.round(1000.0 / (Double.valueOf((String) sc.get("Alica").get("Alica.CSPSolving.CommunicationFrequency"))));
+            AlicaTime interval =  new AlicaTime().inSeconds(1.0 / (Double.valueOf((String) sc.get("Alica").get("Alica.CSPSolving.CommunicationFrequency"))));
+
+            if (timer == null)
+                timer = new NotifyTimer(interval.inMilliseconds(), this);
             timer.start();
         }
     }
@@ -71,10 +77,8 @@ public class VariableSyncModule {
         this.running = false;
 
         if (timer != null) {
-            // TODO: implementation
-//            timer.stop();
+            timer.stopIt();
         }
-        timer = null;
     }
 
     public void clear() {
@@ -86,63 +90,100 @@ public class VariableSyncModule {
 
     public void onSolverResult(SolverResult msg) {
 
-        if (msg.senderID == ownId) {
+        if ((msg.senderID == ownID) || (ae.getTeamObserver().isAgentIgnored(msg.senderID)))
             return;
-        }
+        ResultEntry resultEntry = null;
 
-        if (ae.getTeamObserver().isAgentIgnored(msg.senderID)) {
-            return;
-        }
-        boolean found = false;
-        ResultEntry re = null;
+        for (ResultEntry re : this.store) {
 
-        for (int i = 0; i < this.store.size(); ++i) {
-            re = store.get(i);
-
-            if (re.getId() == msg.senderID) {
-                found = true;
+            if ((re.getId()) == (msg.senderID)) {
+                resultEntry = re;
                 break;
             }
         }
 
-        //Lockguard here!
-        if (!found) {
-            re = new ResultEntry(msg.senderID, ae);
-            this.store.add(re);
+        if (resultEntry == null) {
+            resultEntry = new ResultEntry(msg.senderID, ae);
+//            auto agent_sorted_loc = std::upper_bound(_store.begin(), _store.end(), new_entry,
+//            [](const std::unique_ptr<ResultEntry>& a, const std::unique_ptr<ResultEntry>& b) {
+//                return (a->getId() < b->getId());
+//            });
+//            agent_sorted_loc = this.store.add(agent_sorted_loc, std::move(new_entry));
+//            re = (*agent_sorted_loc).get();
+            int index = 0;
+
+            for (; index < this.store.size(); index++)
+
+                if (this.store.get(index).getId() > resultEntry.getId())
+                    break;
+
+            this.store.insertElementAt(resultEntry, index);
+            CommonUtils.aboutCallNotification("VSM: ResultEntry:" + resultEntry +"inserted at position " + index);
         }
+        AlicaTime now = ae.getAlicaClock().now();
+
         for (SolverVar sv : msg.vars) {
-            Vector<Integer> tmp = new Vector<Integer>(sv.value);
-            re.addValue(sv.id, tmp);
+            Vector<Integer> tmp = new Vector<>(sv.value);
+            resultEntry.addValue(sv.id, tmp, now);
+            //TODO: implementation of Variant
+//            Variant v;
+//            v.loadFrom(sv.value);
+//            re.addValue(sv.id, v, now);
         }
+
+//        boolean found = false;
+//
+//        for (int i = 0; i < this.store.size(); ++i) {
+//            re = store.get(i);
+//
+//            if (re.getId() == msg.senderID) {
+//                found = true;
+//                break;
+//            }
+//        }
+//
+//        if (!found) {
+//            re = new ResultEntry(msg.senderID, ae);
+//            synchronized (this.store) {
+//                this.store.add(re);
+//            }
+//        }
+//        for (SolverVar sv : msg.vars) {
+//            Vector<Integer> tmp = new Vector<Integer>(sv.value);
+//            re.addValue(sv.id, tmp);
+//        }
     }
     public void publishContent() {
 
-        if (!this.running)
+        if ((!this.running) || (!ae.isMaySendMessages()))
             return;
 
-        if (!ae.isMaySendMessages())
-            return;
-        Vector<SolverVar> lv = ownResults.getCommunicatableResults(ttl4Communication);
+        AlicaTime now = ae.getAlicaClock().now();
+        Vector<SolverVar> lv = ownResults.getCommunicatableResults(now.time - ttl4Communication.time);
+//        Vector<SolverVar> lv = ownResults.getCommunicatableResults(ttl4Communication.time);
 
         if (lv.size() == 0)
             return;
         SolverResult sr = new SolverResult();
-        sr.senderID = ownId;
+        sr.senderID = ownID;
         sr.vars = lv;
         communicator.sendSolverResult(sr);
     }
+
     public void postResult(long vid, Vector<Integer> result) {
-        this.ownResults.addValue(vid, result);
+        this.ownResults.addValue(vid, result, ae.getAlicaClock().now());
     }
 
     public Vector<Vector<Vector<Integer>>> getSeeds(Vector<Variable> query, Vector<Vector<Double>> limits) {
         //Lockguard here!
         int dim = query.size();
-		/*cout << "VSyncMod:";
-		for(auto& avar : *query) {
-			cout << " " << avar.getId();
-		}
-		cout << endl;*/
+         if (CommonUtils.VSM_DEBUG_debug) {
+             System.out.print("VSyncMod:");
+             for (Variable avar : query) {
+                 System.out.print(" " + avar.getID());
+             }
+             System.out.println();
+         }
         List<VotedSeed> seeds = new Vector<>();
         Vector<Double> scaling = new Vector<>();
         scaling.setSize(dim);
@@ -155,7 +196,7 @@ public class VariableSyncModule {
 
         for(int i=0; i<this.store.size(); i++) {
             ResultEntry re = this.store.get(i); //allow for lock free iteration (no value is deleted from store)
-            Vector<Vector<Integer>> vec = re.getValues(query, this.ttl4Usage);
+            Vector<Vector<Integer>> vec = re.getValues(query, this.ttl4Usage.time);
 
             if(vec==null) {
                 continue;

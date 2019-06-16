@@ -1,4 +1,4 @@
-package de.uniks.vs.jalica.engine.common;
+package de.uniks.vs.jalica.engine.planselection;
 
 import de.uniks.vs.jalica.engine.model.AlicaElement;
 import de.uniks.vs.jalica.engine.model.Role;

@@ -1,12 +1,13 @@
 package de.uniks.vs.jalica.engine;
 
 import de.uniks.vs.jalica.common.utils.CommonUtils;
-import de.uniks.vs.jalica.engine.common.RoleTaskMapping;
 import de.uniks.vs.jalica.engine.model.EntryPoint;
 import de.uniks.vs.jalica.engine.model.Plan;
 import de.uniks.vs.jalica.engine.model.RoleSet;
 import de.uniks.vs.jalica.engine.model.Task;
 import de.uniks.vs.jalica.engine.planselection.IAssignment;
+import de.uniks.vs.jalica.engine.planselection.RoleTaskMapping;
+import de.uniks.vs.jalica.engine.taskassignment.TaskRole;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ import java.util.LinkedHashMap;
  */
 public class UtilityFunction {
 
-    protected static final double DIFFERENCETHRESHOLD = 0.0001;
+    protected static final double DIFFERENCE_THRESHOLD = 0.0001;
 
     private final String name;
     protected double priorityWeight;
@@ -26,9 +27,9 @@ public class UtilityFunction {
     private UtilityInterval simUI;
     private UtilityInterval priResult;
     private IRoleAssignment ra;
-    private LinkedHashMap<Long, Double> roleHighestPriorityMap;
-    private TaskRoleStruct lookupStruct;
-    private LinkedHashMap<TaskRoleStruct, Double> priorityMartix;
+    private LinkedHashMap<Long, Double> roleHighestPriorityMap;  // Role, Priority
+    private TaskRole lookupStruct;
+    private LinkedHashMap<TaskRole, Double> priorityMartix;
     private Plan plan;
     private AlicaEngine ae;
 
@@ -41,7 +42,7 @@ public class UtilityFunction {
         simUI = new UtilityInterval(0.0, 0.0);
         this.ra = null;
         this.ae = null;
-        this.lookupStruct = new TaskRoleStruct(0, 0);
+        this.lookupStruct = new TaskRole(0, 0);
         this.name = name;
         this.utilSummands = utilSummands;
         this.priorityWeight = priorityWeight;
@@ -62,7 +63,7 @@ public class UtilityFunction {
         // CREATE MATRIX && HIGHEST PRIORITY ARRAY
         // init dicts
         this.roleHighestPriorityMap = new LinkedHashMap<Long, Double>();
-        this.priorityMartix = new LinkedHashMap<TaskRoleStruct, Double> ();
+        this.priorityMartix = new LinkedHashMap<TaskRole, Double> ();
         RoleSet roleSet = ae.getRoleSet();
         long taskId;
         long roleId;
@@ -82,10 +83,10 @@ public class UtilityFunction {
 //                            + roleTaskMapping.getRole().getName() + " with id " + roleId
 //                        + "!\n We are in the UF for the plan " + this.plan.getName() + "!" );
                 }
-                TaskRoleStruct taskRoleStruct = new TaskRoleStruct(taskId, roleId);
+                TaskRole taskRole = new TaskRole(taskId, roleId);
 
-                if (this.priorityMartix.get(taskRoleStruct) == null) {
-                    this.priorityMartix.put(taskRoleStruct, curPriority);
+                if (this.priorityMartix.get(taskRole) == null) {
+                    this.priorityMartix.put(taskRole, curPriority);
                 }
 
                 if (this.roleHighestPriorityMap.get(roleId) < curPriority) {
@@ -93,7 +94,7 @@ public class UtilityFunction {
                 }
             }
             // Add Priority for Idle-EntryPoint
-            this.priorityMartix.put(new TaskRoleStruct(Task.IDLEID, roleId), 0.0);
+            this.priorityMartix.put(new TaskRole(Task.IDLEID, roleId), 0.0);
         }
         //c# != null
         // INIT UTILITYSUMMANDS
@@ -159,9 +160,9 @@ public class UtilityFunction {
             sumOfUI.setMax(sumOfUI.getMax() / sumOfWeights);
             sumOfUI.setMin(sumOfUI.getMin() / sumOfWeights);
             // Min == Max because RP.Assignment must be an complete Assignment!
-            if ((sumOfUI.getMax() - sumOfUI.getMin()) > DIFFERENCETHRESHOLD)
+            if ((sumOfUI.getMax() - sumOfUI.getMin()) > DIFFERENCE_THRESHOLD)
             {
-                System.err.println("UF: The utility min and max value differs more than " + DIFFERENCETHRESHOLD
+                System.err.println("UF: The utility min and max value differs more than " + DIFFERENCE_THRESHOLD
                         + " for an Assignment!");
             }
             return sumOfUI.getMax();
@@ -255,7 +256,7 @@ public class UtilityFunction {
                 roleId = this.ra.getRole(agent).getID();
                 this.lookupStruct.taskId = taskId;
                 this.lookupStruct.roleId = roleId;
-                for (TaskRoleStruct key : this.priorityMartix.keySet())
+                for (TaskRole key : this.priorityMartix.keySet())
                 {
                     if (key.roleId == this.lookupStruct.roleId
                         && key.taskId == this.lookupStruct.taskId)
@@ -273,7 +274,7 @@ public class UtilityFunction {
                 this.priResult.setMin(this.priResult.getMin() + curPrio);
 //#ifdef UFDEBUG
                 double prio = 0;
-                for(TaskRoleStruct key  : this.priorityMartix.keySet())
+                for(TaskRole key  : this.priorityMartix.keySet())
                 {
                     if(key.roleId == this.lookupStruct.roleId && key.taskId == this.lookupStruct.taskId)
                     {

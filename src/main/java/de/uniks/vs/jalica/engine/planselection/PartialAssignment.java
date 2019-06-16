@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.engine.planselection;
 
+import de.uniks.vs.jalica.engine.UtilityInterval;
 import de.uniks.vs.jalica.engine.common.AssignmentCollection;
 import de.uniks.vs.jalica.engine.UtilityFunction;
 import de.uniks.vs.jalica.engine.SimplePlanTree;
@@ -8,6 +9,7 @@ import de.uniks.vs.jalica.engine.model.Plan;
 import de.uniks.vs.jalica.engine.collections.SuccessCollection;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.DynCardinality;
+import de.uniks.vs.jalica.engine.taskassignment.TaskAssignment;
 
 import java.util.ArrayList;
 import java.util.Vector;
@@ -18,28 +20,36 @@ import java.util.Vector;
 public class PartialAssignment extends IAssignment implements Comparable<PartialAssignment> {
 
     private static final long PRECISION = 1073741824;
-    private static final int INFINIT = Integer.MAX_VALUE;
-    private final PartialAssignmentPool pap;
+    private static final int INFINIT    = Integer.MAX_VALUE;
+    private static boolean allowIdling;
+
+    private Plan plan;
+    private TaskAssignment taskAssignment;
+    private DynCardinality[] cardinalities;
+
+    private ArrayList<Long> assignment;
+    private UtilityInterval utility;
+    private int numAssignedAgents;
+    private int nextAgentIdx;
 
     private long compareVal;
     private boolean hashCalculated;
-    private Vector<Long> agents;
-    private Plan plan;
+    private ArrayList<Long> agents;
     private UtilityFunction utilFunc;
     private SuccessCollection epSuccessMapping;
     private AssignmentCollection epAgentsMapping;
-    private DynCardinality[] dynCardinalities;
+    private final PartialAssignmentPool partialAssignmentPool;
 
     public PartialAssignment(PartialAssignmentPool partialAssignmentPool) {
-        this.pap = partialAssignmentPool;
+        this.partialAssignmentPool = partialAssignmentPool;
         this.hashCalculated = false;
         this.epAgentsMapping = new AssignmentCollection(AssignmentCollection.maxEpsCount);
         this.unassignedAgents = new Vector<>();
-        this.dynCardinalities = new DynCardinality[AssignmentCollection.maxEpsCount];
+        this.cardinalities = new DynCardinality[AssignmentCollection.maxEpsCount];
         this.compareVal = PRECISION;
 
         for (int i = 0; i < AssignmentCollection.maxEpsCount; i++) {
-            this.dynCardinalities[i] = new DynCardinality();
+            this.cardinalities[i] = new DynCardinality();
         }
     }
 
@@ -48,7 +58,7 @@ public class PartialAssignment extends IAssignment implements Comparable<Partial
     }
 
     public static PartialAssignment getNew(PartialAssignmentPool partialAssignmentPool, PartialAssignment oldPartialAssignment) {
-        if (partialAssignmentPool.curentIndex >= partialAssignmentPool.maxCount) {
+        if (partialAssignmentPool.curentIndex >= partialAssignmentPool.getMaxCount()) {
             System.err.println("max PA count reached!");
         }
         PartialAssignment newPartialAssignment = partialAssignmentPool.partialAssignments.get(partialAssignmentPool.curentIndex++);
@@ -64,8 +74,8 @@ public class PartialAssignment extends IAssignment implements Comparable<Partial
             newPartialAssignment.unassignedAgents.add(oldPartialAssignment.unassignedAgents.get(i));
         }
 
-        for (int i = 0; i < oldPartialAssignment.dynCardinalities.length; i++) {
-            newPartialAssignment.dynCardinalities[i] = new DynCardinality(oldPartialAssignment.dynCardinalities[i].getMin(), oldPartialAssignment.dynCardinalities[i].getMax());
+        for (int i = 0; i < oldPartialAssignment.cardinalities.length; i++) {
+            newPartialAssignment.cardinalities[i] = new DynCardinality(oldPartialAssignment.cardinalities[i].getMin(), oldPartialAssignment.cardinalities[i].getMax());
         }
 
         newPartialAssignment.epAgentsMapping.setSize(oldPartialAssignment.epAgentsMapping.getSize());
@@ -81,9 +91,9 @@ public class PartialAssignment extends IAssignment implements Comparable<Partial
         return newPartialAssignment;
     }
 
-    public static PartialAssignment getNew(PartialAssignmentPool partialAssignmentPool, Vector<Long> agents, Plan plan, SuccessCollection successCollection) {
+    public static PartialAssignment getNew(PartialAssignmentPool partialAssignmentPool, ArrayList<Long> agents, Plan plan, SuccessCollection successCollection) {
 
-        if (partialAssignmentPool.curentIndex >= partialAssignmentPool.maxCount) {
+        if (partialAssignmentPool.curentIndex >= partialAssignmentPool.getMaxCount()) {
             System.out.println( "PA: max PA count reached!" );
         }
         PartialAssignment partialAssignment = partialAssignmentPool.partialAssignments.get(partialAssignmentPool.curentIndex++);
@@ -112,28 +122,28 @@ public class PartialAssignment extends IAssignment implements Comparable<Partial
         partialAssignment.epAgentsMapping.sortEps();
 
         for (int i = 0; i < partialAssignment.epAgentsMapping.getSize(); i++) {
-            partialAssignment.dynCardinalities[i].setMin(partialAssignment.epAgentsMapping.getEntryPoint(i).getMinCardinality());
-            partialAssignment.dynCardinalities[i].setMax(partialAssignment.epAgentsMapping.getEntryPoint(i).getMaxCardinality());
+            partialAssignment.cardinalities[i].setMin(partialAssignment.epAgentsMapping.getEntryPoint(i).getMinCardinality());
+            partialAssignment.cardinalities[i].setMax(partialAssignment.epAgentsMapping.getEntryPoint(i).getMaxCardinality());
             ArrayList<Long> suc = successCollection.getAgents(partialAssignment.epAgentsMapping.getEntryPoint(i));
 
             if (suc != null) {
-                partialAssignment.dynCardinalities[i].setMin(partialAssignment.dynCardinalities[i].getMin() - suc.size());
-                partialAssignment.dynCardinalities[i].setMax(partialAssignment.dynCardinalities[i].getMax() - suc.size());
+                partialAssignment.cardinalities[i].setMin(partialAssignment.cardinalities[i].getMin() - suc.size());
+                partialAssignment.cardinalities[i].setMax(partialAssignment.cardinalities[i].getMax() - suc.size());
 
-                if (partialAssignment.dynCardinalities[i].getMin() < 0) {
-                    partialAssignment.dynCardinalities[i].setMin(0);
+                if (partialAssignment.cardinalities[i].getMin() < 0) {
+                    partialAssignment.cardinalities[i].setMin(0);
                 }
 
-                if (partialAssignment.dynCardinalities[i].getMax() < 0) {
-                    partialAssignment.dynCardinalities[i].setMax(0);
+                if (partialAssignment.cardinalities[i].getMax() < 0) {
+                    partialAssignment.cardinalities[i].setMax(0);
                 }
 
 //#ifdef SUCDEBUG
                 if (CommonUtils.SUCDEBUG_debug) {
                     System.out.println("PA: SuccessCollection");
                     System.out.println("PA: EntryPoint: " + partialAssignment.epAgentsMapping.getEntryPoints()[i].getName());
-                    System.out.println("PA: DynMax: " + partialAssignment.dynCardinalities[i].getMax());
-                    System.out.println("PA: DynMin: " + partialAssignment.dynCardinalities[i].getMin());
+                    System.out.println("PA: DynMax: " + partialAssignment.cardinalities[i].getMax());
+                    System.out.println("PA: DynMin: " + partialAssignment.cardinalities[i].getMin());
                     System.out.print("PA: SucCol: ");
 
                     for (long k : (suc)) {
@@ -174,10 +184,10 @@ public class PartialAssignment extends IAssignment implements Comparable<Partial
         // Every EntryPoint should be satisfied according teamObserver his minCar
         for (int i = 0; i < this.epAgentsMapping.getSize(); i++) {
 
-            if (CommonUtils.PA_DEBUG_debug) System.out.println("PA:  Nr "+ i +" - " + this.dynCardinalities[i].getMin());
+            if (CommonUtils.PA_DEBUG_debug) System.out.println("PA:  Nr "+ i +" - " + this.cardinalities[i].getMin());
 
-            if (this.dynCardinalities[i].getMin() != 0) {
-                System.out.println("PA:  PartialAssignment is not a complete Assignment " + this.dynCardinalities[i].getMin());
+            if (this.cardinalities[i].getMin() != 0) {
+                System.out.println("PA:  PartialAssignment is not a complete Assignment " + this.cardinalities[i].getMin());
                 return false;
             }
         }
@@ -200,17 +210,42 @@ public class PartialAssignment extends IAssignment implements Comparable<Partial
         for (int i = 0; i < this.epAgentsMapping.getSize(); ++i) {
 
 
-            if (this.dynCardinalities[i].getMax() > 0) {
+            if (this.cardinalities[i].getMax() > 0) {
                 // Update the cardinalities and assign the robot
-                newPa = PartialAssignment.getNew(pap, this);
+                newPa = PartialAssignment.getNew(partialAssignmentPool, this);
                 newPa.assignAgent(robot, i);
                 newPas.add(newPa);
             }
-
         }
-
         return newPas;
     }
+
+//    public boolean expand(ArrayList<PartialAssignment> fringe, PartialAssignmentPool partialAssignmentPool, IAssignment oldAssignment) {
+//        // iterate next idx for cases of pre-assigned agents:
+//        while (_nextAgentIdx < <int>(_assignment.size()) && _assignment[_nextAgentIdx] >= 0) {
+//            ++_nextAgentIdx;
+//        }
+//        if (_nextAgentIdx >= <int>(_assignment.size())) {
+//            // No robot left to expand
+//            return false;
+//        }
+//        boolean change = false;
+//        int numChildren = <int>(_cardinalities.size());
+//        for (int i = 0; i < numChildren; ++i) {
+//            if (_cardinalities[i].getMax() > 0) {
+//                PartialAssignment newPa = pool.getNext();
+//                newPa = this;
+//                newPa.assignUnassignedAgent(_nextAgentIdx, i);
+//                newPa.evaluate(old);
+//                if (newPa._utility.getMax() > -1.0) {
+//                    o_container.insert(std::upper_bound(o_container.begin(), o_container.end(), newPa, compare), newPa);
+//                    change = true;
+//                }
+//            }
+//        }
+//        return change;
+//    }
+
 
     @Override
     public int getEntryPointCount() {
@@ -269,9 +304,9 @@ public class PartialAssignment extends IAssignment implements Comparable<Partial
         return epAgentsMapping;
     }
 
-    public boolean addIfAlreadyAssigned(SimplePlanTree spt, long agent) {
+    public boolean addIfAlreadyAssigned(SimplePlanTree simplePlanTree, long agent) {
 
-        if (spt.getEntryPoint().getPlan() == this.plan) {
+        if (simplePlanTree.getEntryPoint().getPlan() == this.plan) {
             EntryPoint curEp;
             int max = this.epAgentsMapping.getSize();
 
@@ -282,7 +317,7 @@ public class PartialAssignment extends IAssignment implements Comparable<Partial
             for (int i = 0; i < max; ++i) {
                 curEp = this.epAgentsMapping.getEntryPoint(i);
 
-                if (spt.getEntryPoint().getID() == curEp.getID()) {
+                if (simplePlanTree.getEntryPoint().getID() == curEp.getID()) {
 
                     if (!this.assignAgent(agent, i)) {
                         break;
@@ -305,9 +340,9 @@ public class PartialAssignment extends IAssignment implements Comparable<Partial
             return false;
         }
         // If there are children and we didnt find the agent until now, then go on recursive
-		else if (spt.getChildren().size() > 0) {
+		else if (simplePlanTree.getChildren().size() > 0) {
 
-            for (SimplePlanTree sptChild : spt.getChildren()) {
+            for (SimplePlanTree sptChild : simplePlanTree.getChildren()) {
 
                 if (this.addIfAlreadyAssigned(sptChild, agent)) {
                     return true;
@@ -320,15 +355,15 @@ public class PartialAssignment extends IAssignment implements Comparable<Partial
 
     private boolean assignAgent(long agentID, int index) {
 
-        if (this.dynCardinalities[index].getMax() > 0) {
+        if (this.cardinalities[index].getMax() > 0) {
             this.epAgentsMapping.getAgents(index).add(agentID);
 
-            if (this.dynCardinalities[index].getMin() > 0) {
-                this.dynCardinalities[index].setMin(this.dynCardinalities[index].getMin() - 1);
+            if (this.cardinalities[index].getMin() > 0) {
+                this.cardinalities[index].setMin(this.cardinalities[index].getMin() - 1);
             }
 
-            if (this.dynCardinalities[index].getMax() <= Integer.MAX_VALUE) {
-                this.dynCardinalities[index].setMax(this.dynCardinalities[index].getMax() - 1);
+            if (this.cardinalities[index].getMax() <= Integer.MAX_VALUE) {
+                this.cardinalities[index].setMax(this.cardinalities[index].getMax() - 1);
             }
             return true;
         }
@@ -424,8 +459,8 @@ public class PartialAssignment extends IAssignment implements Comparable<Partial
         for (int i = 0; i < this.epAgentsMapping.getSize(); i++) {
             agents = (this.epAgentsMapping.getAgents(i));
             string += "EPid: " + this.epAgentsMapping.getEntryPoint(i).getID() + " Task: " + this.epAgentsMapping.getEntryPoint(i).getTask().getName() + " minCar: "
-                + this.dynCardinalities[i].getMin() + " maxCar: "
-                + (this.dynCardinalities[i].getMax() == INFINIT ? "*" : String.valueOf(this.dynCardinalities[i].getMax())) + " Assigned Agents: ";
+                + this.cardinalities[i].getMin() + " maxCar: "
+                + (this.cardinalities[i].getMax() == INFINIT ? "*" : String.valueOf(this.cardinalities[i].getMax())) + " Assigned Agents: ";
 
             for (long agent : agents) {
                 string += agent + " ";

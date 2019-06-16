@@ -6,6 +6,6 @@ package de.uniks.vs.jalica.engine;
 public enum PlanChange {
     NoChange, //!< NoChange occurred, rule was not applicable
     InternalChange, //!< InternalChange, change occurred but is of no interest teamObserver upper level plans
-    SuccesChange, //!< SuccesChange, change occurred and led teamObserver a success, upper level can react
+    SuccessChange, //!< SuccessChange, change occurred and led teamObserver a success, upper level can react
     FailChange //!< FailChange, change occurred and led teamObserver a failure, upper level should react
 }

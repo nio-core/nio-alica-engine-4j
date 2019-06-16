@@ -12,7 +12,7 @@ public class JSONAttributeHandler extends JSONHandler {
 
     @Override
     public boolean handleIt(Object obj, Plan plan, ModelFactory modelFactory) {
-//        if (modelFactory.getRep().getPlans().containsKey(plan.extractID()))
+//        if (modelFactory.getPlanRepository().getPlans().containsKey(plan.extractID()))
 //            return false;
         Map.Entry entry = (HashMap.Entry) obj;
 
@@ -42,9 +42,9 @@ public class JSONAttributeHandler extends JSONHandler {
             return false;
         }
 
-        if (modelFactory.getRep().getPlans().containsKey(plan.getID())) {
+        if (modelFactory.getPlanRepository().getPlans().containsKey(plan.getID())) {
             modelFactory.addElement(plan);
-            modelFactory.getRep().getPlans().put(plan.getID(), plan);
+            modelFactory.getPlanRepository().getPlans().put(plan.getID(), plan);
         }
         return true;
     }

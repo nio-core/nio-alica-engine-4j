@@ -78,7 +78,7 @@ public class AlicaMultiAgent {
         alicaEngine2.start();
 //
         for (int i = 0; i < 20; i++) {
-            System.out.println(this.getClass().getSimpleName()+ "testMulitAgents: Step " +i);
+            System.out.println(this.getClass().getSimpleName()+ "testMultiAgents: Step " +i);
 
 //            ae->stepNotify();
 //            chrono::milliseconds duration(33);

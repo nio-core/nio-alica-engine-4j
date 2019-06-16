@@ -1,11 +1,15 @@
-package de.uniks.vs.jalica.engine;
+package de.uniks.vs.jalica.engine.roleassignment;
 
+import de.uniks.vs.jalica.engine.AlicaCommunication;
+import de.uniks.vs.jalica.engine.AlicaEngine;
+import de.uniks.vs.jalica.engine.IRoleAssignment;
 import de.uniks.vs.jalica.engine.model.Role;
 import de.uniks.vs.jalica.engine.model.RoleSet;
 import de.uniks.vs.jalica.engine.collections.AgentProperties;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.containers.RoleSwitch;
-import de.uniks.vs.jalica.engine.common.RoleUtility;
+import de.uniks.vs.jalica.engine.roleassignment.RoleUtility;
+import de.uniks.vs.jalica.engine.teammanagement.TeamObserver;
 
 import java.util.*;
 
@@ -20,8 +24,8 @@ public abstract class RoleAssignment implements IRoleAssignment {
     protected RoleSet roleSet;
     protected  Role ownRole;
     protected  ArrayList<AgentProperties> availableAgents;
-    protected  AlicaEngine ae;
-    protected  TeamObserver teamObserver;
+    protected AlicaEngine ae;
+    protected TeamObserver teamObserver;
     protected  HashMap<Long, Role> roles;
     protected AlicaCommunication communication;
     protected  boolean updateRoles;

@@ -5,21 +5,22 @@ package de.uniks.vs.jalica.engine;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.common.ConditionVariable;
 import de.uniks.vs.jalica.engine.containers.messages.AlicaEngineInfo;
+import de.uniks.vs.jalica.engine.model.Behaviour;
+import de.uniks.vs.jalica.engine.model.BehaviourConfiguration;
 import de.uniks.vs.jalica.engine.model.Plan;
+import de.uniks.vs.jalica.engine.model.PlanType;
 import de.uniks.vs.jalica.engine.syncmodule.ISyncModule;
 import de.uniks.vs.jalica.engine.authority.AuthorityManager;
 
-import java.util.ArrayList;
-import java.util.PriorityQueue;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
  * Created by alex on 13.07.17.
  */
 public class PlanBase implements Runnable {
 
-    private ConditionVariable stepModeCV;
-    private  AlicaEngine ae;
+    private AlicaEngine alicaEngine;
     private Plan masterPlan;
 
     private RunningPlan rootNode;
@@ -29,8 +30,8 @@ public class PlanBase implements Runnable {
     private ITeamObserver teamObserver;
     private IRoleAssignment roleAssignment;
     private ISyncModule syncModel;
-    private AuthorityManager authModul;
-    private AlicaCommunication statusPublisher;
+    private AuthorityManager authorityManager;
+//    private AlicaCommunication statusPublisher;
     private AlicaClock alicaClock;
 
     private AlicaTime loopTime;
@@ -45,37 +46,40 @@ public class PlanBase implements Runnable {
     private boolean sendStatusMessages;
 
     private Thread mainThread;
+    private ConditionVariable stepModeCV;
     private Logger log;
 
     private AlicaEngineInfo statusMessage;
-    private PriorityQueue<RunningPlan> fpEvents;
+//    private PriorityQueue<RunningPlan> runningPlans;
+    private ConcurrentLinkedDeque<RunningPlan> runningPlans;
 
     public PlanBase(AlicaEngine ae, Plan masterPlan) {
 
-        this.ae = ae;
+        this.alicaEngine = ae;
         this.masterPlan = masterPlan;
         this.rootNode = null;
         this.mainThread = Thread.currentThread();
         this.teamObserver = ae.getTeamObserver();
         this.syncModel = ae.getSyncModul();
-        this.authModul = ae.getAuthorityManager();
+        this.authorityManager = ae.getAuthorityManager();
         this.roleAssignment = ae.getRoleAssignment();
         this.ruleBook = new RuleBook(ae);
+
         this.alicaClock = ae.getAlicaClock();
         this.lastSendTime = new AlicaTime();
         this.lastSentStatusTime = new AlicaTime();
-        this.loopInterval = new AlicaTime();
+//        this.loopInterval = new AlicaTime();
         this.log = ae.getLogger();
-        this.fpEvents = new PriorityQueue<>();
+        this.runningPlans = new ConcurrentLinkedDeque<>();
         this.treeDepth = 0;
-        this.statusPublisher = null;
+//        this.statusPublisher = null;
         this.deepestNode = null;
         this.stepModeCV = null;
         this.running = false;
 
-        double frequency      = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.EngineFrequency"));
-        double minBroadcastFrequency = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.MinBroadcastFrequency"));
-        double maxBroadcastFrequency = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.MaxBroadcastFrequency"));
+        double frequency      = Double.valueOf((String) this.alicaEngine.getSystemConfig().get("Alica").get("Alica.EngineFrequency"));
+        double minBroadcastFrequency = Double.valueOf((String) this.alicaEngine.getSystemConfig().get("Alica").get("Alica.MinBroadcastFrequency"));
+        double maxBroadcastFrequency = Double.valueOf((String) this.alicaEngine.getSystemConfig().get("Alica").get("Alica.MaxBroadcastFrequency"));
 
         if (frequency > 1000000) {
             System.out.println("PB: ALICA should not be used with more than 1000Hz");
@@ -98,10 +102,10 @@ public class PlanBase implements Runnable {
 
         long halfLoopTime = this.loopTime.time / 2;
 
-        this.sendStatusMessages = Boolean.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.StatusMessages.Enabled"));
+        this.sendStatusMessages = Boolean.valueOf((String) this.alicaEngine.getSystemConfig().get("Alica").get("Alica.StatusMessages.Enabled"));
 
         if (sendStatusMessages) {
-            double statusMessageFrequency = Double.valueOf((String) this.ae.getSystemConfig().get("Alica").get("Alica.StatusMessages.Frequency"));
+            double statusMessageFrequency = Double.valueOf((String) this.alicaEngine.getSystemConfig().get("Alica").get("Alica.StatusMessages.Frequency"));
 
             if (statusMessageFrequency > frequency) {
                 ae.abort("PB: Alica.conf: Status messages frequency must not exceed the engine frequency");
@@ -112,7 +116,7 @@ public class PlanBase implements Runnable {
             this.statusMessage.masterPlan = masterPlan.getName();
         }
 
-        if (this.ae.getStepEngine()) {
+        if (this.alicaEngine.getStepEngine()) {
             this.stepModeCV = new ConditionVariable(this);
         }
 
@@ -128,8 +132,8 @@ public class PlanBase implements Runnable {
 
     public void start() {
 
-        if (ae.getAlicaClock() == null) {
-            ae.abort("PB: Start impossible, without ALICA Clock set!");
+        if (alicaEngine.getAlicaClock() == null) {
+            alicaEngine.abort("PB: Start impossible, without ALICA Clock set!");
         }
 
         if (!this.running) {
@@ -147,7 +151,7 @@ public class PlanBase implements Runnable {
             this.log.itertionStarts();
 
 // TODO: implement step engine part
-            if (ae.getStepEngine()) {
+            if (alicaEngine.getStepEngine()) {
                 if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: ===CUR TREE===");
 
                 if (this.rootNode == null)
@@ -155,16 +159,8 @@ public class PlanBase implements Runnable {
 				else
 				    if (CommonUtils.PB_DEBUG_debug) rootNode.printRecursive();
                 if (CommonUtils.PB_DEBUG_debug) System.out.println( "PB: ===END CUR TREE===" );
-////#endif
-//                {
-//                    // TODO fix implementation
-//                    unique_lock<mutex> lckStep(stepMutex);
-//                    stepModeCV.wait(
-//                            {
-//                        return this.ae.getStepCalled();
-//                    }
-//                    );
 
+//              // TODO fix implementation
                 Thread condition = new Thread() {
                     @Override
                     public void run() {
@@ -176,7 +172,7 @@ public class PlanBase implements Runnable {
                                     e.printStackTrace();
                                 }
 
-                                if (ae.getStepCalled()) {
+                                if (alicaEngine.getStepCalled()) {
                                     if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: called");
                                     stepModeCV.notifyOneThread();
                                 }
@@ -193,7 +189,7 @@ public class PlanBase implements Runnable {
                     }
                 }
                 if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: step engine awakened");
-                this.ae.setStepCalled(false);
+                this.alicaEngine.setStepCalled(false);
                 if (!running) {
                     return;
                 }
@@ -204,7 +200,7 @@ public class PlanBase implements Runnable {
             //Send tick teamObserver other modules
 //            System.out.println(Thread.currentThread().getId());
             try {
-                this.ae.getCommunicator().tick();
+                this.alicaEngine.getCommunicator().tick();
             }
             catch (NullPointerException e) {
                 e.printStackTrace();
@@ -212,22 +208,21 @@ public class PlanBase implements Runnable {
             this.teamObserver.tick(this.rootNode);
             this.roleAssignment.tick();
             this.syncModel.tick();
-            this.authModul.tick(this.rootNode);
+            this.authorityManager.tick(this.rootNode);
 
             if (this.rootNode == null) {
                 this.rootNode = ruleBook.initialisationRule(this.masterPlan);
             }
+            this.rootNode.preTick();
 
-            PlanChange result = this.rootNode.tick(this.ruleBook);
-
-            if (result == PlanChange.FailChange) {
+            if (this.rootNode.tick(this.ruleBook) == PlanChange.FailChange) {
                 System.err.println("PB: MasterPlan Failed");
             }
 
-            //lock for fpEvents
-            synchronized (this.fpEvents) {
+            //lock for runningPlans
+            synchronized (this.runningPlans) {
 //                lock_guard<mutex> lock(lomutex);
-                this.fpEvents = new PriorityQueue<>();
+                this.runningPlans = new ConcurrentLinkedDeque<>();
             }
             AlicaTime now = alicaClock.now();
 
@@ -279,26 +274,26 @@ public class PlanBase implements Runnable {
                         this.statusMessage.currentState = "NONE";
                     }
                     this.statusMessage.currentRole = this.roleAssignment.getOwnRole().getName();
-                    ae.getCommunicator().sendAlicaEngineInfo(this.statusMessage);
+                    alicaEngine.getCommunicator().sendAlicaEngineInfo(this.statusMessage);
                     this.lastSentStatusTime = alicaClock.now();
                 }
             }
 
             this.log.iterationEnds(this.rootNode);
-            this.ae.iterationComplete();
+            this.alicaEngine.iterationComplete();
             now = alicaClock.now();
 
             long availTime = this.loopTime.time - now.time - beginTime.time;
 //            availTime = availTime < 0? 0: availTime;
 
-            if (fpEvents.size() > 0) {
-                //lock for fpEvents
-                synchronized (this.fpEvents) {
+            if (runningPlans.size() > 0) {
+                //lock for runningPlans
+                synchronized (this.runningPlans) {
 
-                    while (this.running && availTime > AlicaTime.milliseconds(1) && fpEvents.size() > 0) {
-//                        RunningPlan runningPlan = fpEvents.peek();//front();
-//                        fpEvents.poll();
-                        RunningPlan runningPlan = fpEvents.poll();
+                    while (this.running && availTime > AlicaTime.milliseconds(1) && runningPlans.size() > 0) {
+//                        RunningPlan runningPlan = runningPlans.peek();//front();
+//                        runningPlans.poll();
+                        RunningPlan runningPlan = runningPlans.poll();
 
                         if (runningPlan.isActive()) {
                             boolean first = true;
@@ -316,16 +311,19 @@ public class PlanBase implements Runnable {
                             }
                         }
                         now = alicaClock.now();
-
-                        availTime = this.loopTime.time - now.time - beginTime.time;
+                        availTime = this.loopTime.time - (now.time - beginTime.time);
                     }
                 }
             }
 
+            now = alicaClock.now();
+            availTime = this.loopTime.time - (now.time - beginTime.time);
+
             if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: availTime " + availTime );
+            if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: loopTime " + this.loopTime.time );
             if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: duration time  " + (now.time - beginTime.time));
 
-            if (availTime > 0 && !ae.getStepEngine()) {
+            if (availTime > AlicaTime.microseconds(100) && !alicaEngine.getStepEngine()) {
 
                 if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: sleep " + availTime);
                 alicaClock.sleep(availTime);
@@ -341,16 +339,47 @@ public class PlanBase implements Runnable {
     }
 
 
+    public void addFastPathEvent(RunningPlan runningPlan) {
+        synchronized (this.runningPlans) {
+            if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: new event " + runningPlan.getPlan().getName());
+            runningPlans.add(runningPlan);
+        }
+    }
+
     public ConditionVariable getStepModeCV() {
         return stepModeCV;
     }
 
-    public void addFastPathEvent(RunningPlan runningPlan) {
-        synchronized (this.fpEvents) {
-            if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: new event " + runningPlan.getPlan().getName());
-            fpEvents.add(runningPlan);
-        }
+    public RunningPlan getRootNode() { return rootNode; }
+
+    public AlicaTime getLoopInterval() {
+        return loopInterval;
     }
 
-    public RunningPlan getRootNode() { return rootNode; }
+    public void setLoopInterval(AlicaTime loopInterval) {
+        this.loopInterval = loopInterval;
+    }
+
+    public RunningPlan getDeepestNode() {
+        return deepestNode;
+    }
+
+    public RunningPlan makeRunningPlan(Plan plan) {
+        RunningPlan runningPlan = new RunningPlan(alicaEngine, plan);
+        runningPlans.add(runningPlan);
+        return runningPlan;
+    }
+
+    public RunningPlan makeRunningPlan(PlanType planType) {
+        RunningPlan runningPlan = new RunningPlan(alicaEngine, planType);
+        runningPlans.add(runningPlan);
+        return runningPlan;
+    }
+
+    public RunningPlan makeRunningPlan(BehaviourConfiguration behaviourConfiguration) {
+        RunningPlan runningPlan = new RunningPlan(alicaEngine, behaviourConfiguration);
+        runningPlans.add(runningPlan);
+        return runningPlan;
+    }
 }
+

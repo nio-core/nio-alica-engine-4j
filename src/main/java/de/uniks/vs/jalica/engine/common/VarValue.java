@@ -1,16 +1,18 @@
 package de.uniks.vs.jalica.engine.common;
 
+import de.uniks.vs.jalica.engine.AlicaTime;
+
 import java.util.Vector;
 
 public class VarValue {
 
     public long id;
     public Vector<Integer> val;
-    public double lastUpdate;
+    public AlicaTime lastUpdate;
 
-    public VarValue(long vid, Vector<Integer> v, double now) {
+    public VarValue(long vid, Vector<Integer> v, AlicaTime time) {
         this.id = vid;
         this.val = v;
-        this.lastUpdate = now;
+        this.lastUpdate = time;
     }
 }

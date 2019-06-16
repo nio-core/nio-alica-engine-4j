@@ -4,13 +4,13 @@ import de.uniks.vs.jalica.engine.constrainmodule.VariableSyncModule;
 
 public class NotifyTimer extends Thread {
 
-    private final int interval;
+    private final long interval;
     private final VariableSyncModule variableSyncModule;
 
     boolean running;
     boolean started;
 
-    public NotifyTimer(int interval, VariableSyncModule variableSyncModule) {
+    public NotifyTimer(long interval, VariableSyncModule variableSyncModule) {
         this.interval = interval;
         this.variableSyncModule = variableSyncModule;
         this.started = true;
@@ -41,7 +41,6 @@ public class NotifyTimer extends Thread {
         startIt();
         super.start();
     }
-
     public boolean startIt() {
 
         if (this.started && !this.running){
@@ -49,7 +48,6 @@ public class NotifyTimer extends Thread {
         }
         return this.started && this.running;
     }
-
 
     public boolean stopIt() {
 

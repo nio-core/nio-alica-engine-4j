@@ -1,6 +1,7 @@
 package de.uniks.vs.jalica.engine.constrainmodule;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
+import de.uniks.vs.jalica.engine.AlicaTime;
 import de.uniks.vs.jalica.engine.model.Variable;
 import de.uniks.vs.jalica.engine.containers.SolverVar;
 import de.uniks.vs.jalica.engine.common.VarValue;
@@ -26,20 +27,19 @@ public class ResultEntry {
         return id;
     }
 
-    void addValue(long vid, Vector<Integer> result) {
-        double now = ae.getAlicaClock().now().time;
-        VarValue vv;
+    void addValue(long vid, Vector<Integer> result, AlicaTime time) {
+//        double now = ae.getAlicaClock().now().time;
 //        lock_guard<std::mutex> lock(valueLock);
-        VarValue it = this.values.get(vid);
+        VarValue existingVarValue = this.values.get(vid);
 
-        if (it != null) {
-            vv = it;
-            vv.val = result;
-            vv.lastUpdate = now;
+        if (existingVarValue != null) {
+            VarValue varValue = existingVarValue;
+            varValue.val = result;
+            varValue.lastUpdate = time;
         }
         else {
-            vv = new VarValue(vid, result, now);
-            this.values.put(vid, vv);
+            VarValue varValue = new VarValue(vid, result, time);
+            this.values.put(vid, varValue);
         }
     }
 
@@ -47,14 +47,14 @@ public class ResultEntry {
         this.values.clear();
     }
 
-    Vector<SolverVar> getCommunicatableResults(long ttl4Communication) {
-//        lock_guard<std::mutex> lock(valueLock);
+    Vector<SolverVar> getCommunicatableResults(long earliest) {
         Vector<SolverVar> lv = new Vector<SolverVar>();
-        double now = ae.getAlicaClock().now().time;
+//        double now = ae.getAlicaClock().now().time;
 
         for(VarValue varValue : values.values()) {
 
-            if(varValue.lastUpdate + ttl4Communication > now) {
+            if (varValue.lastUpdate.time > earliest) {
+//            if (varValue.lastUpdate.time + ttl4Communication > now) {
                 SolverVar sv = new SolverVar();
                 sv.id = varValue.id;
                 sv.value = varValue.val;
@@ -70,7 +70,7 @@ public class ResultEntry {
         VarValue it = this.values.get(vid);
 
         if(it != null) {
-            if(it.lastUpdate + ttl4Usage > now) {
+            if(it.lastUpdate.time + ttl4Usage > now) {
                 return it.val;
             }
         }

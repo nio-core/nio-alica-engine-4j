@@ -1,10 +1,14 @@
-package de.uniks.vs.jalica.engine.planselection;
+package de.uniks.vs.jalica.engine.taskassignment;
 
-import de.uniks.vs.jalica.engine.Assignment;
-import de.uniks.vs.jalica.engine.SimplePlanTree;
-import de.uniks.vs.jalica.engine.ITeamObserver;
-import de.uniks.vs.jalica.engine.model.Plan;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
+import de.uniks.vs.jalica.engine.Assignment;
+import de.uniks.vs.jalica.engine.ITaskAssignment;
+import de.uniks.vs.jalica.engine.ITeamObserver;
+import de.uniks.vs.jalica.engine.SimplePlanTree;
+import de.uniks.vs.jalica.engine.model.Plan;
+import de.uniks.vs.jalica.engine.planselection.IAssignment;
+import de.uniks.vs.jalica.engine.planselection.PartialAssignment;
+import de.uniks.vs.jalica.engine.planselection.PartialAssignmentPool;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,19 +21,20 @@ import java.util.Vector;
 public class TaskAssignment implements ITaskAssignment {
 
     private int expansionCount;
-    private ITeamObserver to;
+    private ITeamObserver teamObserver;
     private ArrayList<Plan> planList;
-    private Vector<Long> agents;
-    private Vector<PartialAssignment> fringe;
+    private ArrayList<Long> agents;
+    private ArrayList<PartialAssignment> fringe;
+    private PartialAssignmentPool partialAssignmentPool;
 
-    public TaskAssignment(PartialAssignmentPool pap, ITeamObserver to,
+    public TaskAssignment(PartialAssignmentPool partialAssignmentPool, ITeamObserver teamObserver,
                           ArrayList<Plan> planList, Vector<Long> paraAgents, boolean preassignOtherAgents) {
-//        #ifdef EXPANSIONEVAL
-        this.expansionCount = 0;
-//#endif
+        this.partialAssignmentPool = partialAssignmentPool;
         this.planList = planList;
-        this.to = to;
-        this.agents = new Vector<Long> (/*paraAgents.size()*/);
+        this.teamObserver = teamObserver;
+
+        this.expansionCount = 0;
+        this.agents = new ArrayList<> (/*paraAgents.size()*/);
         int k = 0;
 
         for (long i : paraAgents) {
@@ -37,8 +42,8 @@ public class TaskAssignment implements ITaskAssignment {
         }
         // sort agent ids ascending
         Collections.sort(agents);
-        this.fringe = new Vector<PartialAssignment>();
-        LinkedHashMap<Long, SimplePlanTree> simplePlanTreeMap = to.getTeamPlanTrees();
+        this.fringe = new ArrayList<PartialAssignment>();
+        LinkedHashMap<Long, SimplePlanTree> simplePlanTreeMap = teamObserver.getTeamPlanTrees();
         PartialAssignment currentPartialAssignment;
         for (Plan curPlan : this.planList)
         {
@@ -46,7 +51,7 @@ public class TaskAssignment implements ITaskAssignment {
             curPlan.getUtilityFunction().cacheEvalData();
 
             // CREATE INITIAL PARTIAL ASSIGNMENTS
-            currentPartialAssignment = PartialAssignment.getNew(pap, this.agents, curPlan, to.getSuccessCollection(curPlan));
+            currentPartialAssignment = PartialAssignment.getNew(partialAssignmentPool, this.agents, curPlan, teamObserver.getSuccessCollection(curPlan));
 
             // ASSIGN PREASSIGNED OTHER AGENTS
             if (preassignOtherAgents)
@@ -63,7 +68,7 @@ public class TaskAssignment implements ITaskAssignment {
     }
 
     private boolean addAlreadyAssignedAgents(PartialAssignment pa, LinkedHashMap<Long, SimplePlanTree> simplePlanTreeMap) {
-        long ownAgentID = to.getOwnID();
+        long ownAgentID = teamObserver.getOwnID();
         boolean haveToRevalute = false;
         SimplePlanTree spt = null;
         for (long agent : (this.agents))
@@ -93,64 +98,56 @@ public class TaskAssignment implements ITaskAssignment {
     }
 
     public Assignment getNextBestAssignment(IAssignment oldPartialAssignment) {
-//#ifdef TA_DEBUG
         if (CommonUtils.TA_DEBUG_debug) System.out.println("TA: Calculating next best PartialAssignment...");
-//#endif
+
         PartialAssignment calculatedPartialAssignment = this.calcNextBestPartialAssignment(oldPartialAssignment);
 
-        if (calculatedPartialAssignment == null) {
+        if (calculatedPartialAssignment == null)
             return null;
-        }
 
-//#ifdef TA_DEBUG
         if (CommonUtils.TA_DEBUG_debug) System.out.println("TA: ... calculated this PartialAssignment:\n" + calculatedPartialAssignment.toString());
-//#endif
 
         Assignment newAss = new Assignment(calculatedPartialAssignment);
-//#ifdef TA_DEBUG
+
         if (CommonUtils.TA_DEBUG_debug) System.out.println("TA: Return this Assignment teamObserver PS:" + newAss.toString());
-//#endif
 
         return newAss;
     }
 
-    PartialAssignment calcNextBestPartialAssignment(IAssignment oldAss) {
-        PartialAssignment currentPartialAssignment = null;
+    PartialAssignment calcNextBestPartialAssignment(IAssignment oldAssignment) {
         PartialAssignment goal = null;
+//        PartialAssignment currentPartialAssignment = null;
 
         while (this.fringe.size() > 0 && goal == null) {
-            currentPartialAssignment = this.fringe.get(0);
-//            this->fringe.erase(this->fringe.begin());
+            PartialAssignment currentPartialAssignment = this.fringe.get(0);
             this.fringe.remove(0);
-//#ifdef TA_DEBUG
-            if (CommonUtils.TA_DEBUG_debug) {
-                System.out.println("<---");
-                System.out.println("TA: NEXT PA from fringe:");
-                System.out.println(currentPartialAssignment.toString() + "--->");
-            }
-//#endif
-            // Check if it is a goal
+
+            if (CommonUtils.TA_DEBUG_debug)  System.out.println("<---\nTA: NEXT PA from fringe:\n" + currentPartialAssignment.toString() + "--->");
+
             if (currentPartialAssignment.isGoal()) {
-                // Save the goal in result
                 goal = currentPartialAssignment;
+            } else {
+                if (CommonUtils.TA_DEBUG_debug) System.out.println("<---" + "\nTA: BEFORE fringe exp:" + fringe + "--->");
+
+//                currentPartialAssignment.expand(fringe, partialAssignmentPool, oldAssignment);
+
+                if (CommonUtils.TA_DEBUG_debug)  System.out.println("<---" + "\nTA: AFTER fringe exp:" + "\nTA: fringe size " + this.fringe.size());
             }
 
-//#ifdef TA_DEBUG
-            if (CommonUtils.TA_DEBUG_debug) System.out.println( "<---" );
-            if (CommonUtils.TA_DEBUG_debug) System.out.println( "TA: BEFORE fringe exp:" );
-            if (CommonUtils.TA_DEBUG_debug) System.out.println( "TA: agentID " + this.to.getOwnID() );
+//            expansionCount++;
+//        }
+//        return goal;
 
-            for(int i = 0; i < this.fringe.size(); i++) {
+
+
+            for( int i = 0; i < this.fringe.size(); i++) {
                 if (CommonUtils.TA_DEBUG_debug) System.out.print( this.fringe.get(i).toString());
             }
-            if (CommonUtils.TA_DEBUG_debug) System.out.println( "--->");
-//#endif
+
             // Expand for the next search (maybe necessary later)
             ArrayList<PartialAssignment> newPartialAssignment = currentPartialAssignment.expand();
 
-//#ifdef EXPANSIONEVAL
             expansionCount++;
-//#endif
             // Every just expanded partial assignment must get an updated utility
 
             for (int i = 0; i < newPartialAssignment.size(); i++)
@@ -160,9 +157,9 @@ public class TaskAssignment implements ITaskAssignment {
 //                PartialAssignment partialAssignment = newPartialAssignment.get(0);
 //                CommonUtils.advance(partialAssignment, i);
                 PartialAssignment partialAssignment = newPartialAssignment.get(i);
-                partialAssignment.getUtilFunc().updateAssignment(partialAssignment, oldAss);
+                partialAssignment.getUtilFunc().updateAssignment(partialAssignment, oldAssignment);
 
-                if (partialAssignment.getMax() != -1) // add this partial assignment only, if all assigned robots does not have a priority of -1 for any task
+                if (partialAssignment.getMax() != -1) // add this partial assignment only, if all assigned agents does not have a priority of -1 for any task
                 {
                     // Add teamObserver search fringe
                     this.fringe.add(partialAssignment);
@@ -170,18 +167,14 @@ public class TaskAssignment implements ITaskAssignment {
             }
             CommonUtils.stable_sort(fringe, 0, fringe.size()-1);
 
-//#ifdef TA_DEBUG
             if (CommonUtils.TA_DEBUG_debug) {
-                System.out.println("<---");
-                System.out.println("TA: AFTER fringe exp:");
-                System.out.println("TA: fringe size " + this.fringe.size());
+                System.out.println("<---"+"\nTA: AFTER fringe exp:"+"\nTA: fringe size " + this.fringe.size());
 
                 for(int i = 0; i < this.fringe.size(); i++) {
                     System.out.print("TA:      " + this.fringe.get(i).toString());
                 }
                 System.out.println("--->");
             }
-//#endif
         }
         return goal;
     }

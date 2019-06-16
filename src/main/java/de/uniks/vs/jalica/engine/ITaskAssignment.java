@@ -1,4 +1,4 @@
-package de.uniks.vs.jalica.engine.planselection;
+package de.uniks.vs.jalica.engine;
 
 import de.uniks.vs.jalica.engine.Assignment;
 import de.uniks.vs.jalica.engine.planselection.IAssignment;

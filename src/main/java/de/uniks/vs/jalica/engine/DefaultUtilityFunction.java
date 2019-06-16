@@ -48,9 +48,9 @@ public class DefaultUtilityFunction extends UtilityFunction {
             sumOfUI.setMax(sumOfUI.getMax() / sumOfWeights);
             sumOfUI.setMin(sumOfUI.getMin() / sumOfWeights);
 
-            if ((sumOfUI.getMax() - sumOfUI.getMin()) > DIFFERENCETHRESHOLD)
+            if ((sumOfUI.getMax() - sumOfUI.getMin()) > DIFFERENCE_THRESHOLD)
             {
-                System.out.println("DefUF: The Min and Max utility differs more than " + DIFFERENCETHRESHOLD
+                System.out.println("DefUF: The Min and Max utility differs more than " + DIFFERENCE_THRESHOLD
                         + " for a complete Assignment!");
             }
             return sumOfUI.getMax();

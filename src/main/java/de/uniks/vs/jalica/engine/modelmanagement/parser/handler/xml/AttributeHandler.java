@@ -14,7 +14,7 @@ public class AttributeHandler extends XMLHandler {
     @Override
     public boolean handleIt(Node node, Plan plan, ModelFactory modelFactory) {
 
-        if (modelFactory.getRep().getPlans().containsKey(plan.getID()))
+        if (modelFactory.getPlanRepository().getPlans().containsKey(plan.getID()))
             return false;
 
         Element element = node.getOwnerDocument().getDocumentElement();
@@ -61,7 +61,7 @@ public class AttributeHandler extends XMLHandler {
         // insert into elements ma
         modelFactory.addElement(plan);
         // insert into plan repository map
-        modelFactory.getRep().getPlans().put(plan.getID(), plan);
+        modelFactory.getPlanRepository().getPlans().put(plan.getID(), plan);
 
         return false;
     }

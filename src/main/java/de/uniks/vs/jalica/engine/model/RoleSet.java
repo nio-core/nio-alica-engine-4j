@@ -1,6 +1,6 @@
 package de.uniks.vs.jalica.engine.model;
 
-import de.uniks.vs.jalica.engine.common.RoleTaskMapping;
+import de.uniks.vs.jalica.engine.planselection.RoleTaskMapping;
 
 import java.util.ArrayList;
 

@@ -1,12 +1,11 @@
-package de.uniks.vs.jalica.engine.common;
+package de.uniks.vs.jalica.engine.roleassignment;
 
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.engine.RoleAssignment;
+import de.uniks.vs.jalica.engine.model.Characteristic;
 import de.uniks.vs.jalica.engine.collections.AgentProperties;
 import de.uniks.vs.jalica.engine.containers.RoleSwitch;
 import de.uniks.vs.jalica.engine.model.Role;
-import sun.management.resources.agent;
 
 import java.util.Comparator;
 

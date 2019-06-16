@@ -4,7 +4,6 @@ import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.engine.model.*;
 import de.uniks.vs.jalica.engine.authority.AllocationDifference;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
-import de.uniks.vs.jalica.engine.planselection.IPlanSelector;
 import de.uniks.vs.jalica.engine.syncmodule.ISyncModule;
 
 import java.util.*;
@@ -140,18 +139,16 @@ public class RuleBook {
         temp.clearChildren();
         r.setFailHandlingNeeded(false);
 
-//#ifdef RULE_debug
         if (CommonUtils.RULE_debug) System.out.println( "RB: PlanReplace" + r.getPlan().getName() );
-//#endif
+
         log.eventOccured("PReplace(" + r.getPlan().getName() + ")");
         return PlanChange.FailChange;
     }
 
     private PlanChange planRedoRule(RunningPlan r) {
-//        #ifdef RULE_debug
         if (CommonUtils.RULE_debug) System.out.println("RB: PlanRedoRule-Rule called." );
         if (CommonUtils.RULE_debug) System.out.println("RB: PlanRedoRule RP \n" + r.toString() );
-//#endif
+
         if (r.getParent() != null || !r.getFailHandlingNeeded() || r.isBehaviour())
             return PlanChange.NoChange;
         if (r.getFailure() != 1)
@@ -161,9 +158,7 @@ public class RuleBook {
         if (r.getActiveState() == r.getOwnEntryPoint().getState())
         {
 //            r.addFailure();
-//#ifdef RULE_debug
             if (CommonUtils.RULE_debug) System.out.println("RB: PlanRedoRule not executed for " + r.getPlan().getName() + "- Unable teamObserver repair, as the current state is already the initial state.");
-//#endif
             return PlanChange.FailChange;
         }
         r.setFailHandlingNeeded(false);
@@ -426,7 +421,7 @@ public class RuleBook {
         log.eventOccured("SynchTrans(" + r.getPlan().getName() + ")");
 
         if (r.getActiveState().isSuccessState())
-            return PlanChange.SuccesChange;
+            return PlanChange.SuccessChange;
 
         else if (r.getActiveState().isFailureState())
             return PlanChange.FailChange;
@@ -465,7 +460,7 @@ public class RuleBook {
         runningPlan.setAllocationNeeded(true);
         log.eventOccured("Transition(" + runningPlan.getPlan().getName() + " teamObserver State " + runningPlan.getActiveState().getName() + ")");
         if (runningPlan.getActiveState().isSuccessState())
-            return PlanChange.SuccesChange;
+            return PlanChange.SuccessChange;
 		else if (runningPlan.getActiveState().isFailureState())
             return PlanChange.FailChange;
         return PlanChange.InternalChange;

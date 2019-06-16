@@ -11,6 +11,9 @@ public class AlicaTime  {
 
     public long time;
 
+    public static long microseconds(long microSeconds) {
+        return (long) (microSeconds);
+    }
     public static long milliseconds(long milliSeconds) {
         return (long) (milliSeconds * mys);
     }
@@ -22,6 +25,7 @@ public class AlicaTime  {
         this.time = 0;
     }
 
+    //TODO: make static "AlicaTime time = AlicaTime.inSeconds(...)"
     public AlicaTime inSeconds(double seconds) {
         this.time = (long) (seconds * ns);
         return this;

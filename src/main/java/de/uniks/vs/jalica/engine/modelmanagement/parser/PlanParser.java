@@ -2,6 +2,7 @@ package de.uniks.vs.jalica.engine.modelmanagement.parser;
 
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.AlicaEngine;
+import de.uniks.vs.jalica.engine.PlanBase;
 import de.uniks.vs.jalica.engine.modelmanagement.parser.handler.json.*;
 import de.uniks.vs.jalica.engine.modelmanagement.parser.handler.xml.*;
 import de.uniks.vs.jalica.engine.common.SystemConfig;
@@ -52,7 +53,6 @@ public class PlanParser {
     ArrayList<String> filesParsed = new ArrayList<>();
     private ArrayList<XMLHandler> xmlTagHandlers;
     private ArrayList<JSONHandler> jsonEntryHandlers;
-
 
     public PlanParser(AlicaEngine ae, PlanRepository planRepository) {
         this.ae = ae;

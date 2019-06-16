@@ -10,14 +10,15 @@ import java.util.Vector;
  */
 public class PartialAssignmentPool {
 
-    public static int maxCount = 10100;
 
     public int curentIndex;
     public Task idleTask;
     public EntryPoint idleEntryPoint;
     public Vector<PartialAssignment> partialAssignments;
+    private int initialSize;
 
-    public PartialAssignmentPool() {
+    public PartialAssignmentPool(int initialSize) {
+        this.initialSize = initialSize;
 
         idleEntryPoint = new EntryPoint();
         idleEntryPoint.setName("IDLE-ep");
@@ -32,9 +33,12 @@ public class PartialAssignmentPool {
         idleEntryPoint.setTask(idleTask);
         partialAssignments = new Vector<>();
 
-        for (int i = 0; i < maxCount; i++) {
+        for (int i = 0; i < initialSize; i++) {
             partialAssignments.add( new PartialAssignment(this));
         }
     }
 
+    public int getMaxCount() {
+        return initialSize;
+    }
 }

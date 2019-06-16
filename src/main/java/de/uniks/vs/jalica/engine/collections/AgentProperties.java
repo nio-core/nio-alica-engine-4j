@@ -3,8 +3,7 @@ package de.uniks.vs.jalica.engine.collections;
 import de.uniks.vs.jalica.engine.common.config.ConfigPair;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.common.SystemConfig;
-import de.uniks.vs.jalica.engine.common.Capability;
-import de.uniks.vs.jalica.engine.common.Characteristic;
+import de.uniks.vs.jalica.engine.model.Characteristic;
 import de.uniks.vs.jalica.engine.idmanagement.IDManager;
 
 import java.util.ArrayList;

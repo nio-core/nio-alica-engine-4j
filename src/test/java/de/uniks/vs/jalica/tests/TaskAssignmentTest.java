@@ -7,13 +7,17 @@ import de.uniks.vs.jalica.communication.AlicaZMQCommunication;
 import de.uniks.vs.jalica.engine.AlicaClock;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.RunningPlan;
-import de.uniks.vs.jalica.engine.planselection.IPlanSelector;
+import de.uniks.vs.jalica.engine.IPlanSelector;
 import de.uniks.vs.jalica.common.FileSystem;
 import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.behaviours.UtilityFunctionCreator;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
+import de.uniks.vs.jalica.engine.idmanagement.IDManager;
 import de.uniks.vs.jalica.engine.model.AbstractPlan;
 import de.uniks.vs.jalica.engine.model.Plan;
 import de.uniks.vs.jalica.engine.model.Role;
+import org.junit.Assert;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,73 +33,73 @@ public class TaskAssignmentTest {
     private ConstraintCreator crc;
     private UtilityFunctionCreator uc;
 
+    private AlicaEngine alicaEngine;
+
     @BeforeEach
     void beforeAll() {
-//// determine the path teamObserver the testsincpp config
-//        string path = supplementary::FileSystem::getSelfPath();
-//        int place = path.rfind("devel");
-//        path = path.substr(0, place);
-//        path = path + "src/alica/alica_test/src/testsincpp";
-//
-//        // bring up the SystemConfig with the corresponding path
-//        sc = supplementary::SystemConfig::getInstance();
-//        sc->setRootPath(path);
-//        sc->setConfigPath(path + "/etc");
-//        cout << sc->getConfigPath() << endl;
-//
-//        sc->setHostname("nase");
-//        ae = new alica::AlicaEngine();
-//        bc = new alica::BehaviourCreator();
-//        cc = new alica::ConditionCreator();
-//        uc = new alica::UtilityFunctionCreator();
-//        crc = new alica::ConstraintCreator();
-//        ae->setAlicaClock(new alicaRosProxy::AlicaROSClock());
-//        ae->init(bc, cc, uc, crc, "RolesetTA", "MasterPlanTaskAssignment", ".", false);
-
         bc = new BehaviourCreator();
         cc = new ConditionCreator();
         uc = new UtilityFunctionCreator();
         crc = new ConstraintCreator();
-    }
-
-    @Test
-     public void testMulitAgents() throws InterruptedException {
 
         FileSystem.PACKAGE_SRC = "src/test/java/de/uniks/vs/jalica";
 
         SystemConfig sc = new SystemConfig("nase");
-        AlicaEngine alicaEngine = new AlicaEngine();
+        alicaEngine = new AlicaEngine();
         alicaEngine.setAlicaClock(new AlicaClock());
         alicaEngine.setCommunicator(new AlicaZMQCommunication(alicaEngine));
         boolean result = alicaEngine.init(sc, bc, cc, uc, crc, "RolesetTA", "MasterPlanTaskAssignment", "roles/", false);
         Assertions.assertTrue(result);
+    }
 
+    @Test
+     public void testMultiAgents() throws InterruptedException {
+        Vector<Long> agents = new Vector<>();
 
-        Vector<Long> robots = new Vector<>();
-
-        for (long i = 8; i <= 11; i++) {
-            robots.add(i);
+        for (long number = 8; number <= 11; number++) {
+            ID agentID = IDManager.generateUUID(number);
+            agents.add(agentID.asLong());
+            alicaEngine.getTeamManager().setTimeLastMsgReceived(agentID, alicaEngine.getAlicaClock().now());
         }
-
-        HashMap<Long, Role> roles = alicaEngine.getPlanRepository().getRoles();
-        int i = 8;
-
-        for (Role role : roles.values()) {
-            alicaEngine.getTeamObserver().getAgentById(i).setCurrentRole(role);
-            i++;
-            if (i > 11)
-                break;
-        }
+        // fake inform the team observer about roles of none existing agents
+        alicaEngine.getTeamObserver().tick(null);
+        alicaEngine.getRoleAssignment().tick();
 
         HashMap<Long, Plan> planMap = alicaEngine.getPlanRepository().getPlans();
         RunningPlan rp = new RunningPlan(alicaEngine, planMap.get(1407152758497l));
-        ArrayList<AbstractPlan> planList = new ArrayList<>();
-        planList.add((planMap.get(1407152758497l)));
+        ArrayList<AbstractPlan> inputPlans = new ArrayList<>();
+        inputPlans.add((planMap.get(1407152758497l)));
         IPlanSelector ps = alicaEngine.getPlanSelector();
-        ArrayList<RunningPlan> plans = ps.getPlansForState(rp, planList, robots);
+
+        ArrayList<RunningPlan> o_plans = ps.getPlansForState(rp, inputPlans, agents);
+        Assert.assertNotNull(o_plans);
+        Assert.assertEquals (1, o_plans);
+
+//        HashMap<Long, Role> roles = alicaEngine.getPlanRepository().getRoles();
+//        int i = 8;
+//
+//        for (Role role : roles.values()) {
+//            alicaEngine.getTeamObserver().getAgentById(i).setCurrentRole(role);
+//            i++;
+//            if (i > 11)
+//                break;
+//        }
+//
+//        HashMap<Long, Plan> planMap = alicaEngine.getPlanRepository().getPlans();
+//        RunningPlan rp = new RunningPlan(alicaEngine, planMap.get(1407152758497l));
+//        ArrayList<AbstractPlan> planList = new ArrayList<>();
+//        planList.add((planMap.get(1407152758497l)));
+//        IPlanSelector ps = alicaEngine.getPlanSelector();
+//        ArrayList<RunningPlan> plans = ps.getPlansForState(rp, planList, agents);
 
 //        alicaEngine.start();
         Thread.sleep(2000);
     }
 
+    @AfterAll
+    void AfterAll() {
+        alicaEngine.shutDown();
+    }
+
 }
+

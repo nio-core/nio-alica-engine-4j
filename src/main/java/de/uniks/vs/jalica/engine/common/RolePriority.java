@@ -5,6 +5,7 @@ import de.uniks.vs.jalica.engine.common.config.ConfigPair;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.model.AlicaElement;
 import de.uniks.vs.jalica.engine.model.Role;
+import de.uniks.vs.jalica.engine.roleassignment.RoleUsage;
 
 import java.util.ArrayList;
 import java.util.HashMap;

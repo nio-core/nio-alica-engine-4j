@@ -1,14 +1,13 @@
 package de.uniks.vs.jalica.engine.planselection;
 
-import de.uniks.vs.jalica.engine.Assignment;
-import de.uniks.vs.jalica.engine.RunningPlan;
+import de.uniks.vs.jalica.engine.*;
 import de.uniks.vs.jalica.engine.model.*;
-import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.engine.ITeamObserver;
 import de.uniks.vs.jalica.engine.collections.AgentProperties;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.PlanningProblem;
+import de.uniks.vs.jalica.engine.taskassignment.TaskAssignment;
 
+import javax.sound.midi.Soundbank;
 import java.util.ArrayList;
 import java.util.Vector;
 
@@ -17,11 +16,13 @@ import java.util.Vector;
  */
 public class PlanSelector implements IPlanSelector {
     private PartialAssignmentPool partialAssignmentPool;
-    private AlicaEngine alicaEngine;
     private ITeamObserver teamObserver;
+    private AlicaEngine alicaEngine;
+    private PlanBase planBase;
 
-    public PlanSelector(AlicaEngine alicaEngine, PartialAssignmentPool assignmentPool) {
+    public PlanSelector(AlicaEngine alicaEngine, PlanBase planBase, PartialAssignmentPool assignmentPool) {
         this.alicaEngine = alicaEngine;
+        this.planBase = planBase;
         this.teamObserver = this.alicaEngine.getTeamObserver();
         this.partialAssignmentPool = assignmentPool;
     }
@@ -47,17 +48,19 @@ public class PlanSelector implements IPlanSelector {
         } else {
             newPlanList = runningPlan.getPlanType().getPlans();
         }
-        // GET ROBOTS TO ASSIGN
+        // GET AGENTS TO ASSIGN
         Vector<Long> selectedAgents = runningPlan.getAssignment().getAllAgents();
         return this.createRunningPlan(runningPlan.getParent(), newPlanList, selectedAgents, runningPlan, runningPlan.getPlanType());
     }
 
     private ArrayList<RunningPlan> getPlansForStateInternal(RunningPlan planningParent, ArrayList<AbstractPlan> abstractPlans, Vector<Long> agentIDs) {
         ArrayList<RunningPlan> rps = new ArrayList<RunningPlan>();
-        if (CommonUtils.PS_DEBUG_debug) System.out.println("###### PS: GetPlansForState: Parent:"
+
+        if (CommonUtils.PS_DEBUG_debug) System.out.println("###### PS::getPlansForState  State:" + planningParent.getActiveState().getName() +"  Parent:"
                 + (planningParent != null ? planningParent.getPlan().getName() : "null") + " plan count: "
                 + abstractPlans.size() + " agent count: "
                 + agentIDs.size() + " ######" );
+
         RunningPlan runningPlan;
         ArrayList<Plan> plans;
         BehaviourConfiguration behaviourConfiguration;
@@ -67,8 +70,6 @@ public class PlanSelector implements IPlanSelector {
 
         for (AbstractPlan abstractPlan : abstractPlans) {
             // BEHAVIOUR CONFIGURATION
-//            bc = (BehaviourConfiguration) ap;
-
             if (abstractPlan == null) {
                 System.out.println("PS: plan is null");
                 continue;
@@ -84,9 +85,6 @@ public class PlanSelector implements IPlanSelector {
                 if (CommonUtils.PS_DEBUG_debug) System.out.println("PS: Added Behaviour " + behaviourConfiguration.getBehaviour().getName() );
             } else {
                 // PLAN
-//                p = (Plan)(ap);
-//                if (p != null)
-
                 if ((abstractPlan instanceof Plan)) {
                     plan = (Plan)abstractPlan;
                     plans = new ArrayList<>();
@@ -152,54 +150,42 @@ public class PlanSelector implements IPlanSelector {
     }
 
     private RunningPlan createRunningPlan(RunningPlan planningParent, ArrayList<Plan> plans,
-                                          Vector<Long> agentIDs, RunningPlan oldRp, PlanType relevantPlanType) {
-        ArrayList<Plan> newPlanList = new ArrayList<>();
+                                          Vector<Long> agentIDs, RunningPlan oldRunningPlan, PlanType relevantPlanType) {
+        ArrayList<Plan> inputPlans = new ArrayList<>();
+
         // REMOVE EVERY PLAN WITH TOO GREAT MIN CARDINALITY
-        for (Plan plan : plans)
-        {
+        for (Plan plan : plans) {
             // CHECK: number of agents < minimum cardinality of this plan
-            if (plan.getMinCardinality() > (agentIDs.size() + teamObserver.successesInPlan(plan)))
-            {
-
-                String ss = "";
-                ss += "PS: AgentIDs: ";
-                for (long agent : agentIDs)
-                {
-                    ss += agent + ", ";
-                }
-                ss += "= " + agentIDs.size() + " IDs are not enough for the plan " + plan.getName() + "!" ;
-                //this.baseModule.Mon.Error(1000, msg);
-
-                if (CommonUtils.PS_DEBUG_debug) System.out.println(ss);
-            }
-            else
-            {
+            if (plan.getMinCardinality() > (agentIDs.size() + teamObserver.successesInPlan(plan))) {
+                if (CommonUtils.PS_DEBUG_debug) System.out.println("PS: AgentIds: " + agentIDs +" \n= " + agentIDs.size() + " IDs are not enough for the plan " + plan.getName() + "!");
+            } else {
                 // this plan was ok according teamObserver its cardinalities, so we can add it
-                newPlanList.add(plan);
+                inputPlans.add(plan);
             }
         }
 
         // WE HAVE NOT ENOUGH AGENTS TO EXECUTE ANY PLAN
-        if (newPlanList.size() == 0)
-        {
+        if (inputPlans.isEmpty())
             return null;
-        }
+
         // TASKASSIGNMENT
-        TaskAssignment ta = null;
-        Assignment oldAss = null;
+        TaskAssignment ta;
         RunningPlan rp;
-        if (oldRp == null)
-        {
+        Assignment oldAssignment = null;
+
+        if (oldRunningPlan == null) {
             // preassign other agents, because we dont need a similar assignment
-            rp = new RunningPlan(alicaEngine, relevantPlanType);
-            ta = new TaskAssignment(this.alicaEngine.getPartialAssignmentPool(), this.alicaEngine.getTeamObserver(), newPlanList, agentIDs, true);
+            rp = planBase.makeRunningPlan(relevantPlanType);
+//            rp = new RunningPlan(alicaEngine, relevantPlanType);
+            ta = new TaskAssignment(this.alicaEngine.getPartialAssignmentPool(), this.alicaEngine.getTeamObserver(), inputPlans, agentIDs, true);
         }
-        else
-        {
+        else {
             // dont preassign other agents, because we need a similar assignment (not the same)
-            rp = new RunningPlan(alicaEngine, oldRp.getPlanType());
-            ta = new TaskAssignment(this.alicaEngine.getPartialAssignmentPool(), this.alicaEngine.getTeamObserver(), newPlanList, agentIDs, false);
-            oldAss = oldRp.getAssignment();
+            //TODO:implement validation
+            rp = planBase.makeRunningPlan(oldRunningPlan.getPlanType());
+//            rp = new RunningPlan(alicaEngine, oldRp.getPlanType());
+            ta = new TaskAssignment(this.alicaEngine.getPartialAssignmentPool(), this.alicaEngine.getTeamObserver(), inputPlans, agentIDs, false);
+            oldAssignment = oldRunningPlan.getAssignment();
         }
 
         // some variables for the do while loop
@@ -207,12 +193,13 @@ public class PlanSelector implements IPlanSelector {
         AgentProperties ownAgentProb = teamObserver.getOwnAgentProperties();
         // PLANNINGPARENT
         rp.setParent(planningParent);
-        ArrayList<RunningPlan> rpChildren = null;
+        ArrayList<RunningPlan> rpChildren = new ArrayList<>();
 
         do
         {
+            rpChildren.clear();
             // ASSIGNMENT
-            rp.setAssignment(ta.getNextBestAssignment(oldAss));
+            rp.setAssignment(ta.getNextBestAssignment(oldAssignment));
 
             if (rp.getAssignment() == null)
             {
@@ -257,16 +244,14 @@ public class PlanSelector implements IPlanSelector {
             }
 
             // ACTIVE STATE set by RunningPlan
-            if(oldRp == null)
+            if(oldRunningPlan == null)
             {
                 // RECURSIVE PLANSELECTING FOR NEW STATE
                 rpChildren = this.getPlansForStateInternal(rp, rp.getActiveState().getPlans(), rp.getAssignment().getAgentsWorking(ep));
             }
             else
             {
-//#ifdef PSDEBUG
                 if (CommonUtils.PS_DEBUG_debug) System.out.println( "PS: no recursion due teamObserver utilitycheck" );
-//#endif
                 // Don't calculate children, because we have an
                 // oldRp . we just replace the oldRp
                 // (not its children . this will happen in an extra call)
@@ -277,17 +262,16 @@ public class PlanSelector implements IPlanSelector {
         // VALID ASSIGNMENT, WHICH PASSED ALL RUNTIME CONDITIONS
         if(rpChildren != null && rpChildren.size() != 0) // c# rpChildren != null
         {
-//#ifdef PSDEBUG
             if (CommonUtils.PS_DEBUG_debug) System.out.println( "PS: Set child . father reference");
-//#endif
             rp.addChildren(rpChildren);
         }
-//#ifdef PSDEBUG
         if (CommonUtils.PS_DEBUG_debug) System.out.println( "PS: Created RunningPlan: \n" + rp.toString() );
-//#endif
         ta = null;
         return rp; // If we return here, this agent is normal assigned
     }
-        
 
+
+    public void setPlanBase(PlanBase planBase) {
+        this.planBase = planBase;
+    }
 }

@@ -2,7 +2,6 @@ package de.uniks.vs.jalica.engine;
 
 
 import de.uniks.vs.jalica.engine.common.Capability;
-import de.uniks.vs.jalica.engine.common.Characteristic;
 import de.uniks.vs.jalica.engine.common.PlanningProblem;
 import de.uniks.vs.jalica.engine.common.SyncTransition;
 import de.uniks.vs.jalica.engine.model.*;
