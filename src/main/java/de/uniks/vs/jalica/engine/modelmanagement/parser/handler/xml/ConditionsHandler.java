@@ -9,6 +9,7 @@ import org.w3c.dom.Node;
 
 /**
  * Created by alex on 18.09.17.
+ * Updated 23.6.19
  */
 public class ConditionsHandler extends XMLHandler {
 
@@ -29,7 +30,7 @@ public class ConditionsHandler extends XMLHandler {
             }
             if (typeString.isEmpty())
             {
-                modelFactory.getAE().abort("MF: Condition without xsi:type in plan", plan.getName());
+                System.out.println("MF: Condition without xsi:type in plan "+ plan.getName());
             }
             else if ("alica:RuntimeCondition".equals(typeString))
             {
@@ -43,14 +44,14 @@ public class ConditionsHandler extends XMLHandler {
                 p.setAbstractPlan(plan);
                 plan.setPreCondition(p);
             }
-            else if ("alica:PostCondition".equals(typeString))
-            {
-                PostCondition p = modelFactory.createPostCondition(node);
-                plan.setPostCondition(p);
-            }
+//            else if ("alica:PostCondition".equals(typeString))
+//            {
+//                PostCondition p = modelFactory.createPostCondition(node);
+//                plan.setPostCondition(p);
+//            }
             else
             {
-                modelFactory.getAE().abort("MF: Unknown Condition type", node.toString());
+                System.out.println("MF: Unknown Condition type "+ node.toString());
             }
             return true;
         }

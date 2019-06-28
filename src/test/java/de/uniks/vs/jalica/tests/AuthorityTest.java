@@ -11,6 +11,7 @@ import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.common.FileSystem;
 import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.behaviours.UtilityFunctionCreator;
+import de.uniks.vs.jalica.engine.idmanagement.IDManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,10 +59,10 @@ public class AuthorityTest {
         FileSystem.PACKAGE_SRC = "src/test/java/de/uniks/vs/jalica";
 
         SystemConfig sc = new SystemConfig("nase");
-        AlicaEngine alicaEngine1 = new AlicaEngine();
+        AlicaEngine alicaEngine1 = new AlicaEngine(new IDManager(), "RolesetTA", sc, "AuthorityTestMaster", false);
         alicaEngine1.setAlicaClock(new AlicaSystemClock());
         alicaEngine1.setCommunicator(new AlicaZMQCommunication(alicaEngine1));
-        boolean result1 = alicaEngine1.init(sc, bc, cc, uc, crc, "RolesetTA", "AuthorityTestMaster", "roles/", false);
+        boolean result1 = alicaEngine1.init(bc, cc, uc, crc);
         Assertions.assertTrue(result1);
 
 //        sc = new SystemConfig("hairy");
@@ -74,7 +75,7 @@ public class AuthorityTest {
 
         USummand uSummandAe = ((alicaEngine1.getPlanRepository().getPlans().get(1414403413451l)).getUtilityFunction().getUtilSummands().get(0));
         DummyTestSummand dbr = (DummyTestSummand)(uSummandAe);
-        dbr.setAgentID(alicaEngine1.getTeamObserver().getOwnID());
+        dbr.setAgentID(alicaEngine1.getTeamManager().getLocalAgentID());
 //        USummand uSummandAe2 = ((alicaEngine2.getPlanRepository().getPlans().get(1414403413451l)).getUtilityFunction().getUtilSummands().get(0));
 //        DummyTestSummand dbr2 = (DummyTestSummand)(uSummandAe2);
 //        dbr2.setAgentID(alicaEngine2.getTeamObserver().getOwnID());

@@ -1,6 +1,7 @@
 package de.uniks.vs.jalica.engine.modelmanagement;
 
 import com.sun.tools.javac.util.Pair;
+import de.uniks.vs.jalica.engine.AlicaTime;
 import de.uniks.vs.jalica.engine.common.Capability;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.*;
@@ -11,6 +12,7 @@ import de.uniks.vs.jalica.engine.modelmanagement.parser.PlanParser;
 import de.uniks.vs.jalica.engine.PlanRepository;
 import de.uniks.vs.jalica.engine.planselection.RoleTaskMapping;
 import de.uniks.vs.jalica.engine.model.Characteristic;
+import org.hamcrest.Factory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.w3c.dom.Document;
@@ -31,6 +33,8 @@ import static de.uniks.vs.jalica.engine.model.PlanningType.Online;
 /*
   Created by alex on 14.07.17.
  */
+
+// TODO: Refactoring (extract XML and YAML)
 
 public class ModelFactory {
 
@@ -106,7 +110,7 @@ public class ModelFactory {
         if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Computing Reachability sets...");
 
         for (Plan plan : this.planRepository.getPlans().values()) {
-            for (EntryPoint entryPoint : plan.getEntryPoints().values()) {
+            for (EntryPoint entryPoint : plan.getEntryPoints()) {
                 entryPoint.computeReachabilitySet();
             }
         }
@@ -300,7 +304,7 @@ public class ModelFactory {
     public Plan createPlan(Document doc) {
         Node element = doc.getDocumentElement();
         long id = this.planParser.parserId(element);
-        Plan plan = new Plan(id, alicaEngine);
+        Plan plan = new Plan( alicaEngine,id);
         plan.setFileName(this.planParser.getCurrentFile());
         setAlicaElementAttributes(plan, element);
         // insert into elements ma
@@ -329,7 +333,7 @@ public class ModelFactory {
     public Plan createPlan(JSONObject jsonObject) {
 //        long id = (long) jsonObject.get("id");
         long id = this.planParser.fetchId(jsonObject.get("id").toString());
-        Plan plan = new Plan(id, alicaEngine);
+        Plan plan = new Plan(alicaEngine, id);
         plan.setFileName(this.planParser.getCurrentFile());
         setAlicaElementAttributes(plan, jsonObject);
         // insert into elements ma
@@ -345,44 +349,48 @@ public class ModelFactory {
         return plan;
     }
 
-    public SyncTransition createSyncTransition(Node element) {
-        SyncTransition s = new SyncTransition();
+    public Synchronisation createSynchronisation(Node element) {
+        Synchronisation s = new Synchronisation();
         s.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(s, element);
-        String talkTimeoutPtr = element.getAttributes().getNamedItem("talkTimeout").getTextContent();
-        if (talkTimeoutPtr != null) {
-            s.setTalkTimeOut(stol(talkTimeoutPtr));
+        String talkTimeout = element.getAttributes().getNamedItem("talkTimeout").getTextContent();
+        if (talkTimeout != null) {
+            long value = stol(talkTimeout);
+            s.setTalkTimeOut(new AlicaTime().inMilliseconds(value));
         }
-        String syncTimeoutPtr = element.getAttributes().getNamedItem("syncTimeout").getTextContent();
-        if (syncTimeoutPtr != null) {
-            s.setSyncTimeOut(stol(syncTimeoutPtr));
+        String syncTimeout = element.getAttributes().getNamedItem("syncTimeout").getTextContent();
+        if (syncTimeout != null) {
+            long value = stol(syncTimeout);
+            s.setSyncTimeOut(new AlicaTime().inMilliseconds(value));
         }
 
         addElement(s);
-        this.planRepository.getSyncTransitions().put(s.getID(), s);
+        this.planRepository.getSynchronisations().put(s.getID(), s);
         if (element.getFirstChild() != null) {
-            alicaEngine.abort("MF: Unhandled Synchtransition Child:", element.getFirstChild().toString());
+            System.out.println("MF: Unhandled Synchtransition Child:"+ element.getFirstChild().toString());
         }
         return s;
     }
 
-    public SyncTransition createSyncTransition(JSONObject jsonObject) {
-        SyncTransition s = new SyncTransition();
+    public Synchronisation createSynchronisation(JSONObject jsonObject) {
+        Synchronisation s = new Synchronisation();
         long id = this.planParser.fetchId(jsonObject.get("id").toString());
         s.setID(id);
         setAlicaElementAttributes(s, jsonObject);
         String talkTimeoutPtr = jsonObject.get("talkTimeout").toString();
 
         if (talkTimeoutPtr != null) {
-            s.setTalkTimeOut(stol(talkTimeoutPtr));
+            long value = stol(talkTimeoutPtr);
+            s.setTalkTimeOut(new AlicaTime().inMilliseconds(value));
         }
         String syncTimeoutPtr = jsonObject.get("syncTimeout").toString();
 
         if (syncTimeoutPtr != null) {
-            s.setSyncTimeOut(stol(syncTimeoutPtr));
+            long value = stol(syncTimeoutPtr);
+            s.setSyncTimeOut(new AlicaTime().inMilliseconds(value));
         }
         addElement(s);
-        this.planRepository.getSyncTransitions().put(s.getID(), s);
+        this.planRepository.getSynchronisations().put(s.getID(), s);
 
 //        if (element.getFirstChild() != null) {
 //            alicaEngine.abort("MF: Unhandled Synchtransition Child:", element.getFirstChild().toString());
@@ -472,7 +480,7 @@ public class ModelFactory {
                     Parameter p = createParameter(curChild);
                     r.getParameters().add(p);
                 } else {
-                    alicaEngine.abort("MF: Unhandled RuntimeCondition Child", curChild.toString());
+                    System.out.println("MF: Unhandled RuntimeCondition Child"+ curChild.toString());
                 }
                 curChild = curChild.getNextSibling();
             }
@@ -561,7 +569,7 @@ public class ModelFactory {
             } else if (synchronisation.equals(val)) {
                 this.transitionSynchReferences.add(new Pair(tran.getID(), cid));
             } else {
-                alicaEngine.abort("MF: Unhandled Transition Child:", curChild.toString());
+                System.out.println("MF: Unhandled Transition Child:"+ curChild.toString());
             }
 //            curChild = curChild.getNextSibling();
         }
@@ -647,7 +655,7 @@ public class ModelFactory {
                     Parameter p = createParameter(curChild);
                     pre.getParameters().add(p);
                 } else {
-                    alicaEngine.abort("MF: Unhandled PreCondition Child:", curChild.getNodeValue());
+                    System.out.println("MF: Unhandled PreCondition Child:"+ curChild.getNodeValue());
                 }
                 curChild = curChild.getNextSibling();
             }
@@ -742,13 +750,13 @@ public class ModelFactory {
         if (typePtr != null) {
             typeString = typePtr;
             if ("alica:ForallAgents".equals(typeString)) {
-                q = new ForallAgents(this.alicaEngine);
+                q = new ForallAgents();
                 q.setID(id);
             } else {
-                alicaEngine.abort("MF: Unsupported quantifier type! !", typeString);
+                System.out.println("MF: Unsupported quantifier type! !"+ typeString);
             }
         } else {
-            alicaEngine.abort("MF: Quantifier without type!", String.valueOf(id));
+            System.out.println("MF: Quantifier without type!"+ String.valueOf(id));
         }
 
         addElement(q);
@@ -774,7 +782,7 @@ public class ModelFactory {
                 if (sorts.equals(val)) {
                     q.getDomainIdentifiers().add(curChild.getFirstChild().getNodeValue());
                 } else {
-                    alicaEngine.abort("MF: Unhandled Quantifier Child:", curChild.toString());
+                    System.out.println("MF: Unhandled Quantifier Child:"+ curChild.toString());
                 }
                 curChild = curChild.getNextSibling();
             }
@@ -804,7 +812,7 @@ public class ModelFactory {
                     PostCondition postCon = createPostCondition(curChild);
                     fail.setPostCondition(postCon);
                 } else {
-                    alicaEngine.abort("MF: Unhandled FaulireState Child: ", curChild.getNodeValue());
+                    System.out.println("MF: Unhandled FaulireState Child: "+ curChild.getNodeValue());
                 }
 
                 curChild = curChild.getNextSibling();
@@ -876,7 +884,7 @@ public class ModelFactory {
                     PostCondition postCon = createPostCondition(curChild);
                     suc.setPostCondition(postCon);
                 } else {
-                    alicaEngine.abort("MF: Unhandled SuccesState Child:", curChild.getNodeValue());
+                    System.out.println("MF: Unhandled SuccesState Child:"+ curChild.getNodeValue());
                 }
                 curChild = curChild.getNextSibling();
             }
@@ -951,7 +959,7 @@ public class ModelFactory {
         }
 
         if (element.getFirstChild() != null) {
-            alicaEngine.abort("MF: Unhandled Result child", element.getFirstChild().toString());
+            System.out.println("MF: Unhandled Result child"+ element.getFirstChild().toString());
         }
 
         return pos;
@@ -1016,10 +1024,10 @@ public class ModelFactory {
             } else if (plans.equals(val)) {
                 this.statePlanReferences.add(new Pair(s.getID(), cid));
             } else if (parametrisation.equals(val)) {
-                Parametrisation para = createParametrisation(curChild);
+                VariableBinding para = createParametrisation(curChild);
                 s.getParametrisation().add(para);
             } else {
-                alicaEngine.abort("MF: Unhandled State Child: ", val);
+                System.out.println("MF: Unhandled State Child: "+ val);
             }
 
 //            curChild = curChild.getNextSibling();
@@ -1059,7 +1067,7 @@ public class ModelFactory {
         for (Object obj : variableBindings) {
             long objID = this.planParser.fetchId(obj.toString());
             this.stateInTransitionReferences.add(new Pair(state.getID(), objID));
-            Parametrisation para = createParametrisation(((JSONObject)obj));
+            VariableBinding para = createParametrisation(((JSONObject)obj));
             state.getParametrisation().add(para);
         }
         return state;
@@ -1077,8 +1085,8 @@ public class ModelFactory {
         return newNodes;
     }
 
-    private Parametrisation createParametrisation(Node element) {
-        Parametrisation para = new Parametrisation();
+    private VariableBinding createParametrisation(Node element) {
+        VariableBinding para = new VariableBinding();
         para.setID(this.planParser.parserId(element));
         setAlicaElementAttributes(para, element);
 
@@ -1095,7 +1103,7 @@ public class ModelFactory {
             } else if (var.equals(val)) {
                 this.paramVarReferences.add(new Pair(para.getID(), cid));
             } else {
-                alicaEngine.abort("MF: Unhandled Parametrisation Child:", curChild.toString());
+                System.out.println("MF: Unhandled Parametrisation Child:"+ curChild.toString());
             }
 
             curChild = curChild.getNextSibling();
@@ -1103,8 +1111,8 @@ public class ModelFactory {
         return para;
     }
 
-    private Parametrisation createParametrisation(JSONObject jsonObject) {
-        Parametrisation para = new Parametrisation();
+    private VariableBinding createParametrisation(JSONObject jsonObject) {
+        VariableBinding para = new VariableBinding();
         long id = this.planParser.fetchId(jsonObject.get("id").toString());
         para.setID(id);
         setAlicaElementAttributes(para, jsonObject);
@@ -1137,11 +1145,11 @@ public class ModelFactory {
         setAlicaElementAttributes(ep, element);
         String attr = element.getAttributes().getNamedItem("minCardinality").getTextContent();
         if (!attr.isEmpty()) {
-            ep.setMinCardinality(stoi(attr));
+            ep.getCardinality().setMin(stoi(attr));
         }
         attr = element.getAttributes().getNamedItem("maxCardinality").getTextContent();
         if (!attr.isEmpty()) {
-            ep.setMaxCardinality(stoi(attr));
+            ep.getCardinality().setMax(stoi(attr));
         }
         attr = element.getAttributes().getNamedItem("successRequired").getTextContent();
         if (!attr.isEmpty()) {
@@ -1171,13 +1179,13 @@ public class ModelFactory {
             } else if (task.equals(val)) {
                 this.epTaskReferences.add(new Pair(ep.getID(), curChildId));
             } else {
-                alicaEngine.abort("MF: Unhandled EntryPoint Child: ", val);
+                System.out.println("MF: Unhandled EntryPoint Child: "+ val);
             }
 //            curChild = curChild.getNextSibling();
         }
 
         if (!haveState) {
-            alicaEngine.abort("MF: No initial state identified for EntryPoint: ", String.valueOf(ep.getID()));
+            System.out.println("MF: No initial state identified for EntryPoint: "+ String.valueOf(ep.getID()));
         }
 
         return ep;
@@ -1191,12 +1199,12 @@ public class ModelFactory {
         String attr = jsonObject.get("minCardinality").toString();
 
         if (!attr.isEmpty()) {
-            ep.setMinCardinality(stoi(attr));
+            ep.getCardinality().setMin(stoi(attr));
         }
         attr = jsonObject.get("maxCardinality").toString();
 
         if (!attr.isEmpty()) {
-            ep.setMaxCardinality(stoi(attr));
+            ep.getCardinality().setMax(stoi(attr));
         }
         attr = jsonObject.get("successRequired").toString();
 
@@ -1218,7 +1226,7 @@ public class ModelFactory {
         if (!attr.isEmpty()) {
             this.epStateReferences.add(new Pair(ep.getID(), id));
         } else {
-            alicaEngine.abort("MF: No initial state identified for EntryPoint: ", String.valueOf(ep.getID()));
+            System.out.println("MF: No initial state identified for EntryPoint: "+ String.valueOf(ep.getID()));
         }
         return ep;
     }
@@ -1239,7 +1247,7 @@ public class ModelFactory {
 
     public void addElement(AlicaElement alicaElement) {
         //TODO: Fix
-        if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: add Element " + alicaElement.getID() + "  " + alicaElement.getName() + "  " + alicaEngine.getAgentName());
+        if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: add Element " + alicaElement.getID() + "  " + alicaElement.getName() + "  " + alicaEngine.getTeamManager().getLocalAgent().getName());
 //        if (this.elements.size()> 0 && this.elements.get(ael.extractID()) != this.elements.values().toArray()[this.elements.values().size()-1])
         if (this.elements.size() > 0 && this.elements.get(alicaElement.getID()) != null && this.elements.get(alicaElement.getID()) != alicaElement) {
 
@@ -1250,7 +1258,7 @@ public class ModelFactory {
             System.out.println("MF: ELEMENT > " + alicaElement.getID() + "< >" + this.elements.get(alicaElement.getID()).getID() + "<");
             System.out.println("MF: ELEMENT > " + alicaElement.hashCode() + "< >" + this.elements.get(alicaElement.getID()).hashCode() + "<");
 //			cout << segfaultdebug::get_stacktrace() << endl;
-            alicaEngine.abort("MF: ERROR Double IDs: " + alicaElement.getID());
+            System.out.println("MF: ERROR Double IDs: " + alicaElement.getID());
         }
         elements.put(alicaElement.getID(), alicaElement);
     }
@@ -1308,10 +1316,10 @@ public class ModelFactory {
             State state = (State) this.elements.get(pairs.snd);
 
             if (state == null) {
-                alicaEngine.abort("MF: Cannot resolve transitionAimReferences target: ", "" + pairs.fst);
+                System.out.println("MF: Cannot resolve transitionAimReferences target: "+ "" + pairs.fst);
             }
             transition.setOutState(state);
-            state.addInTransition(transition);
+            state.getInTransitions().add(transition);
         }
         this.transitionAimReferences.clear();
 
@@ -1332,7 +1340,7 @@ public class ModelFactory {
             State state = (State) this.elements.get(pairs.fst);
 
             if (state != transition.getOutState()) {
-                alicaEngine.abort("MF: Unexpected reference in a transition! ", "" + pairs.fst);
+                System.out.println("MF: Unexpected reference in a transition! "+ "" + pairs.fst);
             }
         }
         this.stateInTransitionReferences.clear();
@@ -1341,7 +1349,7 @@ public class ModelFactory {
         for (Pair<Long, Long> pairs : this.stateOutTransitionReferences) {
             State state = (State) this.elements.get(pairs.fst);
             Transition transition = (Transition) this.elements.get(pairs.snd);
-            state.addOutTransition(transition);
+            state.getOutTransitions().add(transition);
             transition.setInState(state);
         }
         this.stateOutTransitionReferences.clear();
@@ -1374,7 +1382,7 @@ public class ModelFactory {
 
         //paramSubPlanReferences
         for (Pair<Long, Long> pairs : this.paramSubPlanReferences) {
-            Parametrisation p = (Parametrisation) this.elements.get(pairs.fst);
+            VariableBinding p = (VariableBinding) this.elements.get(pairs.fst);
             AbstractPlan ap = (AbstractPlan) this.elements.get(pairs.snd);
             p.setSubPlan(ap);
         }
@@ -1382,7 +1390,7 @@ public class ModelFactory {
 
         //paramSubVarReferences
         for (Pair<Long, Long> pairs : this.paramSubVarReferences) {
-            Parametrisation p = (Parametrisation) this.elements.get(pairs.fst);
+            VariableBinding p = (VariableBinding) this.elements.get(pairs.fst);
             Variable ap = (Variable) this.elements.get(pairs.snd);
             p.setSubVar(ap);
         }
@@ -1390,7 +1398,7 @@ public class ModelFactory {
 
         //paramVarReferences
         for (Pair<Long, Long> pairs : this.paramVarReferences) {
-            Parametrisation p = (Parametrisation) this.elements.get(pairs.fst);
+            VariableBinding p = (VariableBinding) this.elements.get(pairs.fst);
             Variable v = (Variable) this.elements.get(pairs.snd);
             p.setVar(v);
         }
@@ -1399,8 +1407,8 @@ public class ModelFactory {
         //transitionSynchReferences
         for (Pair<Long, Long> pairs : this.transitionSynchReferences) {
             Transition t = (Transition) this.elements.get(pairs.fst);
-            SyncTransition sync = (SyncTransition) this.elements.get(pairs.snd);
-            t.setSyncTransition(sync);
+            Synchronisation sync = (Synchronisation) this.elements.get(pairs.snd);
+            t.setSynchronisation(sync);
             sync.getInSync().add(t);
         }
         this.transitionSynchReferences.clear();
@@ -1433,7 +1441,7 @@ public class ModelFactory {
         for (Pair<Long, Long> pairs : this.quantifierScopeReferences) {
             AlicaElement ae = (AlicaElement) this.elements.get(pairs.snd);
             Quantifier q = (Quantifier) this.elements.get(pairs.fst);
-            q.setScope(this.alicaEngine, ae);
+            q.setScope(ae);
         }
         this.quantifierScopeReferences.clear();
 
@@ -1459,31 +1467,32 @@ public class ModelFactory {
     public void createBehaviour(Document node) {
         Element element = node.getDocumentElement();
         long id = this.planParser.parserId(element);
-        Behaviour beh = new Behaviour();
+        Behaviour beh = new Behaviour(this.alicaEngine);
         beh.setID(id);
 
         setAlicaElementAttributes(beh, element);
         addElement(beh);
         this.planRepository.getBehaviours().put(beh.getID(), beh);
         Node curChild = element.getFirstChild().getNextSibling();
-        while (curChild != null) {
-            String val = curChild.getNodeName();
-            long cid = this.planParser.parserId(curChild);
 
-            if (configurations.equals(val)) {
-                BehaviourConfiguration bc = createBehaviourConfiguration(curChild);
-                this.planRepository.getBehaviourConfigurations().put(bc.getID(), bc);
-                bc.setBehaviour(beh);
-                beh.getConfigurations().add(bc);
-            } else {
-                alicaEngine.abort("MF: Unhandled Behaviour Child:", curChild.getNodeValue());
-            }
-            curChild = curChild.getNextSibling();
-
-            if ("#text".equals(curChild.getNodeName())) {
-                curChild = curChild.getNextSibling();
-            }
-        }
+//        while (curChild != null) {
+//            String val = curChild.getNodeName();
+//            long cid = this.planParser.parserId(curChild);
+//
+//            if (configurations.equals(val)) {
+//                BehaviourConfiguration bc = createBehaviourConfiguration(curChild);
+//                this.planRepository.getBehaviourConfigurations().put(bc.getID(), bc);
+//                bc.setBehaviour(beh);
+//                beh.getConfigurations().add(bc);
+//            } else {
+//                alicaEngine.abort("MF: Unhandled Behaviour Child:", curChild.getNodeValue());
+//            }
+//            curChild = curChild.getNextSibling();
+//
+//            if ("#text".equals(curChild.getNodeName())) {
+//                curChild = curChild.getNextSibling();
+//            }
+//        }
     }
 
     public void createBehaviour(JSONObject jsonObject) {
@@ -1494,23 +1503,41 @@ public class ModelFactory {
         addElement(beh);
         this.planRepository.getBehaviours().put(beh.getID(), beh);
 
-//        Node curChild = element.getFirstChild().getNextSibling();
+        beh.setFrequency(Integer.parseInt(jsonObject.get("frequency").toString()));
+        beh.setDeferring(Integer.parseInt(jsonObject.get("deferring").toString()));
+
+        if (jsonObject.get("runtimeCondition")!= null)
+            beh.setRuntimeCondition(createRuntimeCondition((JSONObject) jsonObject.get("runtimeCondition")));
+
+        if (jsonObject.get("preCondition")!= null)
+            beh.setPreCondition(createPreCondition((JSONObject) jsonObject.get("preCondition")));
+
+        if (jsonObject.get("postCondition")!= null)
+            beh.setPostCondition(createPostCondition((JSONObject) jsonObject.get("postCondition")));
+
+        JSONArray variables = (JSONArray)jsonObject.get("variables");
+
+        for (Object object : variables) {
+//            beh.getParameters().put(VariableFactory::create(*it));
+        }
+
+
         JSONArray configurations = (JSONArray) jsonObject.get("configurations");
 
         if (configurations == null)
             return;
-//        while (curChild != null) {
+
         for (Object obj : configurations) {
-//            String val = curChild.getNodeName();
-//            long cid = this.planParser.parserId(curChild);
             JSONObject confObj = (JSONObject) obj;
             long confID = planParser.fetchId(confObj.get("id").toString());
-//
+
+
+
 //            if (configurations.equals(val)) {
-                BehaviourConfiguration bc = createBehaviourConfiguration(confObj);
-                this.planRepository.getBehaviourConfigurations().put(bc.getID(), bc);
-                bc.setBehaviour(beh);
-                beh.getConfigurations().add(bc);
+//                BehaviourConfiguration bc = createBehaviourConfiguration(confObj);
+//                this.planRepository.getBehaviourConfigurations().put(bc.getID(), bc);
+//                bc.setBehaviour(beh);
+//                beh.getConfigurations().add(bc);
 //            } else {
 //                alicaEngine.abort("MF: Unhandled Behaviour Child:", curChild.getNodeValue());
 //            }
@@ -1528,80 +1555,80 @@ public class ModelFactory {
         b.setID(this.planParser.parserId(element));
         b.setFileName(this.planParser.getCurrentFile());
 
-        String attr = element.getAttributes().getNamedItem("masterPlan").getTextContent();
-        String attrString = "";
-        if (!attr.isEmpty()) {
-            attrString = attr;
-            if (attrString.equals("true")) {
-                b.setMasterPlan(true);
-            }
-        }
-
-        Node receiveRemoteCommand = element.getAttributes().getNamedItem("receiveRemoteCommand");
-        if (receiveRemoteCommand != null && !receiveRemoteCommand.getTextContent().isEmpty()) {
-            attr = receiveRemoteCommand.getTextContent();
-            attrString = attr;
-            if (attrString.equals("true")) {
-                b.setEventDriven(true);
-            }
-        }
-        Node visionTriggered = element.getAttributes().getNamedItem("visionTriggered");
-
-        if (visionTriggered != null && !visionTriggered.getTextContent().isEmpty()) {
-            attr = visionTriggered.getTextContent();
-            attrString = attr;
-            if (attrString.equals("true")) {
-                b.setEventDriven(true);
-            }
-        }
-        Node eventDriven = element.getAttributes().getNamedItem("eventDriven");
-
-        if (eventDriven != null && !eventDriven.getTextContent().isEmpty()) {
-            attr = eventDriven.getTextContent();
-            attrString = attr;
-            if (attrString.equals("true")) {
-                b.setEventDriven(true);
-            }
-        }
-        Node deferring = element.getAttributes().getNamedItem("deferring");
-
-        if (deferring != null && !deferring.getTextContent().isEmpty()) {
-            attr = deferring.getTextContent();
-            b.setDeferring(stoi(attr));
-        }
-        Node frequency = element.getAttributes().getNamedItem("frequency");
-
-        if (frequency != null && !frequency.getTextContent().isEmpty()) {
-            attr = frequency.getTextContent();
-            b.setFrequency(stoi(attr));
-        }
-        setAlicaElementAttributes(b, element);
-        this.elements.put(b.getID(), b);
-        Node elementFirstChild = element.getFirstChild();
-
-        if (elementFirstChild == null)
-            return b;
-
-        Node curChild = elementFirstChild.getNextSibling();
-
-        while (curChild != null) {
-            String val = curChild.getNodeValue();
-            long cid = this.planParser.parserId(curChild);
-            if (vars.endsWith(val)) {
-                Variable v = createVariable(curChild);
-                b.getVariables().add(v);
-            } else if (parameters.equals(val)) {
-                String key = curChild.getAttributes().getNamedItem("key").getTextContent();
-                String value = curChild.getAttributes().getNamedItem("value").getTextContent();
-
-                if (key != null && value != null) {
-                    b.getParameters().put(key, value);
-                }
-            } else {
-                alicaEngine.abort("MF: Unhandled BehaviourConfiguration Child: " + curChild);
-            }
-            curChild = curChild.getNextSibling();
-        }
+//        String attr = element.getAttributes().getNamedItem("masterPlan").getTextContent();
+//        String attrString = "";
+//        if (!attr.isEmpty()) {
+//            attrString = attr;
+//            if (attrString.equals("true")) {
+//                b.setMasterPlan(true);
+//            }
+//        }
+//
+//        Node receiveRemoteCommand = element.getAttributes().getNamedItem("receiveRemoteCommand");
+//        if (receiveRemoteCommand != null && !receiveRemoteCommand.getTextContent().isEmpty()) {
+//            attr = receiveRemoteCommand.getTextContent();
+//            attrString = attr;
+//            if (attrString.equals("true")) {
+//                b.setEventDriven(true);
+//            }
+//        }
+//        Node visionTriggered = element.getAttributes().getNamedItem("visionTriggered");
+//
+//        if (visionTriggered != null && !visionTriggered.getTextContent().isEmpty()) {
+//            attr = visionTriggered.getTextContent();
+//            attrString = attr;
+//            if (attrString.equals("true")) {
+//                b.setEventDriven(true);
+//            }
+//        }
+//        Node eventDriven = element.getAttributes().getNamedItem("eventDriven");
+//
+//        if (eventDriven != null && !eventDriven.getTextContent().isEmpty()) {
+//            attr = eventDriven.getTextContent();
+//            attrString = attr;
+//            if (attrString.equals("true")) {
+//                b.setEventDriven(true);
+//            }
+//        }
+//        Node deferring = element.getAttributes().getNamedItem("deferring");
+//
+//        if (deferring != null && !deferring.getTextContent().isEmpty()) {
+//            attr = deferring.getTextContent();
+//            b.setDeferring(stoi(attr));
+//        }
+//        Node frequency = element.getAttributes().getNamedItem("frequency");
+//
+//        if (frequency != null && !frequency.getTextContent().isEmpty()) {
+//            attr = frequency.getTextContent();
+//            b.setFrequency(stoi(attr));
+//        }
+//        setAlicaElementAttributes(b, element);
+//        this.elements.put(b.getID(), b);
+//        Node elementFirstChild = element.getFirstChild();
+//
+//        if (elementFirstChild == null)
+//            return b;
+//
+//        Node curChild = elementFirstChild.getNextSibling();
+//
+//        while (curChild != null) {
+//            String val = curChild.getNodeValue();
+//            long cid = this.planParser.parserId(curChild);
+//            if (vars.endsWith(val)) {
+//                Variable v = createVariable(curChild);
+//                b.getVariables().add(v);
+//            } else if (parameters.equals(val)) {
+//                String key = curChild.getAttributes().getNamedItem("key").getTextContent();
+//                String value = curChild.getAttributes().getNamedItem("value").getTextContent();
+//
+//                if (key != null && value != null) {
+//                    b.getParameters().put(key, value);
+//                }
+//            } else {
+//                alicaEngine.abort("MF: Unhandled BehaviourConfiguration Child: " + curChild);
+//            }
+//            curChild = curChild.getNextSibling();
+//        }
 
         return b;
     }
@@ -1717,7 +1744,7 @@ public class ModelFactory {
         }
 
         if (!isDefault && !isUseable) {
-            alicaEngine.abort("MF:Selected RoleSet is not default, nor useable with current masterplan");
+            System.out.println("MF:Selected RoleSet is not default, nor useable with current masterplan");
         }
 
         RoleSet rs = new RoleSet();
@@ -1736,7 +1763,7 @@ public class ModelFactory {
                 RoleTaskMapping rtm = createRoleTaskMapping(curChild);
                 rs.getRoleTaskMappings().add(rtm);
             } else {
-                alicaEngine.abort("MF: Unhandled RoleSet Child:", curChild.getNodeValue());
+                System.out.println("MF: Unhandled RoleSet Child:"+ curChild.getNodeValue());
             }
             curChild = getNextSilbing(curChild);
         }
@@ -1784,7 +1811,7 @@ public class ModelFactory {
             RoleTaskMapping rtm = createRoleTaskMapping(role);
              roleSet.getRoleTaskMappings().add(rtm);
 //            } else {
-//                alicaEngine.abort("MF: Unhandled RoleSet Child:", curChild.getNodeValue());
+//                System.out.println("MF: Unhandled RoleSet Child:", curChild.getNodeValue());
 //            }
         }
         return roleSet;
@@ -1820,7 +1847,7 @@ public class ModelFactory {
                 long cid = this.planParser.parserId(curChild);
                 this.rtmRoleReferences.add(new Pair<>(rtm.getID(), cid));
             } else {
-                alicaEngine.abort("MF: Unhandled RoleTaskMapping Child ", curChild.getNodeValue());
+                System.out.println("MF: Unhandled RoleTaskMapping Child "+ curChild.getNodeValue());
             }
             curChild = getNextSilbing(curChild);
         }
@@ -1889,7 +1916,7 @@ public class ModelFactory {
         tr.setFileName(this.planParser.getCurrentFile());
         addElement(tr);
         setAlicaElementAttributes(tr, element);
-        this.planRepository.getTaskRepositorys().put(tr.getID(), tr);
+        this.planRepository.getTaskRepositories().put(tr.getID(), tr);
         long id = 0;
         String defaultTaskPtr = element.getAttribute("defaultTask");
         if (defaultTaskPtr != null) {
@@ -1905,13 +1932,15 @@ public class ModelFactory {
         while (curChild != null) {
             long cid = this.planParser.parserId(curChild);
 
-            Task task = new Task(cid == id);
+            Task task = new Task();
             task.setID(cid);
             setAlicaElementAttributes(task, curChild);
             String descriptionkPtr = curChild.getAttributes().getNamedItem("description").getTextContent();
 
             if (descriptionkPtr != null) {
-                task.setDescription(descriptionkPtr);
+//                task.setDescription(descriptionkPtr);
+                task.setComment(descriptionkPtr);
+
             }
             addElement(task);
             this.planRepository.getTasks().put(task.getID(), task);
@@ -1931,7 +1960,7 @@ public class ModelFactory {
         tr.setFileName(this.planParser.getCurrentFile());
         addElement(tr);
         setAlicaElementAttributes(tr, jsonObject);
-        this.planRepository.getTaskRepositorys().put(tr.getID(), tr);
+        this.planRepository.getTaskRepositories().put(tr.getID(), tr);
         Object defaultTaskObj = jsonObject.get("defaultTask");
 
         if (defaultTaskObj != null) {
@@ -1951,7 +1980,7 @@ public class ModelFactory {
             JSONObject taskObj = (JSONObject) obj;
             long taskID = planParser.fetchId(taskObj.get("id").toString());
 //            Task task = new Task(cid == id);
-            Task task = new Task(taskID == id);
+            Task task = new Task();
             task.setID(taskID);
             setAlicaElementAttributes(task, taskObj);
 //            String descriptionkPtr = curChild.getAttributes().getNamedItem("description").getTextContent();
@@ -1973,12 +2002,13 @@ public class ModelFactory {
 
     public void createRoleDefinitionSet(Document node) {
         Element element = node.getDocumentElement();
-        RoleDefinitionSet r = new RoleDefinitionSet();
+        RoleSet r = new RoleSet();
         r.setID(this.planParser.parserId(element));
         r.setFileName(this.planParser.getCurrentFile());
         setAlicaElementAttributes(r, element);
         addElement(r);
-        this.planRepository.getRoleDefinitionSets().put(r.getID(), r);
+        this.planRepository.getRoleSets().put(r.getID(), r);
+//        this.planRepository.getRoleDefinitionSets().put(r.getID(), r);
 
         Node curChild = getNodeChild(element);
 
@@ -1988,9 +2018,9 @@ public class ModelFactory {
             if (roles.equals(val)) {
                 Role role = createRole(curChild);
                 r.getRoles().add(role);
-                role.setRoleDefinitionSet(r);
+                role.setRoleSet(r);
             } else {
-                alicaEngine.abort("MF: Unhandled RoleDefinitionSet Child:", curChild.getNodeValue());
+                System.out.println("MF: Unhandled RoleDefinitionSet Child:"+ curChild.getNodeValue());
             }
             curChild = getNextSilbing(curChild);
         }
@@ -2011,7 +2041,7 @@ public class ModelFactory {
                 Characteristic  cha = createCharacteristic(curChild);
                 r.getCharacteristics().put(cha.getName(), cha);
             } else {
-                alicaEngine.abort("MF: Unhandled Role Child:", curChild.getNodeValue());
+                System.out.println("MF: Unhandled Role Child:"+ curChild.getNodeValue());
             }
             curChild = getNextSilbing(curChild);
         }
@@ -2091,7 +2121,7 @@ public class ModelFactory {
             }
             else
             {
-                alicaEngine.abort("MF: Unhandled Characteristic Child:", curChild.getNodeValue());
+                System.out.println("MF: Unhandled Characteristic Child:"+ curChild.getNodeValue());
             }
             curChild = getNextSilbing(curChild);
         }
@@ -2117,7 +2147,7 @@ public class ModelFactory {
             }
             else
             {
-                alicaEngine.abort("MF: Unhandled Behaviour Child:", curChild.getNodeValue());
+                System.out.println("MF: Unhandled Behaviour Child:"+ curChild.getNodeValue());
             }
             curChild = getNextSilbing(curChild);
         }
@@ -2145,7 +2175,7 @@ public class ModelFactory {
             }
             else
             {
-                alicaEngine.abort("MF: Unhandled Capability Child:", curChild.getNodeValue());
+                System.out.println("MF: Unhandled Capability Child:"+ curChild.getNodeValue());
             }
             curChild = getNextSilbing(curChild);
         }
@@ -2245,7 +2275,7 @@ public class ModelFactory {
                             p.setRuntimeCondition(pa);
                         }
                     } else {
-                        alicaEngine.abort("MF: Unknown Condition type:", curChild.getNodeValue());
+                        System.out.println("MF: Unknown Condition type:"+ curChild.getNodeValue());
                     }
                 } else if (waitPlan.equals(val)) {
                     this.planningProblemPlanWaitReferences.add(new Pair(p.getID(), cid));
@@ -2300,10 +2330,10 @@ public class ModelFactory {
                     Variable var = createVariable(curChild);
                     pt.getVariables().add(var);
                 } else if (parametrisation.equals(val)) {
-                    Parametrisation para = createParametrisation(curChild);
-                    pt.getParametrisation().add(para);
+                    VariableBinding para = createParametrisation(curChild);
+                    pt.getVariableBindings().add(para);
                 } else {
-                    alicaEngine.abort("MF: Unhandled PlanType Child:", val);
+                    System.out.println("MF: Unhandled PlanType Child:"+ val);
                 }
                 curChild = curChild.getNextSibling();
             }

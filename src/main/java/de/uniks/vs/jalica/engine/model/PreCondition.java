@@ -5,32 +5,27 @@ import java.util.Vector;
 
 /**
  * Created by alex on 20.07.17.
+ * Updated 23.6.19
  */
 public class PreCondition extends Condition {
 
-    boolean enabled;
+    private boolean enabled;
 
     public PreCondition() {
-        variables = new Vector<>();
-        quantifiers = new ArrayList<>();
-    }
-
-    PreCondition(long id) {
-        super();
-        this.id = id;
-        this.enabled = true;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+        enabled = true;
     }
 
     public boolean isEnabled() {
         return  enabled;
     }
 
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
     @Override
     public String toString() {
-        return  "#PreCondition: " + this.name + " " + this.id + (this.enabled ? "enabled" : "disabled")+ "\n\t ConditionString: " + this.conditionString + "\n#EndPreCondition\n";
+        return  "#PreCondition: " + this.getName() + " " + this.id + (this.enabled ? "enabled" : "disabled")
+                + "\n\t ConditionString: " + this.conditionString + "\n#EndPreCondition\n";
     }
 }

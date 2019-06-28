@@ -17,7 +17,7 @@ public class DiscoverySubscriber extends ZMQSubscriber {
         super(topic, subscriber);
         this.communication = communication;
 
-        System.out.println("DI-Sub("+this.communication.getAe().getAgentName()+"): start");
+        System.out.println("DI-Sub("+this.communication.getAe().getTeamManager().getLocalAgent().getName()+"): start");
 
         Thread thread = new Thread() {
 
@@ -32,7 +32,7 @@ public class DiscoverySubscriber extends ZMQSubscriber {
                             continue;
                         }
 
-                        if (CommonUtils.COMM_debug) System.out.println("DI-Sub("+communication.getAe().getAgentName()+"): " +string);
+                        if (CommonUtils.COMM_debug) System.out.println("DI-Sub("+communication.getAe().getTeamManager().getLocalAgent().getName()+"): " +string);
 
 
                         JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(string.replace(topic, ""));

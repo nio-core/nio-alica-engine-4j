@@ -1,44 +1,52 @@
 package de.uniks.vs.jalica.engine.planselection;
 
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.model.EntryPoint;
 import de.uniks.vs.jalica.engine.model.Task;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 /**
  * Created by alex on 13.07.17.
+ * Updated 26.6.19
  */
 public class PartialAssignmentPool {
 
 
-    public int curentIndex;
+    public int curIndex;
     public Task idleTask;
-    public EntryPoint idleEntryPoint;
-    public Vector<PartialAssignment> partialAssignments;
-    private int initialSize;
+    public EntryPoint idleEP;
+    public ArrayList<PartialAssignment> pool;
 
     public PartialAssignmentPool(int initialSize) {
-        this.initialSize = initialSize;
-
-        idleEntryPoint = new EntryPoint();
-        idleEntryPoint.setName("IDLE-ep");
-        idleEntryPoint.setID(EntryPoint.IDLEID);
-        idleEntryPoint.setMinCardinality(0);
-        idleEntryPoint.setMaxCardinality(Integer.MAX_VALUE);
-
-        idleTask = new Task(true);
-        idleTask.setName("IDLE-TASK");
-        idleTask.setID(Task.IDLEID);
-
-        idleEntryPoint.setTask(idleTask);
-        partialAssignments = new Vector<>();
-
-        for (int i = 0; i < initialSize; i++) {
-            partialAssignments.add( new PartialAssignment(this));
-        }
+        this.pool = new ArrayList<>(initialSize);
+        this.curIndex = 0;
+        this.idleEP = EntryPoint.generateIdleEntryPoint();
+        this.idleTask = this.idleEP.getTask();
     }
 
-    public int getMaxCount() {
-        return initialSize;
+    void increaseSize() {
+        this.pool.ensureCapacity(this.pool.size() * 2 + 5);
+    }
+
+    public PartialAssignment getNext() {
+        PartialAssignment pa = this.pool.get(this.curIndex);
+
+        if (++this.curIndex >= this.pool.size()) {
+            throw new PoolExhaustedException("Partial Assignment Pool too small at " + this.pool.size());
+        }
+        return pa;
+    }
+
+    void reset() {
+        this.curIndex = 0;
+    }
+
+    private class PoolExhaustedException extends RuntimeException {
+
+        public PoolExhaustedException(String msg) {
+            System.out.println(msg);
+        }
     }
 }

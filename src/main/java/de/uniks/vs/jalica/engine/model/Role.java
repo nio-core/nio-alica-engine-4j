@@ -10,14 +10,14 @@ import java.util.HashMap;
 public class Role extends AlicaElement {
     private HashMap<String, Characteristic> characteristics = new HashMap<>();
     RoleTaskMapping roleTaskMapping;
-	RoleDefinitionSet roleDefinitionSet;
+	RoleSet roleSet;
 
     public HashMap<String, Characteristic> getCharacteristics() {
         return characteristics;
     }
 
-    public void setRoleDefinitionSet(RoleDefinitionSet roleDefinitionSet) {
-        this.roleDefinitionSet = roleDefinitionSet;
+    public void setRoleSet(RoleSet roleSet) {
+        this.roleSet = roleSet;
     }
 
     public void setCharacteristics(HashMap<String, Characteristic> characteristics) {
@@ -32,7 +32,11 @@ public class Role extends AlicaElement {
         this.roleTaskMapping = roleTaskMapping;
     }
 
-    public RoleDefinitionSet getRoleDefinitionSet() {
-        return roleDefinitionSet;
+    public RoleSet getRoleSet() {
+        return roleSet;
+    }
+
+    public double getPriority(long taskId) {
+        return roleTaskMapping.getTaskPriorities().get(taskId);
     }
 }

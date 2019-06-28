@@ -59,4 +59,13 @@ public class PlanningProblem extends AbstractPlan {
     public void setPostCondition(PostCondition postCondition) {
         this.postCondition = postCondition;
     }
+
+    public void setPreCondition(PreCondition preCondition) {
+        this.preCondition = preCondition;
+    }
+
+    public void setRuntimeCondition(RuntimeCondition runtimeCondition) {
+        this.runtimeCondition = runtimeCondition;
+    }
+
 }

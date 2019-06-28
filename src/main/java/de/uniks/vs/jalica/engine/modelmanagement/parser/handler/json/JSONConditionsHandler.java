@@ -40,9 +40,9 @@ public class JSONConditionsHandler extends JSONHandler {
                 PreCondition p = modelFactory.createPreCondition((JSONObject) entry.getValue());
                 p.setAbstractPlan(plan);
                 plan.setPreCondition(p);
-        } else if (POST_CONDITIONS.equals(entry.getKey())) {
-                PostCondition p = modelFactory.createPostCondition((JSONObject) entry.getValue());
-                plan.setPostCondition(p);
+//        } else if (POST_CONDITIONS.equals(entry.getKey())) {
+//                PostCondition p = modelFactory.createPostCondition((JSONObject) entry.getValue());
+//                plan.setPostCondition(p);
         } else {
 //                modelFactory.getAE().abort("MF: Unknown Condition type", node.toString());
             return false;

@@ -1,7 +1,7 @@
 package de.uniks.vs.jalica.communication;
 
 import de.uniks.vs.jalica.common.utils.CommonUtils;
-import de.uniks.vs.jalica.engine.AlicaCommunication;
+import de.uniks.vs.jalica.engine.IAlicaCommunication;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.containers.messages.AlicaEngineInfo;
 import de.uniks.vs.jalica.engine.containers.messages.AllocationAuthorityInfo;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 /**
  * Created by alex on 29.06.18.
  */
-public class AlicaMQTTCommunication extends AlicaCommunication {
+public class AlicaMQTTCommunication extends IAlicaCommunication {
 
     private boolean isRunning;
 
@@ -26,7 +26,7 @@ public class AlicaMQTTCommunication extends AlicaCommunication {
     }
 
     @Override
-    public boolean init(ArrayList<Long> ids) {
+    public boolean init() {
         CommonUtils.aboutImplIncomplete();
         return true;
     }

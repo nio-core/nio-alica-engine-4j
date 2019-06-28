@@ -4,16 +4,28 @@ import de.uniks.vs.jalica.engine.common.SolverVariable;
 
 /**
  * Created by alex on 13.07.17.
+ * Updated 23.6.19
  */
 public class Variable extends AlicaElement {
-    private final String type;
-    private final SolverVariable solverVar;
+
+    private String type;
 
     public Variable(long id, String name, String type) {
-        this.id = id;
-        this.name = name;
+        super(id, name);
         this.type = type;
-// TODO:		this.solverVar = new autodiff::Variable();
-        this.solverVar = null;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    void setType(String type) {
+        this.type = type;
+    }
+
+
+    @Override
+    public String toString() {
+        return   this.getName() + "(" + this.getID() + ")";
     }
 }

@@ -22,7 +22,8 @@ public class Publish extends DomainBehaviour {
         /*PROTECTED REGION END*/
     }
 
-    public void run(String msg) {
+    @Override
+    public void run(Object msg) {
         /*PROTECTED REGION ID(run1528125245680) ENABLED START*/ //Add additional options here
         CommonUtils.aboutImplIncomplete();
         ReentrantLock lock = new ReentrantLock();
@@ -40,7 +41,7 @@ public class Publish extends DomainBehaviour {
         }
 
         if (count >= countMax)
-            this.setSuccess(true);
+            this.setSuccess();
 
         /*PROTECTED REGION END*/
     }
@@ -52,6 +53,11 @@ public class Publish extends DomainBehaviour {
         countMax = 5;
         count = 0;
         /*PROTECTED REGION END*/
+    }
+
+    @Override
+    public void run() {
+        CommonUtils.aboutNoImpl();
     }
 }
 

@@ -33,4 +33,25 @@ public class DynCardinality {
     }
 
     public int getMax() { return max; }
+
+    public DynCardinality decrease() {
+        this.min--;
+        this.max--;
+        return this;
+    }
+    public DynCardinality decrease(int i) {
+        this.min-= i;
+        this.max-= i;
+        return this;
+    }
+
+    public DynCardinality increase() {
+        this.min++;
+        this.max++;
+        return this;
+    }
+
+    public boolean contains(int c) {
+        return min <= c && c <= max ;
+    }
 }

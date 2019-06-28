@@ -22,6 +22,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import java.awt.color.CMMException;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -72,62 +73,49 @@ public class PlanParser {
         this.taskDir = (String) this.sc.get("Alica").get("Alica.TaskDir");
 
 
-        if (domainConfigFolder.lastIndexOf(FileSystem.PATH_SEPARATOR) != domainConfigFolder.length() - 1)
-        {
+        if (domainConfigFolder.lastIndexOf(FileSystem.PATH_SEPARATOR) != domainConfigFolder.length() - 1) {
             domainConfigFolder = domainConfigFolder + FileSystem.PATH_SEPARATOR;
         }
-        if (planDir.lastIndexOf(FileSystem.PATH_SEPARATOR) != planDir.length() - 1)
-        {
+        if (planDir.lastIndexOf(FileSystem.PATH_SEPARATOR) != planDir.length() - 1) {
             planDir = planDir + FileSystem.PATH_SEPARATOR;
         }
-        if (roleDir.lastIndexOf(FileSystem.PATH_SEPARATOR) != roleDir.length() - 1)
-        {
+        if (roleDir.lastIndexOf(FileSystem.PATH_SEPARATOR) != roleDir.length() - 1) {
             roleDir = roleDir + FileSystem.PATH_SEPARATOR;
         }
-        if (taskDir.lastIndexOf(FileSystem.PATH_SEPARATOR) != taskDir.length() - 1)
-        {
+        if (taskDir.lastIndexOf(FileSystem.PATH_SEPARATOR) != taskDir.length() - 1) {
             taskDir = taskDir + FileSystem.PATH_SEPARATOR;
         }
-        if (!(FileSystem.isPathRooted(this.planDir)))
-        {
+        if (!(FileSystem.isPathRooted(this.planDir))) {
             basePlanPath = domainSourceFolder + planDir;
         }
-		else
-        {
+		else {
             basePlanPath = planDir;
         }
-        if (!(FileSystem.isPathRooted(this.roleDir)))
-        {
+        if (!(FileSystem.isPathRooted(this.roleDir))) {
             baseRolePath = domainSourceFolder + roleDir;
         }
-		else
-        {
+		else {
             baseRolePath = roleDir;
         }
-        if (!(FileSystem.isPathRooted(this.taskDir)))
-        {
+        if (!(FileSystem.isPathRooted(this.taskDir))) {
             baseTaskPath = domainSourceFolder + taskDir;
         }
-		else
-        {
+		else {
             baseTaskPath = taskDir;
         }
-//#ifdef PP_DEBUG
-        if (CommonUtils.PP_DEBUG_debug) System.out.println( "PP: basePlanPath: " + basePlanPath );
+
+		if (CommonUtils.PP_DEBUG_debug) System.out.println( "PP: basePlanPath: " + basePlanPath );
         if (CommonUtils.PP_DEBUG_debug) System.out.println(  "PP: baseRolePath: " + baseRolePath );
         if (CommonUtils.PP_DEBUG_debug) System.out.println(  "PP: baseTaskPath: " + baseTaskPath );
-//#endif
-        if (!(FileSystem.pathExists(basePlanPath)))
-        {
-            ae.abort("PP: BasePlanPath does not exists " + basePlanPath);
+
+        if (!(FileSystem.pathExists(basePlanPath))) {
+            CommonUtils.aboutError("PP: BasePlanPath does not exists " + basePlanPath);
         }
-        if (!(FileSystem.pathExists(baseRolePath)))
-        {
-            ae.abort("PP: BaseRolePath does not exists " + baseRolePath);
+        if (!(FileSystem.pathExists(baseRolePath))) {
+            CommonUtils.aboutError("PP: BaseRolePath does not exists " + baseRolePath);
         }
-        if (!(FileSystem.pathExists(baseTaskPath)))
-        {
-            ae.abort("PP: BaseRolePath does not exists " + baseTaskPath);
+        if (!(FileSystem.pathExists(baseTaskPath))) {
+            CommonUtils.aboutError("PP: BaseRolePath does not exists " + baseTaskPath);
         }
 
     }
@@ -166,7 +154,7 @@ public class PlanParser {
         boolean found = masterplan != null;
         if (CommonUtils.PP_DEBUG_debug) System.out.println( "PP: masterPlanPath: " + masterPlanPath );
         if (!found) {
-            ae.abort("PP: Cannot find MasterPlan '" + masterplan + "'");
+            CommonUtils.aboutError("PP: Cannot find MasterPlan '" + masterplan + "'");
         }
         this.currentFile = masterPlanPath;
         this.currentDirectory = FileSystem.getParent(masterPlanPath);
@@ -180,7 +168,10 @@ public class PlanParser {
         return this.masterPlan;
     }
 
-    public RoleSet parseRoleSet(String roleSetName, String roleSetDir) {
+    public RoleSet parseRoleSet(String roleSetName) {
+        String roleSetDir = this.baseRolePath;
+
+        CommonUtils.aboutCallNotification("check rolesetdir: " +roleSetDir);
 
         if (roleSetName.isEmpty()) {
             roleSetName = findDefaultRoleSet(roleSetDir);
@@ -204,7 +195,7 @@ public class PlanParser {
                     roleSetName = roleSetName.substring(0, roleSetName.length()-5) + ".rst";
 
                     if (!FileSystem.pathExists(roleSetName)) {
-                        ae.abort("PP: Cannot find roleset: " + roleSetName);
+                        CommonUtils.aboutError("PP: Cannot find roleset: " + roleSetName);
                     }
                 } else
                     roleSetName = tempRoleSetName;
@@ -224,7 +215,7 @@ public class PlanParser {
             roleSetName = roleSetName.substring(0, roleSetName.length()-5) + ".rst";
 
             if (!FileSystem.pathExists(roleSetName)) {
-                ae.abort("PP: Cannot find roleset: " + roleSetName);
+                CommonUtils.aboutError("PP: Cannot find roleset: " + roleSetName);
             }
         }
 
@@ -237,7 +228,7 @@ public class PlanParser {
         File file = new File(absolutePath);
 
         if (!file.exists()) {
-            ae.abort("PP: " + file +" not exists!!!");
+            CommonUtils.aboutError("PP: " + file +" not exists!!!");
         }
         RoleSet r = null;
         try {
@@ -255,7 +246,7 @@ public class PlanParser {
 //            }
             if (doc == null)
             {
-                ae.abort("PP: doc.ErrorCode: " + file);
+                CommonUtils.aboutError("PP: doc.ErrorCode: " + file);
             }
             doc.getDocumentElement().normalize();
 
@@ -292,7 +283,7 @@ public class PlanParser {
 
             if (!FileSystem.pathExists(fileToParse))
             {
-                ae.abort("PP: Cannot Find referenced file " + fileToParse);
+                CommonUtils.aboutError("PP: Cannot Find referenced file " + fileToParse);
             }
             if (FileSystem.endsWith(fileToParse, ".rdefset"))
             {
@@ -304,7 +295,7 @@ public class PlanParser {
             }
 			else
             {
-                ae.abort("PP: Cannot Parse file " + fileToParse);
+                CommonUtils.aboutError("PP: Cannot Parse file " + fileToParse);
             }
             filesParsed.add(fileToParse);
 
@@ -325,7 +316,7 @@ public class PlanParser {
 
             if (!FileSystem.pathExists(fileToParse))
             {
-                ae.abort("PP: Cannot Find referenced file ", fileToParse);
+                CommonUtils.aboutError("PP: Cannot Find referenced file " + fileToParse);
             }
             if (FileSystem.endsWith(fileToParse, ".pml"))
             {
@@ -349,7 +340,7 @@ public class PlanParser {
             }
 			else
             {
-                ae.abort("PP: Cannot Parse file", fileToParse);
+                CommonUtils.aboutError("PP: Cannot Parse file" + fileToParse);
             }
             filesParsed.add(fileToParse);
         }
@@ -365,7 +356,7 @@ public class PlanParser {
 
             if (doc == null)
             {
-                ae.abort("PP: doc.ErrorCode: " + file);
+                CommonUtils.aboutError("PP: doc.ErrorCode: " + file);
             }
             doc.getDocumentElement().normalize();
             this.mf.createTasks(doc);
@@ -401,7 +392,7 @@ public class PlanParser {
 
             if (doc == null)
             {
-                ae.abort("PP: doc.ErrorCode: " + currentFile);
+                CommonUtils.aboutError("PP: doc.ErrorCode: " + currentFile);
             }
             doc.getDocumentElement().normalize();
             this.mf.createRoleDefinitionSet(doc);
@@ -426,7 +417,7 @@ public class PlanParser {
 
             if (doc == null)
             {
-                ae.abort("PP: doc.ErrorCode: " + currentFile);
+                CommonUtils.aboutError("PP: doc.ErrorCode: " + currentFile);
             }
             doc.getDocumentElement().normalize();
             this.mf.createCapabilityDefinitionSet(doc);
@@ -470,7 +461,7 @@ public class PlanParser {
         File file = new File(currentFile);
 
         if (!file.exists()) {
-            ae.abort("PP: " + file +" not exists!!!");
+            CommonUtils.aboutError("PP: " + file +" not exists!!!");
         }
 
 //        XMLDocument doc;
@@ -531,7 +522,7 @@ public class PlanParser {
         File file = new File(planFile);
 
         if (!file.exists()) {
-            ae.abort("PP: " + file +" not exists!!!");
+            CommonUtils.aboutError("PP: " + file +" not exists!!!");
         }
 
         DocumentBuilder docBuilder = null;
@@ -541,7 +532,7 @@ public class PlanParser {
             Document doc = dBuilder.parse(file);
 
             if (doc == null) {
-                ae.abort("PP: " + "can not parse " + file);
+                CommonUtils.aboutError("PP: " + "can not parse " + file);
             }
             doc.getDocumentElement().normalize();
 
@@ -648,7 +639,7 @@ public class PlanParser {
         }
         catch (Exception e)
         {
-            ae.abort("PP: Cannot convert ID teamObserver long: " + tokenId + " WHAT?? " + e.getMessage());
+            CommonUtils.aboutError("PP: Cannot convert ID teamObserver long: " + tokenId + " WHAT?? " + e.getMessage());
         }
         return id;
     }
@@ -673,7 +664,7 @@ public class PlanParser {
             }
             catch (Exception e)
             {
-                ae.abort("PP: Cannot convert ID teamObserver long: " + idString1 + " WHAT?? " + e.getMessage());
+                CommonUtils.aboutError("PP: Cannot convert ID teamObserver long: " + idString1 + " WHAT?? " + e.getMessage());
             }
             return id;
         }
@@ -714,7 +705,7 @@ public class PlanParser {
                 System.out.println("PP: "+curAttribute.getNodeName() + " : " + curAttribute.getNodeName() );
             }
 
-        ae.abort("PP: Couldn't resolve remote reference: " + (node.getNodeName()));
+        CommonUtils.aboutError("PP: Couldn't resolve remote reference: " + (node.getNodeName()));
         return -1;
     }
 
@@ -730,7 +721,7 @@ public class PlanParser {
                 return;
         }
 
-        ae.abort("PP: Cannot handle XML Tag: " + node.getNodeName());
+        CommonUtils.aboutError("PP: Cannot handle XML Tag: " + node.getNodeName());
     }
 
     public void handleEntry(Object entry, Plan plan, ModelFactory modelFactory) {
@@ -741,7 +732,7 @@ public class PlanParser {
                 return;
         }
 
-        ae.abort("PP: Cannot handle JSON Entry: " + entry.toString());
+        CommonUtils.aboutError("PP: Cannot handle JSON Entry: " + entry.toString());
     }
 
     public LinkedHashMap<Long, AlicaElement> getParsedElements() {

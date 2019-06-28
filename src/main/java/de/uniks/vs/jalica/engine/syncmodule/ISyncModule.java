@@ -7,6 +7,7 @@ import de.uniks.vs.jalica.engine.containers.SyncTalk;
 /**
  * Created by alex on 13.07.17.
  */
+@Deprecated
 public interface ISyncModule {
     void tick();
 

@@ -9,6 +9,7 @@ import java.util.Vector;
 /**
  * Created by alex on 21.07.17.
  */
+@Deprecated
 public interface IPlanSelector {
 
     //TODO: change agent id types from long to ID

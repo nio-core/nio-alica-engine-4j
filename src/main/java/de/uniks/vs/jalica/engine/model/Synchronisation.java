@@ -1,6 +1,7 @@
 package de.uniks.vs.jalica.engine.model;
 
 import de.uniks.vs.jalica.common.utils.CommonUtils;
+import de.uniks.vs.jalica.engine.AlicaTime;
 import de.uniks.vs.jalica.engine.common.SyncData;
 import de.uniks.vs.jalica.engine.common.SyncTransition;
 import de.uniks.vs.jalica.engine.AlicaEngine;
@@ -14,80 +15,84 @@ import java.util.ArrayList;
 
 /**
  * Created by alex on 11.11.17.
+ * update 22.6.19
  */
-public class Synchronisation {
+public class Synchronisation extends AlicaElement {
 
-    AlicaEngine ae;
-    SyncModule syncModul;
-    SyncTransition syncTransition;
-    int myID;
-    long lastTalkTime;
-    SyncData lastTalkData;
-    long syncStartTime;
-    boolean readyForSync;
-    long lastTick;
-    ArrayList<SyncReady> receivedSyncReadys;
-    ArrayList<Long> connectedTransitions;
-    RunningPlan runningPlan;
-    ArrayList<SyncRow> rowsOK;
-    SyncRow myRow;
-    ArrayList<SyncRow> syncMatrix;
+    private ArrayList<Transition> inSync;
+    private Plan plan;
 
-    public boolean isValid(long curTick) {
-        boolean stillActive = (this.lastTick + 2 >= curTick);
+    private AlicaTime talkTimeout;
+    private AlicaTime syncTimeout;
 
-        if (!stillActive) {
-            //notify others if i am part of the synchronisation already (i.e. have an own row)
+    private boolean failOnSyncTimeout;
 
-            if (myRow != null) {
-
-                if (myRow.getSyncData() != null) {
-                    myRow.getSyncData().conditionHolds = false;
-                    sendTalk(myRow.getSyncData());
-                }
-            }
-            return false;
-        }
-        long now = (long) ae.getAlicaClock().now().time / 1000000L;
-
-        if (this.lastTalkTime != 0) {  //talked already
-
-//#ifdef SM_FAILURE
-            if (CommonUtils.SM_FAILURE_debug) System.out.println("S: TestTimeOut on Sync: " + this.syncTransition.getID() );
-//#endif
-            if ((now > this.syncTransition.getTalkTimeOut() + this.lastTalkTime) && !this.readyForSync) {
-
-                if (this.myRow != null) {
-                    sendTalk(this.myRow.getSyncData());
-                }
-            }
-        }
-
-//#ifdef SM_FAILURE
-        if (CommonUtils.SM_FAILURE_debug) System.out.println("S: TestTimeOut(): syncStarTime " + this.syncStartTime);
-//#endif
-
-        if (this.syncTransition.isFailOnSyncTimeOut()) {
-
-            if (now > this.syncTransition.getSyncTimeOut() + this.syncStartTime) {
-//#ifdef SM_FAILURE
-                if (CommonUtils.SM_FAILURE_debug) System.out.println("S: TestTimeOut() sync failed" );
-//#endif
-                return false;
-            }
-        }
-        return true;
+    public boolean isFailOnSyncTimeOut() {
+        return this.failOnSyncTimeout;
     }
 
-    private void sendTalk(SyncData sd) {
-        SyncTalk talk = new SyncTalk();
-        talk.syncData.add(sd);
-        this.lastTalkTime = (long) ae.getAlicaClock().now().time / 1000000L;
-//#ifdef SM_MESSAGES
-        if (CommonUtils.SM_MESSAGES_debug) System.out.println("S: Sending Talk TID: " + sd.transitionID );
-//#endif
-        this.syncModul.sendSyncTalk(talk);
+    public AlicaTime getSyncTimeOut() {
+        return this.syncTimeout;
     }
 
-    public SyncTransition getSyncTransition() {return syncTransition;}
+    public AlicaTime getTalkTimeOut() {
+        return this.talkTimeout;
+    }
+
+    public Plan getPlan() {
+        return this.plan;
+    }
+
+    public ArrayList<Transition> getInSync() {
+        return this.inSync;
+    }
+
+
+    public Synchronisation() {
+        this.failOnSyncTimeout = false;
+        this.syncTimeout = new AlicaTime().inMilliseconds(3000);
+        this.talkTimeout = new AlicaTime().inMilliseconds(30);
+        this.plan = null;
+    }
+
+
+    public String toString() {
+        String indent = "";
+        String ss = "";
+        ss += indent + "#Synchronisation: " + getName() + " " + getID() + "\n";
+        if (this.plan != null) {
+            ss += indent + "\t Plan: " + this.plan.getID() + " " + this.plan.getName() + "\n";
+        }
+        ss += "\n";
+        ss += indent + "\t TalkTimeOut: " + this.talkTimeout.inMilliseconds() + "\n";
+        ss += indent + "\t SyncTimeOut: " + this.syncTimeout.inMilliseconds() + "\n";
+        ss += indent + "\t FailOnSyncTimeOut: " + this.failOnSyncTimeout + "\n";
+        ss += indent + "\t InSync: " + this.inSync.size() + "\n";
+        for (Transition t : this.inSync) {
+            ss += indent + "\t" + t.getID() + " " + t.getName() + "\n";
+        }
+        ss += "\n";
+        ss += "#EndSynchronisation" + "\n";
+        return ss;
+    }
+
+    public void setFailOnSyncTimeOut(boolean failOnSyncTimeOut) {
+        this.failOnSyncTimeout = failOnSyncTimeOut;
+    }
+
+    public void setSyncTimeOut(AlicaTime syncTimeOut) {
+        this.syncTimeout = syncTimeOut;
+    }
+
+    public void setTalkTimeOut(AlicaTime talkTimeOut) {
+        this.talkTimeout = talkTimeOut;
+    }
+
+    public void setPlan(Plan plan) {
+        this.plan = plan;
+    }
+
+    public void setInSync(ArrayList<Transition> inSync) {
+        this.inSync = inSync;
+    }
 }

@@ -20,11 +20,15 @@ public class DummyBehaviour extends DomainBehaviour {
         CommonUtils.aboutCallNotification();
     }
 
-    public void run(String msg) {
-        CommonUtils.aboutNoImpl();
+    @Override
+    public void run(Object msg) {
+
+            CommonUtils.aboutNoImpl();
     }
 
-    protected void initialiseParameters() {
-        CommonUtils.aboutNoImpl();
+
+    @Override
+    public void run() {
+                CommonUtils.aboutNoImpl();
     }
 }

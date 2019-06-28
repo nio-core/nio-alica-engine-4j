@@ -11,92 +11,119 @@ import java.util.*;
  */
 public class SuccessMarks {
 
-    private AlicaEngine ae;
-    private LinkedHashMap<AbstractPlan, ArrayList<EntryPoint>> successMarks = new LinkedHashMap<>();
+    private LinkedHashMap<AbstractPlan, ArrayList<EntryPoint>> successMarks;
 
-    public SuccessMarks(AlicaEngine ae) {
-        this.ae = ae;
+    public SuccessMarks() {
+        successMarks = new LinkedHashMap<>();
     }
 
-    public SuccessMarks(AlicaEngine ae, ArrayList<Long> epIds) {
-        this.ae = ae;
+    public void update( AlicaEngine ae, ArrayList<Long> succeededEps) {
+        clear();
         HashMap<Long, EntryPoint> eps = ae.getPlanRepository().getEntryPoints();
 
-        for (long id : epIds) {
-            EntryPoint ep = null;
-            EntryPoint iter = eps.get(id);
+        for (long id : succeededEps) {
 
-            if (iter != null) {
-                ep = eps.get(id);
+            EntryPoint ep = eps.get(id);
 
-                ArrayList<EntryPoint> s;
-                ArrayList<EntryPoint> i = this.getSuccessMarks().get(ep.getPlan());
+            if (ep != null) {
+                ArrayList<EntryPoint> entryPoints = this.successMarks.get(ep.getPlan());
 
-                if (i != null) {
-                    s = this.getSuccessMarks().get(ep.getPlan());
+                if (entryPoints == null) {
+                    this.successMarks.put(ep.getPlan(), new ArrayList<EntryPoint>(Arrays.asList(ep)));
+                } else {
 
-//                    if (find(s.begin(), s.end(), ep) == s.end()) {
-                    if (!s.contains(ep))
-                        s.add(ep);
+                    if (entryPoints.contains(ep))
+                        entryPoints.add(ep);
+
                 }
-            } else {
-                ArrayList<EntryPoint> s = new ArrayList();
-                s.add(ep);
-                this.getSuccessMarks().put(ep.getPlan(), s);
             }
+//          else {
+//                ArrayList<EntryPoint> s = new ArrayList();
+//                s.add(ep);
+//                this.getSuccessMarks().put(ep.getPlan(), s);
+//            }
+//        }
         }
     }
+
+//    public update(AlicaEngine ae, ArrayList<Long> epIds) {
+//        this.ae = ae;
+//        HashMap<Long, EntryPoint> eps = ae.getPlanRepository().getEntryPoints();
+//
+//        for (long id : epIds) {
+//            EntryPoint ep = null;
+//            EntryPoint iter = eps.get(id);
+//
+//            if (iter != null) {
+//                ep = eps.get(id);
+//
+//                ArrayList<EntryPoint> s;
+//                ArrayList<EntryPoint> i = this.getSuccessMarks().get(ep.getPlan());
+//
+//                if (i != null) {
+//                    s = this.getSuccessMarks().get(ep.getPlan());
+//
+////                    if (find(s.begin(), s.end(), ep) == s.end()) {
+//                    if (!s.contains(ep))
+//                        s.add(ep);
+//                }
+//            } else {
+//                ArrayList<EntryPoint> s = new ArrayList();
+//                s.add(ep);
+//                this.getSuccessMarks().put(ep.getPlan(), s);
+//            }
+//        }
+//    }
 
     public void markSuccessfull(AbstractPlan p, EntryPoint e) {
-        ArrayList<EntryPoint> iter = this.getSuccessMarks().get(p);//find(p);
+        ArrayList<EntryPoint> l = this.successMarks.get(p);
 
-        if (iter != this.getSuccessMarks().get(successMarks.size()-1)) {
-            ArrayList<EntryPoint> l = this.getSuccessMarks().get(p);//.at(p);
-            EntryPoint i = find(l, e);
-//            auto i = find(l.begin(), l.end(), e);
-
-            if (i == l.get(l.size()-1))
-            {
-                l.add(e);
-            }
-        }
-	    else {
-            ArrayList l = new ArrayList<EntryPoint>();
+        if (!l.contains(e)) {
             l.add(e);
-            this.getSuccessMarks().put(p, l);
-
         }
+//        ArrayList<EntryPoint> iter = this.getSuccessMarks().get(p);//find(p);
+//
+//        if (iter != this.getSuccessMarks().get(successMarks.size()-1)) {
+//            ArrayList<EntryPoint> l = this.getSuccessMarks().get(p);//.at(p);
+//            EntryPoint i = find(l, e);
+//
+//            if (i == l.get(l.size()-1))
+//            {
+//                l.add(e);
+//            }
+//        }
+//	    else {
+//            ArrayList l = new ArrayList<EntryPoint>();
+//            l.add(e);
+//            this.getSuccessMarks().put(p, l);
+//
+//        }
     }
 
-    private EntryPoint find(ArrayList<EntryPoint> l, EntryPoint e) {
-        for (EntryPoint entryPoint: l) {
-            if (entryPoint == e)
-                return entryPoint;
-        }
-
-        return l.get(l.size()-1);
-    }
+//    private EntryPoint find(ArrayList<EntryPoint> l, EntryPoint e) {
+//        for (EntryPoint entryPoint: l) {
+//            if (entryPoint == e)
+//                return entryPoint;
+//        }
+//
+//        return l.get(l.size()-1);
+//    }
 
     public LinkedHashMap<AbstractPlan,ArrayList<EntryPoint>> getSuccessMarks() {
         return successMarks;
     }
 
     public void removePlan(AbstractPlan plan) {
-        this.getSuccessMarks().remove(plan);
+        this.successMarks.remove(plan);
+    }
+
+    boolean succeeded( AbstractPlan p,  EntryPoint e) {
+        ArrayList<EntryPoint> entryPoints = this.successMarks.get(p);
+        return entryPoints != null ? entryPoints.contains(e) : false;
     }
 
     public ArrayList<EntryPoint> succeededEntryPoints(AbstractPlan plan) {
-
-//        for (map<AbstractPlan*, shared_ptr<list<EntryPoint*> > >::const_iterator iterator =
-//                this->getSuccessMarks().begin(); iterator != this.getSuccessMarks().end(); iterator++)
-
-        for (AbstractPlan abstractPlan : this.getSuccessMarks().keySet()) {
-
-            if (abstractPlan == plan) {
-                return this.getSuccessMarks().get(abstractPlan);
-            }
-        }
-        return null;
+        return this.successMarks.get(plan);
     }
 
     public void clear() {
@@ -104,23 +131,23 @@ public class SuccessMarks {
     }
 
     public void limitToPlans(HashSet<AbstractPlan> active) {
-        ArrayList<AbstractPlan> tr = new ArrayList<>();
+        ArrayList<AbstractPlan> plans = new ArrayList<>();
 
-        for (AbstractPlan itePlan : this.getSuccessMarks().keySet()) {
+        for (AbstractPlan plan : this.successMarks.keySet()) {
 
-            if (!active.contains(itePlan)) {
-                tr.add(itePlan);
+            if (!active.contains(plan)) {
+                plans.add(plan);
             }
         }
 
-        for (AbstractPlan p : tr) {
-            this.getSuccessMarks().remove(p);
+        for (AbstractPlan plan : plans) {
+            this.successMarks.remove(plan);
         }
         
     }
 
     // <AbstractPlan,ArrayList<EntryPoint>>
-    public ArrayList<Long> toList() {
+    public ArrayList<Long> toIdGrp() {
         ArrayList<Long> ret = new ArrayList<Long>();
 
         for (ArrayList<EntryPoint> entryPoints : this.getSuccessMarks().values()){

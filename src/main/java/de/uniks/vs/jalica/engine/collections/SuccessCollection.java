@@ -7,81 +7,113 @@ import java.util.ArrayList;
 
 /**
  * Created by alex on 18.07.17.
+ * updated 23.6.19
  */
 public class SuccessCollection {
 
-    EntryPoint[] entryPoints;
-    ArrayList<Long>[] agents;
-    int count = 0;
+    private Plan plan;
+    private ArrayList<ArrayList<Long>> successData;
+
+    // Type definitions --------------------
+    // AgentGrp = ArrayList<Long>
+    // EntryPointGrp = ArrayList<EntryPoint>
+    // IdGrp = ArrayList<Long>
+    // VariableGrp = ArrayList<Variable>
+    // BehaviourParameterMap = HashMap<String, String>
+    // TransitionGrp = ArrayList<Transition>
+    // typedef std::tuple<Long, Long, Long, Long, Long, ArrayList<stdEntryPointRobot>> stdAllocationAuthorityInfo;
+    // typedef std::tuple<Long, ArrayList<Long>> stdEntryPointRobot;
+
+
+    public SuccessCollection() {
+        this.plan = null;
+        this.successData = new ArrayList<>();
+    }
 
     public SuccessCollection(Plan plan) {
-        this.count = plan.getEntryPoints().size();
-        this.entryPoints = new EntryPoint[this.count];
-        this.agents = new ArrayList[this.count];
-        ArrayList<EntryPoint> eps = new ArrayList<>();
-
-//        for (map<long, EntryPoint*>::const_iterator iter = plan.getEntryPoints().begin();
-//                iter != plan.getEntryPoints().end(); iter++)
-
-        for (Long key : plan.getEntryPoints().keySet()) {
-            eps.add(plan.getEntryPoints().get(key));
-        }
-        eps.sort(EntryPoint::compareTo);
-
-//        for (EntryPoint ep : eps) {
-        for (int i = 0; i < eps.size(); i++) {
-            this.entryPoints[i] = eps.get(i);
-            this.agents[i] = new ArrayList<>();
-        }
+        this.plan = plan;
+        this.successData = new ArrayList<>(plan.getEntryPoints().size());
     }
 
-    public ArrayList<Long> getAgents(EntryPoint entryPoint) {
-        for (int i = 0; i < this.count; i++) {
-            if (this.getEntryPoints()[i] == entryPoint) {
-                return this.agents[i];
-            }
-        }
-        return null;
-    }
 
-    public EntryPoint[] getEntryPoints() {
-        return entryPoints;
+
+    public void setSuccess(long agentId, EntryPoint ep) {
+
+        if (ep.getPlan() == this.plan) {
+            this.successData.get(ep.getIndex()).add(agentId);
+        }
     }
 
     public void clear() {
-        for (int i = 0; i < this.count; i++)
-        {
-            this.agents[i].clear();
+        for (ArrayList<Long> ag : this.successData) {
+            ag.clear();
         }
     }
 
-    public ArrayList<Long>[] getAgents() {
-        return agents;
-    }
-
-    public int getCount() {
-        return count;
-    }
-
-    public void setSuccess(long agent, EntryPoint ep) {
-        for (int i = 0; i < this.count; i++)
-        {
-            if (this.entryPoints[i] == ep)
-            {
-                this.agents[i].add(agent);
-                return;
-            }
-        }
-    }
-
-    public ArrayList<Long> getAgentsById(long id) {
-
-        for (int i = 0; i < this.count; i++){
-
-            if (this.getEntryPoints()[i].getID() == id){
-                return this.agents[i];
-            }
+     public ArrayList<Long> getAgents(EntryPoint ep) {
+        if (ep.getPlan() == this.plan) {
+            return this.successData.get(ep.getIndex());
         }
         return null;
+    }
+
+    ArrayList<Long> getAgentsById(long id) {
+        ArrayList<EntryPoint> eps = new ArrayList<>(this.plan.getEntryPoints());
+
+        for (int i = 0; i < eps.size(); i++) {
+
+            if (eps.get(i).getID() == id) {
+                return successData.get(i);
+        }
+    }
+        return null;
+    }
+
+    public ArrayList<Long> getAgentsByIndex(int index) {
+        return this.successData.get(index);
+    }
+
+//    public ArrayList<Long> getAgentsByIndex(int index) {
+//
+//        if (index >= 0 && index < this.successData.size()) {
+//            return this.successData.get(index);
+//        }
+//        return null;
+//    }
+
+    int getCount()  { return this.successData.size(); }
+
+    ArrayList<EntryPoint> getEntryPoints() { return new ArrayList<>(this.plan.getEntryPoints()); }
+
+    public ArrayList<ArrayList<Long>> getRaw() {
+        return this.getData();
+    }
+
+    public ArrayList<ArrayList<Long>> getData() {
+        return this.successData;
+    }
+
+    @Override
+    public String toString() {
+        String out = "";
+        boolean haveAny = false;
+        ArrayList<EntryPoint> eps = this.plan.getEntryPoints();
+        for (int i = 0; i < eps.size(); ++i) {
+            if (!this.successData.get(i).isEmpty()) {
+                if (!haveAny) {
+                    out += "Success:" + "\n";
+                }
+                haveAny = true;
+                out += eps.get(i).getID() + " (" + eps.get(i).getTask().getName() + "): ";
+                for (long r : this.successData.get(i)) {
+                    out += r + " ";
+                }
+                out += "\n";
+            }
+        }
+        if (!haveAny) {
+            out += "No EntryPoint successful!";
+        }
+        return out;
     }
 }

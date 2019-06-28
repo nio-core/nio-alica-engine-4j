@@ -27,8 +27,8 @@ public class Characteristic extends AlicaElement {
 
     public float calculateSimilarityTo(Characteristic characteristic) {
         float similarity = 1.0f -
-                        (CommonMetrics.levenshteinDistance(this.name, characteristic.getName())
-                                / (this.name.length() > characteristic.getName().length() ? this.name.length() : characteristic.getName().length()));
+                        (CommonMetrics.levenshteinDistance(this.getName(), characteristic.getName())
+                                / (this.getName().length() > characteristic.getName().length() ? this.getName().length() : characteristic.getName().length()));
 
         if (CommonUtils.isNumeric(this.value) ^ CommonUtils.isNumeric(characteristic.getValue())) {
             similarity = 0;
@@ -41,7 +41,7 @@ public class Characteristic extends AlicaElement {
         }
 
         if (CommonUtils.C_DEBUG_debug) System.out.println("C: " + CommonUtils.isNumeric(this.value) +" " + CommonUtils.isNumeric(characteristic.getValue()));
-        if (CommonUtils.C_DEBUG_debug) System.out.println("C: " + this.name + ":" + this.value + "     " + characteristic.getName() + ":" + characteristic.getValue() +   "     " + similarity );
+        if (CommonUtils.C_DEBUG_debug) System.out.println("C: " + this.getName() + ":" + this.value + "     " + characteristic.getName() + ":" + characteristic.getValue() +   "     " + similarity );
 
         return similarity;
     }

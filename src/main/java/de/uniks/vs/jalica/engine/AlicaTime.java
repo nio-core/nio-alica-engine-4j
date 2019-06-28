@@ -2,6 +2,7 @@ package de.uniks.vs.jalica.engine;
 
 /**
  * Created by alex on 13.07.17.
+ * Updated 21.6.19
  */
 public class AlicaTime  {
 
@@ -10,6 +11,10 @@ public class AlicaTime  {
     private static final long ms  = 1000l;
 
     public long time;
+
+    public AlicaTime(long time) {
+        this.time = time;
+    }
 
     public static long microseconds(long microSeconds) {
         return (long) (microSeconds);
@@ -23,6 +28,10 @@ public class AlicaTime  {
 
     public AlicaTime() {
         this.time = 0;
+    }
+
+    public static AlicaTime zero() {
+        return new AlicaTime();
     }
 
     //TODO: make static "AlicaTime time = AlicaTime.inSeconds(...)"

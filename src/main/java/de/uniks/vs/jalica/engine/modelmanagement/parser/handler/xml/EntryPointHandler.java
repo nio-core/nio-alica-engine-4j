@@ -7,6 +7,7 @@ import org.w3c.dom.Node;
 
 /**
  * Created by alex on 18.09.17.
+ * Updated 23.6.19
  */
 public class EntryPointHandler extends XMLHandler {
 
@@ -20,7 +21,7 @@ public class EntryPointHandler extends XMLHandler {
         if (ENTRY_POINTS.equals(val))
         {
             EntryPoint ep = modelFactory.createEntryPoint(node);
-            plan.getEntryPoints().put(ep.getID(), ep);
+            plan.getEntryPoints().add(ep);
             ep.setPlan(plan);
             return true;
         }

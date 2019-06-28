@@ -53,10 +53,10 @@ public class AttributeHandler extends XMLHandler {
         }
         attr = element.getAttributes().getNamedItem("destinationPath").getTextContent();
 
-        if (!attr.isEmpty())
-        {
-            plan.setDestinationPath(attr);
-        }
+//        if (!attr.isEmpty())
+//        {
+//            plan.setDestinationPath(attr);
+//        }
 
         // insert into elements ma
         modelFactory.addElement(plan);

@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.engine.containers;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 /**
@@ -7,5 +8,5 @@ import java.util.Vector;
  */
 public class SolverResult implements Message {
     public long senderID;
-    public Vector<SolverVar> vars = new Vector<>();
+    public ArrayList<SolverVar> vars = new ArrayList<>();
 }

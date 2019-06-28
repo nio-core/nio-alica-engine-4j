@@ -2,6 +2,7 @@ package de.uniks.vs.jalica.engine.containers.messages;
 
 import de.uniks.vs.jalica.engine.containers.Message;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 /**
@@ -11,7 +12,7 @@ public class AlicaEngineInfo implements Message {
     public long senderID;
     public String masterPlan;
     public String currentPlan;
-    public Vector<Long> agentIDsWithMe = new Vector<>();
+    public ArrayList<Long> agentIDsWithMe = new ArrayList<>();
     public String currentTask;
     public String currentState;
     public String currentRole;

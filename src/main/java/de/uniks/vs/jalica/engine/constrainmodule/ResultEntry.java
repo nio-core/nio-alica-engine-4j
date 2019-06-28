@@ -1,103 +1,95 @@
 package de.uniks.vs.jalica.engine.constrainmodule;
 
-import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.AlicaTime;
-import de.uniks.vs.jalica.engine.model.Variable;
-import de.uniks.vs.jalica.engine.containers.SolverVar;
 import de.uniks.vs.jalica.engine.common.VarValue;
+import de.uniks.vs.jalica.engine.containers.SolverVar;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Vector;
+import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+/**
+ * 24.6.19
+ */
 
 public class ResultEntry {
 
-
     private long id;
-    AlicaEngine ae;
     HashMap<Long, VarValue> values;
-//    mutex valueLock;
+    Lock valueLock;
 
-    public ResultEntry(long agentID, AlicaEngine ae) {
-        this.id = agentID;
-        this.ae = ae;
-        this.values = new HashMap<>();
+    public ResultEntry(long robotId) {
+        this.id = robotId;
+    }
+
+    public ResultEntry(ResultEntry o) {
+        this.id = o.id;
+        this.values = new HashMap<>(o.values);
+        o.values.clear();
+        this.valueLock = new ReentrantLock();
     }
 
     long getId() {
-        return id;
+        return this.id;
     }
 
-    void addValue(long vid, Vector<Integer> result, AlicaTime time) {
-//        double now = ae.getAlicaClock().now().time;
-//        lock_guard<std::mutex> lock(valueLock);
-        VarValue existingVarValue = this.values.get(vid);
+    ResultEntry tranfer(ResultEntry o) {
+        this.id = o.id;
+        this.values = new HashMap<>(o.values);
+        o.values.clear();
+        return this;
+    }
 
-        if (existingVarValue != null) {
-            VarValue varValue = existingVarValue;
-            varValue.val = result;
-            varValue.lastUpdate = time;
-        }
-        else {
-            VarValue varValue = new VarValue(vid, result, time);
-            this.values.put(vid, varValue);
+    void addValue(long vid, Variant val, AlicaTime time) {
+//        std::lock_guard<std::mutex> lock(_valueLock);
+        synchronized (this.values) {
+            VarValue it = this.values.get(vid);
+            if (it != null) {
+                VarValue vv = it;
+                vv.val = val;
+                vv.lastUpdate = time;
+            } else {
+                this.values.put(vid, new VarValue(val, time));
+            }
         }
     }
 
     void clear() {
-        this.values.clear();
+//        std::lock_guard<std::mutex> lock(_valueLock);
+        synchronized (this.values) {
+            this.values.clear();
+        }
     }
 
-    Vector<SolverVar> getCommunicatableResults(long earliest) {
-        Vector<SolverVar> lv = new Vector<SolverVar>();
-//        double now = ae.getAlicaClock().now().time;
+    void getCommunicatableResults(AlicaTime earliest, ArrayList<SolverVar> oResult) {
+//        std::lock_guard<std::mutex> lock(_valueLock);
+        synchronized (this.values) {
+            for (Map.Entry<Long, VarValue> p : this.values.entrySet()) {
+                if (p.getValue().lastUpdate.time > earliest.time) {
+                    SolverVar sv = new SolverVar();
+                    sv.id = p.getKey();
+                    p.getValue().val.serializeTo(sv.value);
+                    oResult.add(sv);
+                }
 
-        for(VarValue varValue : values.values()) {
-
-            if (varValue.lastUpdate.time > earliest) {
-//            if (varValue.lastUpdate.time + ttl4Communication > now) {
-                SolverVar sv = new SolverVar();
-                sv.id = varValue.id;
-                sv.value = varValue.val;
-                lv.add(sv);
             }
         }
-        return lv;
     }
 
-    Vector<Integer> getValue(long vid, long ttl4Usage) {
-        double now = ae.getAlicaClock().now().time;
-//        lock_guard<std::mutex> lock(valueLock);
-        VarValue it = this.values.get(vid);
-
-        if(it != null) {
-            if(it.lastUpdate.time + ttl4Usage > now) {
-                return it.val;
+    Variant getValue(long vid, AlicaTime earliest) {
+//        std::lock_guard < std::mutex > lock(_valueLock);
+        synchronized (this.values) {
+            VarValue it = this.values.get(vid);
+            if (it != null) {
+                if (it.lastUpdate.time > earliest.time) {
+                    return it.val;
+                }
             }
         }
-        return null;
+        return new Variant();
     }
 
-    Vector<Vector<Integer>> getValues(Vector<Variable> query, long ttl4Usage) {
-        Vector<Vector<Integer>> ret = new Vector<>(query.size());
-//        int i = 0;
-        int nans = 0;
-
-//        for(auto it = query.begin(); it != query.end(); it++, i++) {
-//
-//            ret.get(i) = getValue((it).extractID(), ttl4Usage);
-//            if(ret.get(i) == null) nans++;
-//        }
-        for(int i = 0; i < query.size(); i++) {
-            ret.set(i,getValue(query.get(i).getID(), ttl4Usage));
-
-            if(ret.get(i) == null)
-                nans++;
-        }
-
-        if(nans == query.size()-1)
-            return null;
-
-        return ret;
-    }
 
 }

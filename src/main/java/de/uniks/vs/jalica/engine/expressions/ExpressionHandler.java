@@ -1,26 +1,22 @@
 package de.uniks.vs.jalica.engine.expressions;
 
-import de.uniks.vs.jalica.engine.AlicaEngine;
-import de.uniks.vs.jalica.engine.BasicUtilityFunction;
-import de.uniks.vs.jalica.engine.IConditionCreator;
-import de.uniks.vs.jalica.engine.IConstraintCreator;
-import de.uniks.vs.jalica.engine.IUtilityFunctionCreator;
-import de.uniks.vs.jalica.engine.PlanRepository;
+import de.uniks.vs.jalica.engine.*;
 import de.uniks.vs.jalica.engine.model.Condition;
 import de.uniks.vs.jalica.engine.model.Plan;
 import de.uniks.vs.jalica.engine.model.Transition;
 
 /**
  * Created by alex on 13.07.17.
+ * Updated 23.6.19
  */
 public class ExpressionHandler {
 
-    private final AlicaEngine ae;
     private final IConditionCreator conditionCreator;
-    private final IUtilityFunctionCreator utilityCreator;
+    private final IUtilityCreator utilityCreator;
     private final IConstraintCreator constraintCreator;
+    private final AlicaEngine ae;
 
-    public ExpressionHandler(AlicaEngine ae, IConditionCreator cc, IUtilityFunctionCreator uc, IConstraintCreator crc) {
+    public ExpressionHandler(AlicaEngine ae, IConditionCreator cc, IUtilityCreator uc, IConstraintCreator crc) {
         this.ae = ae;
         this.conditionCreator = cc;
         this.utilityCreator = uc;
@@ -67,6 +63,14 @@ public class ExpressionHandler {
             }
         }
 
+    }
+
+    boolean dummyTrue(RunningPlan rp) {
+        return true;
+    }
+
+    boolean dummyFalse(RunningPlan rp) {
+        return false;
     }
 
     private void attachConstraint(Condition c) {

@@ -35,9 +35,9 @@ public class JSONAttributeHandler extends JSONHandler {
         else if ("utilityThreshold".equals(entry.getKey())) {
             plan.setUtilityThreshold(CommonUtils.stod(entry.getValue().toString()));
         }
-        else if ("destinationPath".equals(entry.getKey())) {
-            plan.setDestinationPath(entry.getValue().toString());
-        }
+//        else if ("destinationPath".equals(entry.getKey())) {
+//            plan.setDestinationPath(entry.getValue().toString());
+//        }
         else {
             return false;
         }

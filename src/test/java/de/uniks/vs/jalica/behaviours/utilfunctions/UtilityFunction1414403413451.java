@@ -29,7 +29,7 @@ public class UtilityFunction1414403413451 extends BasicUtilityFunction {
         DummyTestSummand us = new DummyTestSummand(1.0, "Something", 1, relevantEntryPoints);
         ArrayList<USummand> utilSummands = new ArrayList<>();
         utilSummands.add(us);
-        UtilityFunction function = new UtilityFunction("test", utilSummands, 0.1, 0.1, plan);
+        UtilityFunction function = new UtilityFunction(0.1, 0.1, plan);
 
         return function;
 

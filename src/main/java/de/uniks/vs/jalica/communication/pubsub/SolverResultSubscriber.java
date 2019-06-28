@@ -11,6 +11,7 @@ import org.json.simple.parser.ParseException;
 import org.zeromq.ZMQ;
 import org.zeromq.ZMQException;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 public class SolverResultSubscriber extends ZMQSubscriber {
@@ -44,7 +45,7 @@ public class SolverResultSubscriber extends ZMQSubscriber {
                             JSONObject object = (JSONObject) sv;
                             SolverVar svs = new SolverVar();
                             svs.id = (long) object.get("id");
-                            svs.value = (Vector<Integer>) object.get("value");
+                            svs.value = (ArrayList<Integer>) object.get("value");
                             solverResult.vars.add(svs);
                         }
                         alicaZMQCommunication.handleSolverResult(solverResult);

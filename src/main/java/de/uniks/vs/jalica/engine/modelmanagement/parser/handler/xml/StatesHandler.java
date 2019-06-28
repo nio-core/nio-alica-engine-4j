@@ -59,7 +59,7 @@ public class StatesHandler extends XMLHandler {
             }
             else
             {
-                modelFactory.getAE().abort("SH: Unknown State type:", typePtr);
+                System.out.println("SH: Unknown State type: "+ typePtr);
             }
             return true;
         }

@@ -25,11 +25,11 @@ public class SimplePlanTree {
      * The id of the agent teamObserver which this tree refers teamObserver
      */
     private long agentID = -1;
-    private boolean newSimplePlanTree = true;
+    private boolean isNew = true;
     /**
      * The timestamp denoting when this tree was received.
      */
-    private double receiveTime;
+    private AlicaTime receiveTime;
     private ArrayList<Long> stateIds;
 
     public boolean containsPlan(AbstractPlan plan) {
@@ -45,9 +45,9 @@ public class SimplePlanTree {
         return false;
     }
 
-    public boolean isNewSimplePlanTree() {return newSimplePlanTree;}
+    public boolean isNewSimplePlanTree() {return isNew;}
 
-    public void setNewSimplePlanTree(boolean newSimplePlanTree) {this.newSimplePlanTree = newSimplePlanTree;}
+    public void setNewSimplePlanTree(boolean aNew) {this.isNew = aNew;}
 
     public HashSet<SimplePlanTree> getChildren() { return children; }
 
@@ -73,15 +73,25 @@ public class SimplePlanTree {
         return stateIds;
     }
 
-    public void setReceiveTime(double receiveTime) {
+    public void setReceiveTime(AlicaTime receiveTime) {
         this.receiveTime = receiveTime;
     }
 
-    public double getReceiveTime() {
+    public AlicaTime getReceiveTime() {
         return receiveTime;
     }
 
     public long getAgentID() {return agentID;}
 
     public void setAgentID(long agentID) {this.agentID = agentID;}
+
+    public void setProcessed() { this.isNew = false; }
+
+    public SimplePlanTree getParent() {
+        return parent;
+    }
+
+    public void setParent(SimplePlanTree parent) {
+        this.parent = parent;
+    }
 }

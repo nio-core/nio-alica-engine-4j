@@ -8,5 +8,5 @@ import de.uniks.vs.jalica.engine.planselection.IAssignment;
  */
 public interface ITaskAssignment {
 
-    Assignment getNextBestAssignment(IAssignment oldAss);
+    Assignment getNextBestAssignment(Assignment oldAss);
 }

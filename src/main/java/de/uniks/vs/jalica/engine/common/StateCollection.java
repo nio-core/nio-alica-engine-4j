@@ -12,6 +12,8 @@ import java.util.Vector;
 /**
  * Created by alex on 17.07.17.
  */
+
+@Deprecated
 public class StateCollection {
 
     private Vector<Long> agents = new Vector<>();
@@ -113,17 +115,17 @@ public class StateCollection {
         }
         //shared_ptr<vector<EntryPoint*> >eps = oldOne.getEntryPoints();
         EntryPoint ep;
-        for(short i = 0; i < oldOne.getEntryPointCount(); i++)
-        {
-            ep = oldOne.getEpAgentsMapping().getEntryPoint(i);
-            for(long rid : (oldOne.getAgentsWorking(ep)))
-            {
-                Long iter = CommonUtils.find(newOne.getAgentsWorking(ep), 0, newOne.getAgentsWorking(ep).size() - 1, rid);
-                if(iter != newOne.getAgentsWorking(ep).lastElement())
-                {
-                    this.setState(rid, oldOne.getAgentStateMapping().getState(rid));
-                }
-            }
-        }
+//        for(short i = 0; i < oldOne.getEntryPointCount(); i++)
+//        {
+//            ep = oldOne.getEpAgentsMapping().getEntryPoint(i);
+//            for(long rid : (oldOne.getAgentsWorking(ep).get()))
+//            {
+//                Long iter = CommonUtils.find(newOne.getAgentsWorking(ep), 0, newOne.getAgentsWorking(ep).size() - 1, rid);
+//                if(iter != newOne.getAgentsWorking(ep).lastElement())
+//                {
+//                    this.setState(rid, oldOne.getAgentStateMapping().getState(rid));
+//                }
+//            }
+//        }
     }
 }

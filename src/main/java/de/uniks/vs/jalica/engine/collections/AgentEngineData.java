@@ -2,89 +2,65 @@ package de.uniks.vs.jalica.engine.collections;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.idmanagement.IDManager;
-import de.uniks.vs.jalica.engine.model.ForallAgents;
-import de.uniks.vs.jalica.engine.model.Quantifier;
-import de.uniks.vs.jalica.engine.model.Role;
-import de.uniks.vs.jalica.engine.model.Variable;
+import de.uniks.vs.jalica.engine.model.*;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
+import java.util.*;
 
 /**
  * Created by alex on 14.07.17.
  */
 public class AgentEngineData {
 
-    private AlicaEngine ae;
-    private AgentProperties properties;
-    private Role currentRole;
-
+    private AlicaEngine engine;
+    private long id;
     // indicating which EntryPoints it completed.
     private SuccessMarks successMarks;
-    HashMap<String, Variable> domainVariables = new HashMap<>();
+    HashMap<Variable, DomainVariable> domainVariables = new HashMap<>();
 
-    //agent is considered active
-    private boolean active;
-    private double lastMessageTime;
+//    private AgentProperties properties;
+//    private Role currentRole;
+//    //agent is considered active
+//    private boolean active;
+//    private double lastMessageTime;
 
-    public AgentEngineData(AlicaEngine ae, AgentProperties properties) {
-        this.ae = ae;
-        this.active = false;
-        this.lastMessageTime = 0;
-        this.properties = properties;
+    public AgentEngineData(AlicaEngine engine,  long id) {
+        this.engine = engine;
+        this.id = id;
+        this.successMarks = new SuccessMarks();
         this.initDomainVariables();
-        this.successMarks = new SuccessMarks(ae);
-        this.currentRole = null;
     }
 
-    public boolean isActive() {
-        if(CommonUtils.AED_DEBUG_debug) System.out.println("AED: " + this.properties.getName() +" is " +this.active);
-        return active;
+    public void updateSuccessMarks( ArrayList succeededEps) {
+        this.successMarks.update(this.engine, succeededEps);
     }
 
-    public void setActive(boolean active) {
-        if(CommonUtils.AED_DEBUG_debug) System.out.println("AED: " + this.properties.getName() +"("+this.active+") "+" set " + active);
-        this.active = active;
+    public void clearSuccessMarks() {
+        this.successMarks.clear();
     }
 
-    public AgentProperties getProperties() {
-        return properties;
-    }
+    public void initDomainVariables() {
+        Set<Map.Entry<Long, Quantifier>> quantifiers = this.engine.getPlanRepository().getQuantifiers().entrySet();
 
-    public SuccessMarks getSuccessMarks() {
-        return successMarks;
-    }
+        for (Map.Entry<Long, Quantifier> quantifier : quantifiers) {
 
-    public void setSuccessMarks(SuccessMarks successMarks) {
-        this.successMarks = successMarks;
-    }
-
-    public void setLastMessageTime(double lastMessageTime) {
-        if(CommonUtils.AED_DEBUG_debug) System.out.println(this.lastMessageTime +" "+ lastMessageTime);
-        this.lastMessageTime = lastMessageTime;
-    }
-
-    public void initDomainVariables()
-    {
-        LinkedHashMap<Long, Quantifier> qs = ae.getPlanRepository().getQuantifiers();
-        //for (map<long, Quantifier*>::const_iterator iter = qs.begin(); iter != qs.end(); iter++)
-        for (Long key : qs.keySet())
-        {
-            if (qs.get(key) instanceof ForallAgents)
-            {
-                for (String s : qs.get(key).getDomainIdentifiers())
-                {
-                    Variable v = new Variable(IDManager.generateUniqueID(s), this.getProperties().getName() + "." + s,"");
-                    this.domainVariables.put(s,v);
-                }
+            for ( Variable variable : quantifier.getValue().getTemplateVariables()) {
+                DomainVariable domainVariable = new DomainVariable(makeUniqueId(variable.getName()), id + "." + variable.getName(), "", variable, id);
+                this.domainVariables.put(variable, domainVariable);
             }
         }
     }
 
-    public Variable getDomainVariable(String ident)
-    {
-        return this.domainVariables.get(ident);
+    public DomainVariable getDomainVariable(Variable templateVar) {
+        return this.domainVariables.get(templateVar);
+    }
+
+    public DomainVariable getDomainVariable(String name) {
+        CommonUtils.aboutCallNotification("AgentEngineData:getDomainVariable by name " + name);
+        Variable tv = this.engine.getPlanRepository().getVariables().get(name);
+        return getDomainVariable(tv);
+
+//        return this.domainVariables.get(ident);
 //        if(iterator != this.domainVariables.end())
 //        {
 //            return iterator.second;
@@ -96,7 +72,41 @@ public class AgentEngineData {
 //        }
     }
 
+    private long makeUniqueId( String s)  {
+        Long uniqueID = IDManager.generateUniqueID(s);
+        assert(!this.engine.getModelManager().idExists(uniqueID));
+        return uniqueID;
+    }
 
+    public SuccessMarks getSuccessMarks() {
+        return successMarks;
+    }
+
+    public void setSuccessMarks(SuccessMarks successMarks) {
+        this.successMarks = successMarks;
+    }
+
+
+
+//    public boolean isActive() {
+//        if(CommonUtils.AED_DEBUG_debug) System.out.println("AED: " + this.properties.getName() +" is " +this.active);
+//        return active;
+//    }
+//
+//    public void setActive(boolean active) {
+//        if(CommonUtils.AED_DEBUG_debug) System.out.println("AED: " + this.properties.getName() +"("+this.active+") "+" set " + active);
+//        this.active = active;
+//    }
+//
+//    public AgentProperties getProperties() {
+//        return properties;
+//    }
+//
+//    public void setLastMessageTime(double lastMessageTime) {
+//        if(CommonUtils.AED_DEBUG_debug) System.out.println(this.lastMessageTime +" "+ lastMessageTime);
+//        this.lastMessageTime = lastMessageTime;
+//    }
+//
 //    public long makeUniqueId(String s)
 //    {
 //        long ret = (long)this.getProperties().extractID() << 32;
@@ -113,14 +123,14 @@ public class AgentEngineData {
 ////        }
 //        return ret;
 //    }
-
-    public Role getCurrentRole() {
-        return currentRole;
-    }
-
-    public void setCurrentRole(Role currentRole) {
-        this.currentRole = currentRole;
-    }
-
-    public double getLastMessageTime() { return lastMessageTime; }
+//
+//    public Role getCurrentRole() {
+//        return currentRole;
+//    }
+//
+//    public void setCurrentRole(Role currentRole) {
+//        this.currentRole = currentRole;
+//    }
+//
+//    public double getLastMessageTime() { return lastMessageTime; }
 }

@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.engine.modelmanagement.parser.handler.json;
 
+import de.uniks.vs.jalica.engine.model.Synchronisation;
 import de.uniks.vs.jalica.engine.modelmanagement.ModelFactory;
 import de.uniks.vs.jalica.engine.model.Plan;
 import de.uniks.vs.jalica.engine.common.SyncTransition;
@@ -20,9 +21,9 @@ public class JSONSynchonisationsHandler extends JSONHandler {
             JSONArray value = (JSONArray) entry.getValue();
 
             for (Object jsonObject : value ) {
-                SyncTransition st = modelFactory.createSyncTransition((JSONObject)jsonObject);
+                Synchronisation st = modelFactory.createSynchronisation((JSONObject)jsonObject);
                 st.setPlan(plan);
-                plan.getSyncTransitions().add(st);
+                plan.getSynchronisations().add(st);
             }
             return true;
         }

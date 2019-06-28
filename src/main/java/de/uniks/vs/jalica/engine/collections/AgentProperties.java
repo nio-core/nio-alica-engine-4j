@@ -13,6 +13,7 @@ import java.util.HashMap;
  * Created by alex on 14.07.17.
  */
 public class AgentProperties {
+
     private long id;
     private String name;
     private AlicaEngine ae;
@@ -20,28 +21,42 @@ public class AgentProperties {
     private HashMap<String, Characteristic> characteristics;
 //    private HashMap<Long, Capability> capabilities;
 
+    public AgentProperties() {}
+
     public AgentProperties(AlicaEngine ae, String name) {
         this.ae = ae;
         this.name = name;
+        this.defaultRole = extractDefaultRole(this.name, this.ae.getSystemConfig());
+        this.characteristics = extractAgentCharacteristics(this.name, this.ae.getSystemConfig());
         this.id = extractID(this.name, this.ae.getSystemConfig());
 //        this.capabilities = ae.getPlanRepository().getCapabilities();
-        this.characteristics = extractAgentCharacteristics(this.name, this.ae.getSystemConfig());
-        this.defaultRole = extractDefaultRole(this.name, this.ae.getSystemConfig());
+
+//        this.defaultRole = (*sc)["Globals"]->tryGet<std::string>("NOROLESPECIFIED", "Globals", "Team", name.c_str(), "DefaultRole", NULL);
+
+//        std::shared_ptr<std::vector<std::string>> caps = (*sc)["Globals"]->getNames("Globals", "Team", name.c_str(), NULL);
+//        for (const std::string& s : *caps) {
+//            if (s.compare("ID") == 0 || s.compare("DefaultRole") == 0) {
+//                continue;
+//            }
+//            std::string key = s;
+//            std::string kvalue = (*sc)["Globals"]->get<std::string>("Globals", "Team", name.c_str(), s.c_str(), NULL);
+//        for (const Capability* cap : engine->getPlanRepository()->getCapabilities()) {
+//            if (cap->getName().compare(key) == 0) {
+//                for (const CapValue* val : cap->getCapValues()) {
+//                    // transform(kvalue.begin(), kvalue.end(), kvalue.begin(), ::tolower);
+//                    if (val->getName().compare(kvalue) == 0) {
+//                        _characteristics.emplace(key, std::unique_ptr<const Characteristic>(new Characteristic(cap, val)));
+//                    }
+//                }
+//            }
+//        }
+//        }
     }
 
     private String extractDefaultRole(String name, SystemConfig sc) {
         Object _defaultRole = sc.get("Globals").get("Team." + name + ".defaultRole") == null ?
                 sc.get("Globals").get("Team." + name + ".DefaultRole") : sc.get("Globals").get("Team." + name + ".defaultRole");
         return _defaultRole != null ? (String) _defaultRole : "None";
-    }
-
-    private long extractID(String name, SystemConfig sc) {
-        Object id = sc.get("Globals").get("Team." + name + ".ID");
-
-        if (id != null)
-            return Integer.valueOf((String) id);
-        else
-           return IDManager.generateUUID(this).asLong();
     }
 
     private HashMap<String, Characteristic> extractAgentCharacteristics(String name, SystemConfig sc) {
@@ -60,6 +75,15 @@ public class AgentProperties {
             characteristicMap.put(key, characteristic);
         }
         return characteristicMap;
+    }
+
+    public long extractID(String name, SystemConfig sc) {
+        Object id = sc.get("Globals").get("Team." + name + ".ID");
+
+        if (id != null)
+            return Integer.valueOf((String) id);
+        else
+            return IDManager.generateUUID(this).asLong();
     }
 
 //    private void extractCharacteristicsWithCapabilities(String name, SystemConfig sc) {
@@ -96,15 +120,15 @@ public class AgentProperties {
 //        }
 //    }
 
-    public long extractID() {
-        return id;
-    }
+    public String getDefaultRole() { return defaultRole; }
 
     public String getName() {
         return name;
     }
 
-    public String getDefaultRole() { return defaultRole; }
+    public long getID() {
+        return id;
+    }
 
     public HashMap<String, Characteristic> getCharacteristics() {
         return characteristics;

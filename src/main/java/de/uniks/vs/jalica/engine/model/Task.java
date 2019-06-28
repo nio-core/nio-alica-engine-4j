@@ -2,27 +2,17 @@ package de.uniks.vs.jalica.engine.model;
 
 /**
  * Created by alex on 13.07.17.
+ * Updated 26.6.19
  */
 public class Task extends AlicaElement {
 
     public static final long IDLEID = -1;
+    public static final String IDLENAME = "IDLE-TASK";
 
-    String description;
     TaskRepository taskRepository;
-    boolean defaultTask;
 
-
-    public Task(boolean defaultTask) {
-        super();
-        this.defaultTask = defaultTask;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    public Task() {
+        this.taskRepository = null;
     }
 
     public void setTaskRepository(TaskRepository taskRepository) {

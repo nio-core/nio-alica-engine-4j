@@ -35,7 +35,7 @@ public class Constraint1403773741874 extends BasicConstraint {
     public void getConstraint(ProblemDescriptor c, RunningPlan rp) {
         /*PROTECTED REGION ID(cc1403773741874) ENABLED START*/
         CommonUtils.aboutCallNotification();
-        System.out.println("RTC: " + rp.getPlan().getName());
+        System.out.println("RTC: " + rp.getActivePlan().getName());
         /*PROTECTED REGION END*/
     }
 

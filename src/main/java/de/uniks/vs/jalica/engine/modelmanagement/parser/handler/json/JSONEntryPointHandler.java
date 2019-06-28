@@ -22,7 +22,7 @@ public class JSONEntryPointHandler extends JSONHandler {
 
             for (Object jsonObject : entryPoints ) {
                 EntryPoint ep = modelFactory.createEntryPoint((JSONObject)jsonObject);
-                plan.getEntryPoints().put(ep.getID(), ep);
+                plan.getEntryPoints().add(ep);
                 ep.setPlan(plan);
             }
             return true;

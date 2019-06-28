@@ -9,7 +9,7 @@ public class TransitionCondition1413201052549 extends BasicCondition {
     @Override
     public boolean evaluate(RunningPlan rp) {
         /*PROTECTED REGION ID(1413201052549) ENABLED START*/
-        if(rp.getOwnID() == 8)
+        if(rp.getAlicaEngine().getTeamManager().getLocalAgentID()== 8)
         {
             return TestWorldModel.getOne().isTransitionCondition1413201052549();
         }

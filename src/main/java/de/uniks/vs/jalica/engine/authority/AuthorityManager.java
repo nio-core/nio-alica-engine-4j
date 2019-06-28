@@ -1,6 +1,7 @@
 package de.uniks.vs.jalica.engine.authority;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
+import de.uniks.vs.jalica.engine.AlicaTime;
 import de.uniks.vs.jalica.engine.containers.messages.AllocationAuthorityInfo;
 import de.uniks.vs.jalica.engine.Assignment;
 import de.uniks.vs.jalica.engine.RunningPlan;
@@ -8,194 +9,134 @@ import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.containers.EntryPointAgents;
 
 import java.util.Vector;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Created by alex on 13.07.17.
+ * Updated 24.6.19
  */
 public class AuthorityManager {
 
     Vector<AllocationAuthorityInfo> queue = new Vector<>();
-    AlicaEngine ae;
-    long ownID;
+    AlicaEngine engine;
+    long localAgentID;
+    Lock mutex;
 
     public AuthorityManager(AlicaEngine ae) {
-        this.ae = ae;
-        this.ownID = -1;
+        this.engine = ae;
+        this.localAgentID = -1;
     }
 
     public void init() {
-        this.ownID = ae.getTeamObserver().getOwnID();
-    }
-
-    public void tick(RunningPlan rp) {
-        if (CommonUtils.AM_DEBUG_debug) System.out.println("AM: Tick called!" );
-//        lock_guard<mutex> lock(mu);
-        processPlan(rp);
-        this.queue.clear();
-    }
-
-    private void processPlan(RunningPlan rp) {
-
-        if (rp == null || rp.isBehaviour())
-            return;
-
-        if (rp.getCycleManagement().needsSending()) {
-            sendAllocation(rp);
-            rp.getCycleManagement().sent();
-        }
-
-        if (CommonUtils.AM_DEBUG_debug) System.out.println("AM: Queue size of AuthorityInfos is " + this.queue.size() );
-
-        for (int i = 0; i < this.queue.size(); i++) {
-
-            if (authorityMatchesPlan(this.queue.get(i), rp)) {
-
-                if (CommonUtils.AM_DEBUG_debug)  System.out.println( "AM: Found AuthorityInfo, which matches the plan " + rp.getPlan().getName() );
-                rp.getCycleManagement().handleAuthorityInfo(this.queue.get(i));
-                this.queue.remove(this.queue.get(i));
-                i--;
-            }
-        }
-
-        for (RunningPlan c : rp.getChildren()) {
-            processPlan(c);
-        }
-
-    }
-
-//    private boolean authorityMatchesPlan2(AllocationAuthorityInfo allocationAuthorityInfo, RunningPlan runningPlan) {
-////        assert(!p.isRetired());
-////        // If a plan is not retired and does not have a parent, it must be masterplan
-////        if (p.isRetired()) {
-////            return false;
-////        }
-//        RunningPlan parent = runningPlan.getParent();
-//
-//        if ((parent == null && allocationAuthorityInfo.parentState == -1) ||
-//                (parent != null && parent.getActiveState() != null && parent.getActiveState().extractID() == allocationAuthorityInfo.parentState)) {
-//
-////        if (runningPlan.getActivePlan().extractID() == allocationAuthorityInfo.planID) {
-//            if (runningPlan.getPlan().extractID() == allocationAuthorityInfo.planID) {
-//                return true;
-//            } else if (allocationAuthorityInfo.planType != -1 && runningPlan.getPlanType() != null && runningPlan.getPlanType().extractID() == allocationAuthorityInfo.planType) {
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-
-    private boolean authorityMatchesPlan(AllocationAuthorityInfo allocationAuthorityInfo, RunningPlan runningPlan) {
-        RunningPlan parent = runningPlan.getParent();
-//        auto shared = runningPlan.getParent().lock();
-
-		if (runningPlan.getParent() != null) {
-            if (CommonUtils.AM_DEBUG_debug) System.out.println( "AM: Parent-Weak is NOT expired!");
-            if (CommonUtils.AM_DEBUG_debug) System.out.println( "AM: Parent-ActiveState is: " + (parent.getActiveState() != null ? parent.getActiveState().getID() : null));
-            if (CommonUtils.AM_DEBUG_debug) System.out.println( "AM: AAI-ParentState is: " + allocationAuthorityInfo.parentState);
-		}
-		else {
-            if (CommonUtils.AM_DEBUG_debug) System.out.println(  "AM: Parent-Weak is expired!");
-            if (CommonUtils.AM_DEBUG_debug) System.out.println(  "AM: Current-ActiveState is: " + runningPlan.getActiveState().getID());
-            if (CommonUtils.AM_DEBUG_debug) System.out.println( "AM: AAI-ParentState is: " + allocationAuthorityInfo.parentState);
-		}
-
-        if ((parent == null && allocationAuthorityInfo.parentState == -1)
-                || (parent != null && parent.getActiveState() != null
-                && parent.getActiveState().getID() == allocationAuthorityInfo.parentState)) {
-
-            if (runningPlan.getPlan().getID() == allocationAuthorityInfo.planID) {
-                return true;
-            }  else if (allocationAuthorityInfo.planType != -1 && runningPlan.getPlanType() != null && runningPlan.getPlanType().getID() == allocationAuthorityInfo.planType) {
-                return true;
-            }
-        }
-        return false;
+        this.localAgentID = this.engine.getTeamManager().getLocalAgentID();
     }
 
     public void handleIncomingAuthorityMessage(AllocationAuthorityInfo aai) {
-
-        if (ae.getTeamObserver().isAgentIgnored(aai.senderID)) {
+        AlicaTime now = this.engine.getAlicaClock().now();
+        if (this.engine.getTeamManager().isAgentIgnored(aai.senderID)) {
             return;
         }
-
-        if (aai.senderID != this.ownID) {
-            ae.getTeamObserver().messageRecievedFrom(aai.senderID);
-
-            if (aai.senderID > this.ownID) {
-
-                //notify TO that evidence about other robots is available
+        if ((aai.senderID) != this.localAgentID) {
+            this.engine.getTeamManager().setTimeLastMsgReceived(aai.senderID, now);
+            if ((aai.senderID) > this.localAgentID) {
+                // notify TO that evidence about other robots is available
                 for (EntryPointAgents epr : aai.entryPointAgents) {
-
                     for (long rid : epr.agents) {
-
-                        if (rid != this.ownID) {
-                            ae.getTeamObserver().messageRecievedFrom(rid);
+                        if (rid != this.localAgentID) {
+                            this.engine.getTeamManager().setTimeLastMsgReceived(rid, now);
                         }
                     }
                 }
             }
         }
-
-        if (CommonUtils.AM_DEBUG_debug) {
-            String ss = "";
-            ss += "AM: Received AAI Assignment from " + aai.senderID + " is: ";
-            for (EntryPointAgents entryPointAgents : aai.entryPointAgents) {
-                ss += "EP: " + entryPointAgents.entrypoint + " Agents: ";
-                for (long agentID : entryPointAgents.agents) {
-                    ss += agentID + ", ";
-                }
-                ss += "\n";
-            }
-            System.out.println(ss);
-        }
-
+        System.out.println("AM: Received AAI Assignment: " + aai);
         {
-//                lock_guard<mutex> lock(mu);
-            this.queue.add(aai);
+//            std::lock_guard<std::mutex> lock(this.mutex);
+            synchronized (this.queue) {
+                this.queue.add(aai);
+            }
         }
     }
 
-    public void close() {CommonUtils.aboutNoImpl();}
+    public void tick(RunningPlan rp) {
+        System.out.println("AM: Tick called! <<<<<<");
+//        std::lock_guard<std::mutex> lock(this.mutex);
+        synchronized (this.queue) {
+            if (rp != null) {
+                processPlan(rp);
+            }
+            this.queue.clear();
+        }
+    }
 
-    public void sendAllocation(RunningPlan p) {
+    void processPlan(RunningPlan rp) {
+        if (rp.isBehaviour()) {
+            return;
+        }
+        if (rp.getCycleManagement().needsSending()) {
+            sendAllocation(rp);
+            rp.getCycleManagement().sent();
+        }
 
-        if (!this.ae.isMaySendMessages()) {
+        System.out.println("AM: Queue size of AuthorityInfos is " + this.queue.size());
+
+        for (int i = 0; i < this.queue.size(); i++) {
+            if (authorityMatchesPlan(this.queue.get(i), rp)) {
+                System.out.println("AM: Found AuthorityInfo, which matches the plan " + rp.getActivePlan().getName());
+                rp.getCycleManagement().handleAuthorityInfo(this.queue.get(i));
+                this.queue.remove(this.queue.get(i));
+                i--;
+            }
+        }
+        for (RunningPlan c : rp.getChildren()) {
+            processPlan(c);
+        }
+    }
+    
+    void sendAllocation(RunningPlan p)
+    {
+        if (!this.engine.maySendMessages()) {
             return;
         }
         AllocationAuthorityInfo aai = new AllocationAuthorityInfo();
-        Assignment ass = p.getAssignment();
 
-        for (int i = 0; i < ass.getEntryPointCount(); i++) {
-            EntryPointAgents entryPointAgents = new EntryPointAgents();
-            entryPointAgents.entrypoint = ass.getEpAgentsMapping().getEntryPoint(i).getID();
+    Assignment ass = p.getAssignment();
+        for (int i = 0; i < ass.getEntryPointCount(); ++i) {
+            EntryPointAgents epRobots = new EntryPointAgents();
+            epRobots.entrypoint = ass.getEntryPoint(i).getID();
+            ass.getAgentsWorking(i, epRobots.agents);
 
-            for (long robot : ass.getAgentsWorking(entryPointAgents.entrypoint)) {
-                entryPointAgents.agents.add(robot);
-            }
-            aai.entryPointAgents.add(entryPointAgents);
+            aai.entryPointAgents.add(epRobots);
         }
 
-        RunningPlan shared = p.getParent();
-        aai.parentState = ((shared == null || shared.getActiveState() == null) ? -1 : shared.getActiveState().getID());
-        aai.planID = p.getPlan().getID();
-        aai.authority = this.ownID; // OOOOOOOH
-        aai.senderID = this.ownID;
-        aai.planType = (p.getPlanType() == null ? -1 : p.getPlanType().getID());
+        RunningPlan parent = p.getParent();
+        aai.parentState = ((parent != null && parent.getActiveState() != null) ? parent.getActiveState().getID() : -1);
+        aai.planID = p.getActivePlan().getID();
+        aai.authority = this.localAgentID;
+        aai.senderID = this.localAgentID;
+        aai.planType = (p.getPlanType() != null ? p.getPlanType().getID() : -1);
 
-        if(CommonUtils.AM_DEBUG_debug) {
-            String ss = "";
-            ss += "AM: Sending AAI Assignment from " + aai.senderID + " is: " + "\n";
-
-            for (EntryPointAgents entryPointAgents : aai.entryPointAgents) {
-                ss += "EP: " + entryPointAgents.entrypoint + " Agents: ";
-                for (long agentID : entryPointAgents.agents) {
-                    ss += agentID + ", ";
-                }
-                ss += "\n";
-            }
-            System.out.println(ss);
-        }
-
-        this.ae.getCommunicator().sendAllocationAuthority(aai);
+        System.out.println("AM: Sending AAI Assignment: " + aai);
+        this.engine.getCommunicator().sendAllocationAuthority(aai);
     }
+
+    boolean authorityMatchesPlan(AllocationAuthorityInfo aai, RunningPlan p)
+    {
+        assert(!p.isRetired());
+        // If a plan is not retired and does not have a parent, it must be masterplan
+        if (p.isRetired()) {
+            return false;
+        }
+    RunningPlan parent = p.getParent();
+        if ((parent == null && aai.parentState == -1) ||
+                (parent != null && parent.getActiveState() != null && parent.getActiveState().getID() == aai.parentState)) {
+        if (p.getActivePlan().getID() == aai.planID) {
+            return true;
+        } else if (aai.planType != -1 && p.getPlanType() != null && p.getPlanType().getID() == aai.planType) {
+            return true;
+        }
+    }
+        return false;
+    }
+    public void close() {}
 }

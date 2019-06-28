@@ -13,7 +13,7 @@ public class ErrorHandler extends XMLHandler {
     public boolean handleIt(Node node, Plan plan, ModelFactory modelFactory) {
 
         String val = node.getNodeName();
-        modelFactory.getAE().abort("EH: Unhandled Plan Child: ", val);
+        System.out.println("EH: Unhandled Plan Child: "+ val);
         return true;
     }
 }

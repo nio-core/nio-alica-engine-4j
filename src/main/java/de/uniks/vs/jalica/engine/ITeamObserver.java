@@ -17,29 +17,35 @@ import java.util.LinkedHashMap;
  */
 public interface ITeamObserver {
 
-    public long getOwnID() ;
+//    public long getOwnID() ;
+
+//    boolean updateTeamPlanTrees();
 
     void tick(RunningPlan rootNode);
 
     void doBroadCast(ArrayList<Long> msg);
 
-    AgentEngineData getOwnEngineData();
+//    AgentEngineData getOwnEngineData();
 
-    void notifyAgentLeftPlan(AbstractPlan plan);
+//    void notifyAgentLeftPlan(AbstractPlan plan);
 
-    ArrayList<Long> getAvailableAgentIDs();
+//    ArrayList<Long> getAvailableAgentIDs();
+
+//    void cleanOwnSuccessMarks(RunningPlan root);
 
     int successesInPlan(Plan plan);
 
-    LinkedHashMap<Long, SimplePlanTree> getTeamPlanTrees();
+//    LinkedHashMap<Long, SimplePlanTree> getTeamPlanTrees();
 
-    SuccessCollection getSuccessCollection(Plan plan);
+//    SuccessCollection getSuccessCollection(Plan plan);
 
-    AgentProperties getOwnAgentProperties();
+//    AgentProperties getOwnAgentProperties();
 
-    int teamSize();
+//    int teamSize();
 
     void handlePlanTreeInfo(PlanTreeInfo pti);
 
     void updateSuccessCollection(Plan plan, SuccessCollection epSuccessMapping);
+
+    SuccessCollection createSuccessCollection(Plan plan);
 }

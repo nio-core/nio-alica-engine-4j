@@ -1,5 +1,5 @@
 package de.uniks.vs.jalica.engine;
 
-public interface IUtilityFunctionCreator {
+public interface IUtilityCreator {
     BasicUtilityFunction createUtility(long utilityfunctionConfId);
 }

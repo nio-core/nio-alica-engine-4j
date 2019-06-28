@@ -4,6 +4,7 @@ import de.uniks.vs.jalica.common.FileSystem;
 import de.uniks.vs.jalica.communication.dummy_proxy.AlicaDummyCommunication;
 import de.uniks.vs.jalica.engine.*;
 import de.uniks.vs.jalica.engine.common.SystemConfig;
+import de.uniks.vs.jalica.engine.idmanagement.IDManager;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,7 +19,7 @@ public class InitShutdownTest {
 
     private IBehaviourCreator behaviourCreator;
     private IConditionCreator conditionCreator;
-    private IUtilityFunctionCreator utilityFunctionCreator;
+    private IUtilityCreator utilityFunctionCreator;
     private IConstraintCreator constraintCreator;
 
     @Before
@@ -32,7 +33,7 @@ public class InitShutdownTest {
 
         systemConfig = new SystemConfig("nase", root, log, config);
 
-        alicaEngine = new AlicaEngine();
+        alicaEngine = new AlicaEngine(new IDManager(), "RoleSet", systemConfig, "MasterPlan", false);
 
 //        bc = new BehaviourCreator();
 //        cc = new ConditionCreator();
@@ -44,8 +45,7 @@ public class InitShutdownTest {
 
     @Test
     public void test() {
-        Assert.assertTrue("Unable teamObserver initialise the Alica Engine!", alicaEngine.init(systemConfig, behaviourCreator, conditionCreator, utilityFunctionCreator, constraintCreator,
-                "RoleSet", "MasterPlan", "plans/", false));
+        Assert.assertTrue("Unable teamObserver initialise the Alica Engine!", alicaEngine.init( behaviourCreator, conditionCreator, utilityFunctionCreator, constraintCreator));
     }
 
     @After

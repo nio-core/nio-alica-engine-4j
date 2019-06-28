@@ -21,7 +21,8 @@ public class Subscribe extends DomainBehaviour {
         /*PROTECTED REGION END*/
     }
 
-    public void run(String msg) {
+    @Override
+    public void run(Object msg) {
         /*PROTECTED REGION ID(run1528125245680) ENABLED START*/ //Add additional options here
         CommonUtils.aboutImplIncomplete();
         ReentrantLock lock = new ReentrantLock();
@@ -39,7 +40,7 @@ public class Subscribe extends DomainBehaviour {
         }
 
         if (count >= countMax)
-            this.setSuccess(true);
+            this.setSuccess();
         /*PROTECTED REGION END*/
     }
 
@@ -47,5 +48,10 @@ public class Subscribe extends DomainBehaviour {
         /*PROTECTED REGION ID(initialiseParameters1528125245680) ENABLED START*/ //Add additional options here
         CommonUtils.aboutNoImpl();
         /*PROTECTED REGION END*/
+    }
+
+    @Override
+    public void run() {
+        CommonUtils.aboutNoImpl();
     }
 }

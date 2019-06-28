@@ -6,21 +6,20 @@ package de.uniks.vs.jalica.engine.model;
 public class SuccessState extends TerminalState {
 
     public SuccessState() {
-        this.terminal = true;
-        this.successState = true;
-        this.failureState = false;
+        super(StateType.SUCCESS);
     }
 
-    public String toString()
-    {
-        String ss = "#SuccessState: " + this.name + " " + this.id + "\n";
-        ss += "\t Result:" + "\n";
-        ss += "\t InTransitions: " + this.inTransitions.size() + "\n";
-        if(this.inTransitions.size() != 0)
-        {
-            for(Transition t : this.getInTransitions())
-            {
-                ss += "\t" + t.getID() + " " + t.getName() + "\n";
+    public String toString() {
+        String indent = "";
+        String ss = "";
+        ss += indent +  "#SuccessState: " + getName() + " " + getID() + "\n";
+        ss += indent + "\t Result:" + "\n";
+        ss += indent + "\t InTransitions: " + getInTransitions().size() + "\n";
+
+        if (getInTransitions().size() != 0) {
+
+            for (Transition t : getInTransitions()) {
+                ss += indent + "\t" + t.getID() + " " + t.getName() + "\n";
             }
         }
         ss += "#SuccessState" + "\n";

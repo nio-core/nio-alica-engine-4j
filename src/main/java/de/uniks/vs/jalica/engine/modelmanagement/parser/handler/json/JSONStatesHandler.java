@@ -54,7 +54,7 @@ public class JSONStatesHandler extends JSONHandler {
 //                    plan.getStates().add(fail);
 //                }
                 else {
-                    modelFactory.getAE().abort("SH: Unknown State type:", jsonObject.get("type").toString());
+                    System.out.println("SH: Unknown State type:"+ jsonObject.get("type").toString());
                 }
             }
             return true;

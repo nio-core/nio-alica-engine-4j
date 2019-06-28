@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 /**
  * Created by alex on 13.07.17.
+ * Updated 23.6.19
  */
 public class RoleSet extends AlicaElement {
 
@@ -16,6 +17,7 @@ public class RoleSet extends AlicaElement {
      */
     private long usableWithPlanID;
     private boolean isDefault;
+    private String fileName;
 
     public void setIsDefault(boolean isDefault) {
         this.isDefault = isDefault;
@@ -34,6 +36,36 @@ public class RoleSet extends AlicaElement {
     }
     public void setDefaultPriority(double defaultPriority) {
         this.defaultPriority = defaultPriority;
+    }
+
+    String getFileName()  { return this.fileName; }
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public ArrayList<Role> getRoles() {
+        ArrayList<Role> roles = new ArrayList<>();
+
+        for (RoleTaskMapping mapping: this.roleTaskMappings) {
+            roles.add(mapping.getRole());
+        }
+        return roles;
+    }
+
+    @Override
+    public String toString() {
+        String indent = "";
+        String ss = "";
+        ss += indent + "#RoleSet: " + getName() + " " + this.getID() + "\n";
+        ss += indent + "\t UsableWithPlanID: " + this.usableWithPlanID + "\n";
+        ArrayList<Role> roles = getRoles();
+        ss += indent + "\t Contains Mappings: " + roles.size() + "\n";
+
+        for ( Role role : roles) {
+            ss += role.toString();
+        }
+        ss += "#EndRoleSet" + "\n";
+        return ss;
     }
 }
 

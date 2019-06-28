@@ -16,7 +16,7 @@ public class DefendMid extends BasicBehaviour {
     }
 
     @Override
-    public void run(String msg) {
+    public void run(Object msg) {
         /*PROTECTED REGION ID(run1402489351885) ENABLED START*/ //Add additional options here
         CommonUtils.aboutCallNotification("DefendMid " );
         /*PROTECTED REGION END*/
@@ -26,6 +26,11 @@ public class DefendMid extends BasicBehaviour {
     protected void initialiseParameters() {
         /*PROTECTED REGION ID(initialiseParameters1402489351885) ENABLED START*/ //Add additional options here
         /*PROTECTED REGION END*/
+    }
+
+    @Override
+    public void run() {
+
     }
 
     /*PROTECTED REGION ID(methods1402489351885) ENABLED START*/ //Add additional methods here

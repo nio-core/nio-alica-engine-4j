@@ -22,7 +22,7 @@ public class Attack extends DomainBehaviour {
     }
 
     @Override
-    public void run(String msg) {
+    public void run(Object msg) {
         /*PROTECTED REGION ID(run1402488848841) ENABLED START*/ //Add additional options here
         CommonUtils.aboutCallNotification("Attack " + callCounter );
         callCounter++;
@@ -35,6 +35,11 @@ public class Attack extends DomainBehaviour {
         callCounter = 0;
         initCounter++;
         /*PROTECTED REGION END*/
+    }
+
+    @Override
+    public void run() {
+
     }
 
     /*PROTECTED REGION ID(methods1402488848841) ENABLED START*/ //Add additional methods here

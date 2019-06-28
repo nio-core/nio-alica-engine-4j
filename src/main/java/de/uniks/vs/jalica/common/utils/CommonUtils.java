@@ -1,7 +1,15 @@
 package de.uniks.vs.jalica.common.utils;
 
+import com.sun.tools.javac.util.Pair;
+import de.uniks.vs.jalica.common.CVCondition;
+import de.uniks.vs.jalica.common.Comparable;
 import de.uniks.vs.jalica.common.TimerEvent;
+import de.uniks.vs.jalica.engine.AgentStatePairs;
 import de.uniks.vs.jalica.engine.AlicaTime;
+import de.uniks.vs.jalica.engine.ScopedReadLock;
+import de.uniks.vs.jalica.engine.constrainmodule.ResultEntry;
+import de.uniks.vs.jalica.engine.model.State;
+import de.uniks.vs.jalica.engine.planselection.views.UniquePartialAssignmentSuccessView;
 
 import java.util.*;
 
@@ -22,6 +30,8 @@ public class CommonUtils {
     public static final boolean SC_DEBUG_debug = false;
     public static final boolean BP_DEBUG_debug = false;
     public static final boolean PS_DEBUG_debug = false;
+    public static final boolean SP_DEBUG_debug = false;
+    public static final boolean SM_DEBUG_debug = false;
 
     // Communication
     public static final boolean COMM_debug              = false;
@@ -53,6 +63,7 @@ public class CommonUtils {
     public static final boolean MISSING_IMPLEMENTATION_debug    = true;
     public static final boolean IMPLEMENTATION_INCOMPLETE_debug = true;
     public static final boolean CALL_debug                      = true;
+    public static final boolean WARNING_debug                   = true;
     public static final boolean ERROR_debug                     = true;
 
     public static final int EXIT_FAILURE = 1;
@@ -97,11 +108,15 @@ public class CommonUtils {
         return newAgents;
     }
 
-    public static <T> void copy(Set<T> agentsInState, int start, int end, Vector<T> agents) {
-        T[] array = (T[]) agentsInState.toArray();
+    public static <T> void copy(Set<T> from, int start, int end, Vector<T> target) {
+        T[] array = (T[]) from.toArray();
 
         for (int i = start; i <= end; i++)
-            agents.add(array[i]);
+            target.add(array[i]);
+    }
+
+    public static <T> void copy(ArrayList<T> from, ArrayList<T> target) {
+        target.addAll(from);
     }
 
     public static int stoi(String string) {
@@ -145,6 +160,20 @@ public class CommonUtils {
         }
     }
 
+    public static void aboutWarning(String msg) {
+        if (!WARNING_debug)
+            return;
+
+        try {
+            throw new Exception();
+        } catch (Exception e) {
+            System.out.flush();
+            StackTraceElement[] stackTrace = e.getStackTrace();
+            System.out.println("Warning:" + msg + "   (" + stackTrace[2]+")");
+            System.out.flush();
+        }
+    }
+
     public static void aboutImplIncomplete() {
 
         if(!IMPLEMENTATION_INCOMPLETE_debug)
@@ -156,6 +185,18 @@ public class CommonUtils {
             System.out.flush();
             StackTraceElement[] stackTrace = e.getStackTrace();
             System.out.println(stackTrace[1] + " ->  Implementation incomplete!");
+            System.out.flush();
+        }
+    }
+
+
+    public static void aboutImplIncomplete(String s) {
+        try {
+            throw new Exception();
+        } catch (Exception e) {
+            System.out.flush();
+            StackTraceElement[] stackTrace = e.getStackTrace();
+            System.out.println(stackTrace[1] + " ->  Implementation incomplete: " + s );
             System.out.flush();
         }
     }
@@ -259,5 +300,91 @@ public class CommonUtils {
             return false;
         }
         return true;
+    }
+
+
+    public static void resizeIntArrayList(ArrayList<Integer> arrayList, int size, int initial) {
+        int oldSize = arrayList.size();
+        arrayList.ensureCapacity(size);
+
+        for (;oldSize < arrayList.size(); oldSize++) {
+            arrayList.add(Integer.valueOf(initial));
+        }
+    }
+
+    public static <T> void move(ArrayList<T> from, ArrayList<T> to) {
+        to.addAll(from);
+        from.clear();
+    }
+
+    public static <T> int upperBound(ArrayList<T> list, T entry, Comparable comparable) {
+
+        if (list.isEmpty())
+            return 0;
+
+        for (int i = 0; i < list.size(); i++) {
+            if (comparable.compareTo(entry, list.get(i))) {
+                return i;
+            }
+        }
+        return list.size()-1;
+    }
+
+//    public static int lower_bound(Comparable[] arr, Comparable key) {
+//        int len = arr.length;
+//        int lo = 0;
+//        int hi = len-1;
+//        int mid = (lo + hi)/2;
+//        while (true) {
+//            int cmp = arr[mid].compareTo(key);
+//            if (cmp == 0 || cmp > 0) {
+//                hi = mid-1;
+//                if (hi < lo)
+//                    return mid;
+//            } else {
+//                lo = mid+1;
+//                if (hi < lo)
+//                    return mid<len-1?mid+1:-1;
+//            }
+//            mid = (lo + hi)/2;
+//        }
+//    }
+//
+//    public static int upperBound(Comparable[] arr, Comparable key) {
+//        int len = arr.length;
+//        int lo = 0;
+//        int hi = len-1;
+//        int mid = (lo + hi)/2;
+//        while (true) {
+//            int cmp = arr[mid].compareTo(key);
+//            if (cmp == 0 || cmp < 0) {
+//                lo = mid+1;
+//                if (hi < lo)
+//                    return mid<len-1?mid+1:-1;
+//            } else {
+//                hi = mid-1;
+//                if (hi < lo)
+//                    return mid;
+//            }
+//            mid = (lo + hi)/2;
+//        }
+//    }
+
+    public static void aboutWarningNotification(boolean condition, String msg) {
+
+        if (condition){
+            try {
+                throw new Exception();
+            } catch (Exception e) {
+                System.out.flush();
+                StackTraceElement[] stackTrace = e.getStackTrace();
+                System.out.print(stackTrace[1] + " ->  called  ("+msg+")");
+                if (stackTrace.length > 2)
+                    System.out.println("  (from " + stackTrace[2] + ")");
+                else
+                    System.out.println();
+                System.out.flush();
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@ package de.uniks.vs.jalica.engine.containers;
 
 import de.uniks.vs.jalica.engine.common.SyncData;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 /**
@@ -9,5 +10,5 @@ import java.util.Vector;
  */
 public class SyncTalk {
     public  long senderID;
-    public Vector<SyncData> syncData = new Vector<>();
+    public  ArrayList<SyncData> syncData = new ArrayList<>();
 }

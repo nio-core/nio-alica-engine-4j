@@ -22,7 +22,7 @@ public class PlanTreeInfoSubscriber extends ZMQSubscriber {
 
             @Override
             public void run() {
-                if (CommonUtils.COMM_debug) System.out.println("PTI-Sub("+alicaZMQCommunication.getAe().getAgentName()+"): Thread started" );
+                if (CommonUtils.COMM_debug) System.out.println("PTI-Sub("+alicaZMQCommunication.getAe().getTeamManager().getLocalAgent().getName()+"): Thread started" );
                 while (true) {
 
                     try {
@@ -31,7 +31,7 @@ public class PlanTreeInfoSubscriber extends ZMQSubscriber {
                     if (!string.startsWith(topic))
                         continue;
 
-                    if (CommonUtils.COMM_debug) System.out.println("PTI-Sub(" + alicaZMQCommunication.getAe().getAgentName() +") " + string);
+                    if (CommonUtils.COMM_debug) System.out.println("PTI-Sub(" + alicaZMQCommunication.getAe().getTeamManager().getLocalAgent().getName() +") " + string);
 
 
                         JSONObject jsonObject = (JSONObject)JSONValue.parseWithException(string.replace(topic, ""));

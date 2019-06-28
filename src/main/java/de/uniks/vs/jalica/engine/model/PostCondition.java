@@ -5,21 +5,21 @@ import java.util.Vector;
 
 /**
  * Created by alex on 03.08.17.
+ * Updated 23.6.19
  */
 public class PostCondition extends Condition {
 
     public PostCondition() {
-        variables = new Vector<>();
-        quantifiers = new ArrayList<>();
-    }
-
-    PostCondition(long id) {
         super();
-        this.id = id;
     }
 
     @Override
     public String toString() {
-        return  "#PostCondition: " + this.name + " " + this.id  +"\n\t ConditionString: " + this.conditionString + "\n#PostCondition\n";
+        String  ss = "";
+        String indent = "";
+        ss += indent + "#PostCondition: " + getName() + " " + getID() + "\n";
+        ss += indent + "\t ConditionString: " + getConditionString() + "\n";
+        ss += indent + "#PostCondition" + "\n";
+        return ss;
     }
 }

@@ -2,18 +2,19 @@ package de.uniks.vs.jalica.engine.roleassignment;
 
 import de.uniks.vs.jalica.engine.collections.AgentProperties;
 import de.uniks.vs.jalica.engine.model.Role;
+import de.uniks.vs.jalica.engine.teammanagement.Agent;
 
 /**
  * Created by alex on 14.07.17.
  */
 public class RoleUtility {
-    private final AgentProperties agentProperties;
+    private final Agent agent;
     private final Role role;
     private final double utilityValue;
 
-    public RoleUtility(double utilityValue, AgentProperties agentProperties, Role role) {
+    public RoleUtility(double utilityValue, Agent agent, Role role) {
         this.utilityValue = utilityValue;
-        this.agentProperties = agentProperties;
+        this.agent = agent;
         this.role = role;
     }
 
@@ -21,8 +22,8 @@ public class RoleUtility {
         return role;
     }
 
-    public AgentProperties getAgentProperties() {
-        return agentProperties;
+    public Agent getAgent() {
+        return agent;
     }
 
     public double getUtilityValue() {

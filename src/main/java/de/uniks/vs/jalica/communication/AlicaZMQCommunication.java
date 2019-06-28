@@ -3,7 +3,7 @@ package de.uniks.vs.jalica.communication;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.communication.discovery.StdDiscovery;
 import de.uniks.vs.jalica.communication.pubsub.*;
-import de.uniks.vs.jalica.engine.AlicaCommunication;
+import de.uniks.vs.jalica.engine.IAlicaCommunication;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.containers.messages.AlicaEngineInfo;
 import de.uniks.vs.jalica.engine.containers.messages.AllocationAuthorityInfo;
@@ -14,12 +14,10 @@ import de.uniks.vs.jalica.engine.containers.SyncReady;
 import de.uniks.vs.jalica.engine.containers.SyncTalk;
 import org.zeromq.*;
 
-import java.util.ArrayList;
-
 /**
  * Created by alex on 29.06.18.
  */
-public class AlicaZMQCommunication extends AlicaCommunication {
+public class AlicaZMQCommunication extends IAlicaCommunication {
 
     private final MessageTopics topics;
 
@@ -47,7 +45,8 @@ public class AlicaZMQCommunication extends AlicaCommunication {
         System.setProperty("java.net.preferIPv4Stack", "true");
     }
 
-    public boolean init(ArrayList<Long> ids) {
+//    public boolean init(ArrayList<Long> ids) {
+    public boolean init() {
         topics.loadTopics();
         ZContext context = new ZContext();
         initializeMsgPublishers(context);

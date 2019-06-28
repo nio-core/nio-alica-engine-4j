@@ -2,7 +2,7 @@ package de.uniks.vs.jalica.engine.common;
 
 import de.uniks.vs.jalica.engine.constrainmodule.VariableSyncModule;
 
-public class NotifyTimer extends Thread {
+public class NotifyTimer<V> extends Thread {
 
     private final long interval;
     private final VariableSyncModule variableSyncModule;

@@ -18,7 +18,7 @@ public abstract class DomainBehaviour extends BasicBehaviour {
     public DomainBehaviour(String name, AlicaEngine ae) {
         super(name);
         this.systemConfig = ae.getSystemConfig();
-        this.agentName = ae.getAgentName();
+        this.agentName = ae.getTeamManager().getLocalAgent().getName();
         this.ownID = systemConfig.getOwnAgentID();
     }
 

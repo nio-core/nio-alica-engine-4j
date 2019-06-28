@@ -9,6 +9,7 @@ import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.common.FileSystem;
 import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.behaviours.UtilityFunctionCreator;
+import de.uniks.vs.jalica.engine.idmanagement.IDManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,10 +35,10 @@ public class AlicaInitTest {
         FileSystem.PACKAGE_SRC = "src/test/java/de/uniks/vs/jalica";
 
         SystemConfig sc = new SystemConfig("nase");
-        AlicaEngine alicaEngine = new AlicaEngine();
+        AlicaEngine alicaEngine = new AlicaEngine(new IDManager(),"Roleset", sc, "MasterPlan", false);
         alicaEngine.setAlicaClock(new AlicaSystemClock());
         alicaEngine.setCommunicator(new AlicaZMQCommunication(alicaEngine));
-        boolean result = alicaEngine.init(sc, bc, cc, uc, crc, "Roleset", "MasterPlan", "roles/", false);
+        boolean result = alicaEngine.init(bc, cc, uc, crc);
 
         if(!result)
             System.out.println("Unable teamObserver initialise the Alica Engine!");

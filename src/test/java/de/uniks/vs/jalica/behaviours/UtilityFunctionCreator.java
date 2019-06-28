@@ -1,19 +1,19 @@
 package de.uniks.vs.jalica.behaviours;
 
-import de.uniks.vs.jalica.behaviours.tests.UtilityFunction1402488437260;
 import de.uniks.vs.jalica.behaviours.helloworld.testcommunication1528124991817.UtilityFunction1528124991817;
 import de.uniks.vs.jalica.behaviours.helloworld.testcommunicationmaster1528124971225.UtilityFunction1528124971225;
+import de.uniks.vs.jalica.behaviours.tests.UtilityFunction1402488437260;
 import de.uniks.vs.jalica.behaviours.utilfunctions.UtilityFunction1414403396328;
 import de.uniks.vs.jalica.behaviours.utilfunctions.UtilityFunction1414403413451;
-import de.uniks.vs.jalica.engine.BasicUtilityFunction;
-import de.uniks.vs.jalica.engine.IUtilityFunctionCreator;
-import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.behaviours.utilfunctions.UtilityFunction1482486227468;
+import de.uniks.vs.jalica.common.utils.CommonUtils;
+import de.uniks.vs.jalica.engine.BasicUtilityFunction;
+import de.uniks.vs.jalica.engine.IUtilityCreator;
 
 /**
  * Created by alex on 13.07.17.
  */
-public class UtilityFunctionCreator implements IUtilityFunctionCreator {
+public class UtilityFunctionCreator implements IUtilityCreator {
 
     public UtilityFunctionCreator() { }
 

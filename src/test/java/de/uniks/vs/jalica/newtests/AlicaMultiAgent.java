@@ -11,6 +11,7 @@ import de.uniks.vs.jalica.communication.AlicaZMQCommunication;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.common.FileSystem;
 import de.uniks.vs.jalica.engine.common.SystemConfig;
+import de.uniks.vs.jalica.engine.idmanagement.IDManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,10 +54,10 @@ public class AlicaMultiAgent {
 //        ASSERT_TRUE(ae->init(bc, cc, uc, crc, "RolesetTA", "MultiAgentTestMaster", ".", true))
 //                << "Unable teamObserver initialise the Alica Engine!";
         SystemConfig sc = new SystemConfig("nase");
-        AlicaEngine alicaEngine1 = new AlicaEngine();
+        AlicaEngine alicaEngine1 = new AlicaEngine(new IDManager(), "RolesetTA", sc, "MultiAgentTestMaster", true);
         alicaEngine1.setAlicaClock(new AlicaSystemClock());
         alicaEngine1.setCommunicator(new AlicaZMQCommunication(alicaEngine1));
-        boolean result = alicaEngine1.init(sc, bc, cc, uc, crc, "RolesetTA", "MultiAgentTestMaster", "roles/", true);
+        boolean result = alicaEngine1.init(bc, cc, uc, crc );
         Assertions.assertTrue(result);
 
 //        sc->setHostname("hairy");
@@ -66,10 +67,10 @@ public class AlicaMultiAgent {
 //        ASSERT_TRUE(ae2->init(bc, cc, uc, crc, "RolesetTA", "MultiAgentTestMaster", ".", true))
 //                << "Unable teamObserver initialise the Alica Engine!";
         SystemConfig sc2 = new SystemConfig("hairy");
-        AlicaEngine alicaEngine2 = new AlicaEngine();
+        AlicaEngine alicaEngine2 = new AlicaEngine(new IDManager(), "RolesetTA", sc2, "MultiAgentTestMaster", true);
         alicaEngine2.setAlicaClock(new AlicaSystemClock());
         alicaEngine2.setCommunicator(new AlicaZMQCommunication(alicaEngine2));
-        result = alicaEngine2.init(sc2, bc, cc, uc, crc, "RolesetTA", "MultiAgentTestMaster", "roles/", true);
+        result = alicaEngine2.init(bc, cc, uc, crc);
         Assertions.assertTrue(result);
 //
 //        ae->start();
@@ -113,8 +114,8 @@ public class AlicaMultiAgent {
             if (i > 11 && i < 15) {
                 Assertions.assertEquals(alicaEngine1.getPlanBase().getRootNode().getActiveState().getID(), 1413201213955l);
                 Assertions.assertEquals(alicaEngine2.getPlanBase().getRootNode().getActiveState().getID(), 1413201213955l);
-                Assertions.assertEquals((alicaEngine1.getPlanBase().getRootNode().getChildren().get(0)).getPlan().getName(), "MultiAgentTestPlan");
-                Assertions.assertEquals((alicaEngine2.getPlanBase().getRootNode().getChildren().get(0)).getPlan().getName(), "MultiAgentTestPlan");
+                Assertions.assertEquals((alicaEngine1.getPlanBase().getRootNode().getChildren().get(0)).getActivePlan().getName(), "MultiAgentTestPlan");
+                Assertions.assertEquals((alicaEngine2.getPlanBase().getRootNode().getChildren().get(0)).getActivePlan().getName(), "MultiAgentTestPlan");
             }
             if (i == 15)
             {
