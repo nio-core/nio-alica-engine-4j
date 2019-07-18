@@ -10,6 +10,7 @@ import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.engine.common.NotifyTimer;
 import de.uniks.vs.jalica.engine.containers.SolverResult;
 import de.uniks.vs.jalica.engine.containers.SolverVar;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 
 import java.util.ArrayList;
 import java.util.concurrent.locks.Lock;
@@ -34,6 +35,7 @@ public class VariableSyncModule {
 
     public VariableSyncModule(AlicaEngine ae) {
         this.ae = ae;
+        this.publishData = new SolverResult();
         this.running = false;
         this.timer = null;
         this.distThreshold = 0;
@@ -60,7 +62,7 @@ public class VariableSyncModule {
         this.ttl4Usage = new AlicaTime().inMilliseconds(Long.valueOf((String) sc.get("Alica").get("Alica.CSPSolving.SeedTTL4Usage")));
         this.distThreshold = (Double.valueOf((String) sc.get("Alica").get("Alica.CSPSolving.SeedMergingThreshold")));
 
-        long ownID = this.ae.getTeamManager().getLocalAgentID();
+        ID ownID = this.ae.getTeamManager().getLocalAgentID();
         synchronized (this) {
             this.ownResults = new ResultEntry(ownID);
             this.store.add(ownResults);
@@ -112,7 +114,7 @@ public class VariableSyncModule {
 //            std::lock_guard < std::mutex > lock(_mutex);
             synchronized (this.store) {
 
-                int index = CommonUtils.upperBound(this.store, newEntry, (Comparable<ResultEntry>) (a, b) -> a.getId() < b.getId());
+                int index = CommonUtils.upperBound(this.store, newEntry, (Comparable<ResultEntry>) (a, b) -> a.getId().asLong() < b.getId().asLong());
                 this.store.add(index, newEntry);
 //                auto agent_sorted_loc = std::upperBound (_store.begin(), _store.end(), newEntry,
 //                [](const std::unique_ptr < ResultEntry > & a, const std::unique_ptr < ResultEntry > & b){

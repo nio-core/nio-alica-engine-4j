@@ -1,49 +1,50 @@
 package de.uniks.vs.jalica.engine;
 
+import de.uniks.vs.jalica.common.ExtArrayList;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.collections.SuccessCollection;
 import de.uniks.vs.jalica.engine.common.Pair;
 import de.uniks.vs.jalica.engine.containers.messages.AllocationAuthorityInfo;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.EntryPoint;
 import de.uniks.vs.jalica.engine.model.Plan;
 import de.uniks.vs.jalica.engine.model.State;
 import de.uniks.vs.jalica.engine.planselection.PartialAssignment;
-import de.uniks.vs.jalica.engine.views.AgentsInStateView;
-import de.uniks.vs.jalica.engine.views.AllAgentsView;
-import de.uniks.vs.jalica.engine.views.AssignmentSuccessView;
-import de.uniks.vs.jalica.engine.views.AssignmentView;
+import de.uniks.vs.jalica.engine.teammanagement.view.AgentsInStateView;
+import de.uniks.vs.jalica.engine.teammanagement.view.AllAgentsView;
+import de.uniks.vs.jalica.engine.teammanagement.view.AssignmentSuccessView;
+import de.uniks.vs.jalica.engine.teammanagement.view.AssignmentView;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 /**
  * Created by alex on 17.07.17.
  * update 21.6.19
  */
-public class Assignment  {
+public class Assignment {
     Plan plan;
-    ArrayList<AgentStatePairs> assignmentData;
+    ExtArrayList<AgentStatePairs> assignmentData;
     SuccessCollection successData;
     double lastUtility;
 
-    public Assignment(){
+    public Assignment() {
         this.plan = null;
-        this.assignmentData = new ArrayList<>();
+        this.assignmentData = new ExtArrayList<>();
         this.successData = new SuccessCollection();
         this.lastUtility = 0.0;
     }
 
-    public Assignment( Plan p) {
+    public Assignment(Plan p) {
         this.plan = p;
-        this.assignmentData = new ArrayList<>(p.getEntryPoints().size());
+        this.assignmentData = new ExtArrayList<>(AgentStatePairs::new, p.getEntryPoints().size());
         this.successData = new SuccessCollection(p);
         this.lastUtility = 0.0;
     }
 
     public Assignment(PartialAssignment pa) {
         this.plan = pa.getPlan();
-        this.assignmentData = new ArrayList<>(pa.getPlan().getEntryPoints().size());
+        this.assignmentData = new ExtArrayList<>(AgentStatePairs::new, pa.getPlan().getEntryPoints().size());
         this.successData = pa.getSuccessData();
         this.lastUtility = pa.getUtility().getMax();
 
@@ -62,19 +63,19 @@ public class Assignment  {
         }
     }
 
-    public Assignment( Plan p,  AllocationAuthorityInfo aai) {
+    public Assignment(Plan p, AllocationAuthorityInfo aai) {
         this.plan = p;
-        this.assignmentData = new ArrayList<>(p.getEntryPoints().size());
+        this.assignmentData = new ExtArrayList<>(AgentStatePairs::new, p.getEntryPoints().size());
         this.successData = new SuccessCollection(p);
         this.lastUtility = 0.0;
 
         int numEps = this.plan.getEntryPoints().size();
 
         for (int i = 0; i < numEps; ++i) {
-            assert(p.getEntryPoints().get(i).getID() == aai.entryPointAgents.get(i).entrypoint);
+            assert (p.getEntryPoints().get(i).getID() == aai.entryPointAgents.get(i).entrypoint);
             this.assignmentData.get(i).getData().ensureCapacity(aai.entryPointAgents.get(i).agents.size());
 
-            for (long agent : aai.entryPointAgents.get(i).agents) {
+            for (ID agent : aai.entryPointAgents.get(i).agents) {
                 this.assignmentData.get(i).add(agent, this.plan.getEntryPoints().get(i).getState());
             }
         }
@@ -88,11 +89,11 @@ public class Assignment  {
         ArrayList<EntryPoint> eps = this.plan.getEntryPoints();
         int numEps = eps.size();
 
-        for (int i = 0; i < numEps; ++i) {
-            int c = this.assignmentData.get(i).size() + this.successData.getData().get(i).size();
+        for (int i = 0; i < numEps; i++) {
+            int c = this.assignmentData.get(i).size() + this.successData.getData().get(i).size(); // TODO: successData init with size ExtArrayList
 
             //TODO: reduce
-            if (!eps.get(i).getCardinality().contains(c)) {
+            if (! eps.get(i).getCardinality().contains(c)) {
                 return false;
             }
         }
@@ -124,10 +125,10 @@ public class Assignment  {
         if (this.plan == null) {
             return false;
         }
-    ArrayList<EntryPoint> eps = this.plan.getEntryPoints();
-     int numEps = eps.size();
+        ArrayList<EntryPoint> eps = this.plan.getEntryPoints();
+        int numEps = eps.size();
 
-     for (int i = 0; i < numEps; ++i) {
+        for (int i = 0; i < numEps; ++i) {
 
             if (!this.successData.getData().get(i).isEmpty() && this.successData.getData().get(i).size() >= eps.get(i).getMinCardinality()) {
                 return true;
@@ -136,9 +137,9 @@ public class Assignment  {
         return false;
     }
 
-    public boolean hasAgent(long id) {
+    public boolean hasAgent(ID id) {
 
-        for ( AgentStatePairs asps : this.assignmentData) {
+        for (AgentStatePairs asps : this.assignmentData) {
 
             if (asps.hasAgent(id)) {
                 return true;
@@ -147,22 +148,22 @@ public class Assignment  {
         return false;
     }
 
-     public EntryPoint getEntryPointOfAgent(long id) {
+    public EntryPoint getEntryPointOfAgent(ID id) {
         int i = 0;
-        for ( AgentStatePairs asps : this.assignmentData) {
+        for (AgentStatePairs asps : this.assignmentData) {
 
             if (asps.hasAgent(id)) {
-            return this.plan.getEntryPoints().get(i);
+                return this.plan.getEntryPoints().get(i);
             }
             i++;
         }
         return null;
     }
 
-    public State getStateOfAgent(long id) {
+    public State getStateOfAgent(ID id) {
 
-        for ( AgentStatePairs asps : this.assignmentData) {
-        State s = asps.getStateOfAgent(id);
+        for (AgentStatePairs asps : this.assignmentData) {
+            State s = asps.getStateOfAgent(id);
 
             if (s != null) {
                 return s;
@@ -171,12 +172,12 @@ public class Assignment  {
         return null;
     }
 
-    public void getAllAgents(ArrayList<Long> oAgents) {
+    public void getAllAgents(ArrayList<ID> oAgents) {
 //        std::transform(asps.begin(), asps.end(), std::back_inserter(o_agents), [](AgentStatePair asp) -> essentials::IdentifierConstPtr { return asp.first; });
 
-        for ( AgentStatePairs asps : this.assignmentData) {
+        for (AgentStatePairs asps : this.assignmentData) {
 
-            for( Pair<Long, State> asp :asps.getData()) {
+            for (Pair<ID, State> asp : asps.getData()) {
 
                 if (!oAgents.contains(asp.fst))
                     oAgents.add(asp.fst);
@@ -185,43 +186,43 @@ public class Assignment  {
     }
 
 
-    private ArrayList<Long> getAgentsInState(int sid) {
+    private ArrayList<ID> getAgentsInState(int sid) {
         State s = this.plan.getStateByID(sid);
         return s != null ? agentsInStateView(this, s) : new ArrayList<>();
     }
 
-    private ArrayList<Long> agentsInStateView(Assignment assignment, State state) {
+    private ArrayList<ID> agentsInStateView(Assignment assignment, State state) {
         AgentStatePairs asp = assignment.getAgentStates(state.getEntryPoint());
         return asp.getAgentsInState(state);
     }
 
-    AgentStatePairs getAgentStates( EntryPoint ep) {
+    AgentStatePairs getAgentStates(EntryPoint ep) {
         return this.assignmentData.get(ep.getIndex());
     }
 
-    public void getAgentsWorking(EntryPoint ep, ArrayList<Long> oAgents) {
+    public void getAgentsWorking(EntryPoint ep, ArrayList<ID> oAgents) {
         AgentStatePairs asps = getAgentStates(ep);
         oAgents.ensureCapacity(asps.size());
 //        std::transform(asp.begin(), asp.end(), std::back_inserter(o_agents), [](AgentStatePair asp) -> essentials::IdentifierConstPtr { return asp.first; });
-        for (Pair<Long, State> asp : asps.getData()) {
+        for (Pair<ID, State> asp : asps.getData()) {
 
             if (!oAgents.contains(asp.fst))
                 oAgents.add(asp.fst);
         }
     }
 
-    public void getAgentsWorking(int idx, ArrayList<Long> oAgents) {
+    public void getAgentsWorking(int idx, ArrayList<ID> oAgents) {
         AgentStatePairs asps = getAgentStates(idx);
         oAgents.ensureCapacity(asps.size());
 //        std::transform(asp.begin(), asp.end(), std::back_inserter(o_agents), [](AgentStatePair asp) -> essentials::IdentifierConstPtr { return asp.first; });
-        for (Pair<Long, State> asp : asps.getData()) {
+        for (Pair<ID, State> asp : asps.getData()) {
 
             if (!oAgents.contains(asp.fst))
                 oAgents.add(asp.fst);
         }
     }
 
-    void getAgentsWorkingAndFinished( EntryPoint ep, ArrayList<Long> oAgents) {
+    void getAgentsWorkingAndFinished(EntryPoint ep, ArrayList<ID> oAgents) {
         ArrayList<EntryPoint> eps = this.plan.getEntryPoints();
         int numEps = eps.size();
 
@@ -230,9 +231,9 @@ public class Assignment  {
             if (ep == eps.get(i)) {
                 oAgents.ensureCapacity(this.assignmentData.get(i).size() + this.successData.getData().get(i).size());
 
-                for ( AgentStatePairs asps : this.assignmentData) {
+                for (AgentStatePairs asps : this.assignmentData) {
 
-                    for( Pair<Long, State> asp :asps.getData()) {
+                    for (Pair<ID, State> asp : asps.getData()) {
 
                         if (!oAgents.contains(asp.fst))
                             oAgents.add(asp.fst);
@@ -246,10 +247,10 @@ public class Assignment  {
         }
     }
 
-    public void getAgentsInState(State s, ArrayList<Long> oAgents) {
+    public void getAgentsInState(State s, ArrayList<ID> oAgents) {
         AgentStatePairs agentStatePairs = this.assignmentData.get(s.getEntryPoint().getIndex());
 
-        for (Pair<Long, State> asp : agentStatePairs.getData()) {
+        for (Pair<ID, State> asp : agentStatePairs.getData()) {
 
             if (asp.snd == s) {
                 oAgents.add(asp.fst);
@@ -298,101 +299,97 @@ public class Assignment  {
         }
     }
 
-    public boolean updateAgent(long agent, EntryPoint e) {
+    public boolean updateAgent(ID agent, EntryPoint e) {
         return updateAgent(agent, e, null);
     }
 
-    boolean updateAgent(long agent,  EntryPoint e,  State s) {
+    boolean updateAgent(ID agent, EntryPoint e, State s) {
         boolean found = false;
         boolean inserted = false;
         int i = 0;
-        assert(s == null || s.getEntryPoint() == e);
+        assert (s == null || s.getEntryPoint() == e);
 
         for (AgentStatePairs asps : this.assignmentData) {
             boolean isTargetEp = e == this.plan.getEntryPoints().get(i);
 
             if (isTargetEp) {
 
-            for (Pair<Long, State> asp : asps.getData()) {
+                for (Pair<ID, State> asp : asps.getData()) {
 
-                if (asp.fst == agent) {
-                    // assume a null state signals no change
+                    if (asp.fst == agent) {
+                        // assume a null state signals no change
 
-                    if (s == null || asp.snd == s) {
-                        return false;
-                    } else {
-                        asp.snd = s;
-                        return true;
+                        if (s == null || asp.snd == s) {
+                            return false;
+                        } else {
+                            asp.snd = s;
+                            return true;
+                        }
+                    }
+                }
+                asps.add(agent, s != null ? s : e.getState());
+                inserted = true;
+            } else if (!found) {
+                for (int j = 0; j < asps.size(); j++) {
+                    if (asps.getData().get(j).fst == agent) {
+                        found = true;
+                        asps.removeAt(j);
+                        break;
                     }
                 }
             }
-            asps.add(agent, s != null ? s : e.getState());
-            inserted = true;
-        } else if (!found) {
-            for (int j = 0; j < asps.size(); j++) {
-                if (asps.getData().get(j).fst == agent) {
-                    found = true;
-                    asps.removeAt(j);
-                    break;
-                }
+            if (found && inserted) {
+                return true;
             }
+            ++i;
         }
-        if (found && inserted) {
-            return true;
-        }
-        ++i;
-    }
         return inserted;
     }
 
-    void moveAllFromTo( EntryPoint scope, State from,  State to)
-    {
-        assert(from.getEntryPoint() == scope);
-        assert(to.getEntryPoint() == scope);
+    void moveAllFromTo(EntryPoint scope, State from, State to) {
+        assert (from.getEntryPoint() == scope);
+        assert (to.getEntryPoint() == scope);
 
         for (int i = 0; i < this.assignmentData.size(); i++) {
 
             if (scope == this.plan.getEntryPoints().get(i)) {
 
-                for (Pair<Long, State> asp : this.assignmentData.get(i).getData()) {
+                for (Pair<ID, State> asp : this.assignmentData.get(i).getData()) {
 
                     if (asp.snd == from) {
                         asp.snd = to;
                     }
+                }
             }
         }
     }
-    }
 
-    void setAllToInitialState( ArrayList<Long> agents,  EntryPoint ep)
-    {
+    void setAllToInitialState(ArrayList<ID> agents, EntryPoint ep) {
         for (int i = 0; i < this.assignmentData.size(); i++) {
-         boolean isTargetEp = ep.getIndex() == i;
+            boolean isTargetEp = ep.getIndex() == i;
 
-         if (isTargetEp) {
-             State s = ep.getState();
+            if (isTargetEp) {
+                State s = ep.getState();
 
-             for (long id : agents) {
-                Pair<Long, State> it = null;
+                for (ID id : agents) {
+                    Pair<ID, State> it = null;
 
-                for(Pair<Long, State> asp:  this.assignmentData.get(i).getData()) {
+                    for (Pair<ID, State> asp : this.assignmentData.get(i).getData()) {
 
-                    if ( asp.fst == id) {
-                        it = asp;
+                        if (asp.fst == id) {
+                            it = asp;
+                        }
                     }
-
+                    if (it == null) {
+                        this.assignmentData.get(i).getData().add(new Pair<ID, State>(id, s));
+                    } else {
+                        it.snd = s;
+                    }
                 }
-
-                if (it == null) {
-                    this.assignmentData.get(i).getData().add(new Pair<Long, State>(id, s));
-                } else {
-                    it.snd = s;
-                }
+            } else {
+                this.assignmentData.get(i).removeAllIn(agents);
             }
-        } else {
-            this.assignmentData.get(i).removeAllIn(agents);
         }
-    }
     }
 
     Assignment adaptTaskChangesFrom(Assignment as) {
@@ -408,7 +405,7 @@ public class Assignment  {
 //            AgentStatePairs n = as.this.assignmentData[i];
             AgentStatePairs n = as.assignmentData.get(i);
 
-            for (Pair<Long, State> asp : n.getData()) {
+            for (Pair<ID, State> asp : n.getData()) {
                 State s = this.assignmentData.get(i).getStateOfAgent(asp.fst);
                 if (s != null) {
                     asp.snd = s;
@@ -419,16 +416,16 @@ public class Assignment  {
         return as;
     }
 
-    boolean removeAllIn( ArrayList<Long> limit,  State watchState) {
+    boolean removeAllIn(ArrayList<Long> limit, State watchState) {
         boolean ret = false;
         int epCount = this.assignmentData.size();
 
         for (int i = 0; i < epCount; ++i) {
 
             for (int j = this.assignmentData.get(i).size() - 1; j >= 0; --j) {
-                long id = this.assignmentData.get(i).getData().get(j).fst;
+                ID id = this.assignmentData.get(i).getData().get(j).fst;
 
-                if ( limit.contains(id)) {
+                if (limit.contains(id)) {
                     ret = ret || this.assignmentData.get(i).getData().get(j).snd == watchState;
                     this.assignmentData.get(i).removeAt(j);
                 }
@@ -437,14 +434,14 @@ public class Assignment  {
         return ret;
     }
 
-    boolean removeAllNotIn( ArrayList<Long> limit,  State watchState) {
+    boolean removeAllNotIn(ArrayList<ID> limit, State watchState) {
         boolean ret = false;
         int epCount = this.assignmentData.size();
 
         for (int i = 0; i < epCount; ++i) {
 
             for (int j = this.assignmentData.get(i).size() - 1; j >= 0; --j) {
-                long id = this.assignmentData.get(i).getData().get(j).fst;
+                ID id = this.assignmentData.get(i).getData().get(j).fst;
 
                 if (!limit.contains(id)) {
                     ret = ret || this.assignmentData.get(i).getData().get(j).snd == watchState;
@@ -454,13 +451,14 @@ public class Assignment  {
         }
         return ret;
     }
-    void removeAgent(long agent) {
-     int epCount = this.assignmentData.size();
+
+    void removeAgent(ID agent) {
+        int epCount = this.assignmentData.size();
 
         for (int i = 0; i < epCount; ++i) {
 
-            Pair<Long, State> it = null;
-            for (Pair<Long, State> asp : this.assignmentData.get(i).getData()) {
+            Pair<ID, State> it = null;
+            for (Pair<ID, State> asp : this.assignmentData.get(i).getData()) {
 
                 if (agent == asp.fst)
                     it = asp;
@@ -476,28 +474,30 @@ public class Assignment  {
 
     public void fillPartial(PartialAssignment pa) {
         int epCount = this.assignmentData.size();
-        ArrayList<Long> allAgents = pa.getProblem().getAgents();
+        ArrayList<ID> allAgents = pa.getProblem().getAgents();
 
         for (int i = 0; i < epCount; ++i) {
-            for ( Pair<Long, State> asp : this.assignmentData.get(i).getData()) {
+            for (Pair<ID, State> asp : this.assignmentData.get(i).getData()) {
 
 //                if (allAgents.contains(asp.fst)) {
 
-                    for (int index = 0; index < allAgents.size(); index++) {
+                for (int index = 0; index < allAgents.size(); index++) {
 
-                        if (allAgents.get(index) == asp.fst) {
-                            int agentIdx = index;
-                            pa.assignUnassignedAgent(agentIdx, i);
-                            break;
-                        }
+                    if (allAgents.get(index) == asp.fst) {
+                        int agentIdx = index;
+                        pa.assignUnassignedAgent(agentIdx, i);
+                        break;
                     }
+                }
 //                }
             }
         }
     }
 
     // -- getter setter --
-    public Plan getPlan()  { return this.plan; }
+    public Plan getPlan() {
+        return this.plan;
+    }
 
     int size() {
         int sum1 = this.assignmentData.stream().mapToInt(asps -> asps.size()).sum();
@@ -507,27 +507,74 @@ public class Assignment  {
         for (AgentStatePairs asps : this.assignmentData)
             sum4 += asps.size();
 
-        if (sum4 == sum1 || sum4 == sum2|| sum4 == sum3) CommonUtils.aboutImplIncomplete(" Lambda works -> refactor code");
+        if (sum4 == sum1 || sum4 == sum2 || sum4 == sum3)
+            CommonUtils.aboutImplIncomplete(" Lambda works -> refactor code");
         return sum4;
     }
 
-    public int getEntryPointCount()  { return this.assignmentData.size(); }
-    public EntryPoint getEntryPoint(int idx)  { return this.plan.getEntryPoints().get(idx); }
-//    private AgentStatePairs getAgentStates(int index) {  return this.assignmentData.get(index);   }
-public AgentStatePairs getAgentStates(int idx) { return this.assignmentData.get(idx); }
+    public int getEntryPointCount() {
+        return this.assignmentData.size();
+    }
 
-    public ArrayList<Long> getSuccessData(int idx)  { return this.successData.getAgentsByIndex(idx); }
-    ArrayList<Long> getSuccessData( EntryPoint ep) { return this.successData.getAgentsByIndex(ep.getIndex()); }
-    SuccessCollection getSuccessData() { return this.successData; }
+    public EntryPoint getEntryPoint(int idx) {
+        return this.plan.getEntryPoints().get(idx);
+    }
 
-    double getLastUtilityValue() { return this.lastUtility; }
-    void addAgent(long agent,  EntryPoint e,  State s) { this.assignmentData.get(e.getIndex()).add(agent, s); }
+    //    private AgentStatePairs getAgentStates(int index) {  return this.assignmentData.get(index);   }
+    public AgentStatePairs getAgentStates(int idx) {
+        return this.assignmentData.get(idx);
+    }
 
-    void setState(long agent,  State s,  EntryPoint hint) { this.assignmentData.get(hint.getIndex()).setStateOfAgent(agent, s); }
-    void removeAgentFrom(long agent,  EntryPoint ep) { this.assignmentData.get(ep.getIndex()).remove(agent); }
-    void removeAllFrom( ArrayList<Long> agents,  EntryPoint ep) { this.assignmentData.get(ep.getIndex()).removeAllIn(agents); }
+    public ArrayList<ID> getSuccessData(int idx) {
+        return this.successData.getAgentsByIndex(idx);
+    }
 
+    ArrayList<ID> getSuccessData(EntryPoint ep) {
+        return this.successData.getAgentsByIndex(ep.getIndex());
+    }
 
+    SuccessCollection getSuccessData() {
+        return this.successData;
+    }
+
+    double getLastUtilityValue() {
+        return this.lastUtility;
+    }
+
+    void addAgent(ID agent, EntryPoint e, State s) {
+        this.assignmentData.get(e.getIndex()).add(agent, s);
+    }
+
+    void setState(ID agent, State s, EntryPoint hint) {
+        this.assignmentData.get(hint.getIndex()).setStateOfAgent(agent, s);
+    }
+
+    void removeAgentFrom(ID agent, EntryPoint ep) {
+        this.assignmentData.get(ep.getIndex()).remove(agent);
+    }
+
+    void removeAllFrom(ArrayList<ID> agents, EntryPoint ep) {
+        this.assignmentData.get(ep.getIndex()).removeAllIn(agents);
+    }
+
+    @Override
+    public String toString() {
+        String out = " ";
+        ArrayList<EntryPoint> eps = this.plan.getEntryPoints();
+        int numEps = eps.size();
+        assert (numEps == this.assignmentData.size());
+
+        for (int i = 0; i < numEps; ++i) {
+            out += "EP: " + eps.get(i).getID() + " Task: " + eps.get(i).getTask().getName() + " AgentIDs: ";
+
+            for (Pair<ID, State> rsp : this.assignmentData.get(i).getData()) {
+                out += rsp.fst + "(" + rsp.snd.getName() + ") ";
+            }
+            out += ", ";
+        }
+        out +=  this.successData + "\n";
+        return out;
+    }
 
     // -- views --
 //    public class AssignmentSuccessView {

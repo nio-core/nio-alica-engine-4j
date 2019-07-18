@@ -12,6 +12,7 @@ import de.uniks.vs.jalica.engine.containers.RoleSwitch;
 import de.uniks.vs.jalica.engine.containers.SolverResult;
 import de.uniks.vs.jalica.engine.containers.SyncReady;
 import de.uniks.vs.jalica.engine.containers.SyncTalk;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import org.zeromq.*;
 
 /**
@@ -20,6 +21,7 @@ import org.zeromq.*;
 public class AlicaZMQCommunication extends IAlicaCommunication {
 
     private final MessageTopics topics;
+    private final ID agentID;
 
     private AlicaEngineInfoPublisher alicaEngineInfoPublisher;
 
@@ -40,9 +42,11 @@ public class AlicaZMQCommunication extends IAlicaCommunication {
 
     public AlicaZMQCommunication(AlicaEngine ae, String configFile) {
         super(ae);
+        agentID = ae.getTeamManager().getLocalAgentID();
         this.topics = new MessageTopics(ae, configFile);
         this.isRunning = false;
         System.setProperty("java.net.preferIPv4Stack", "true");
+        init();
     }
 
 //    public boolean init(ArrayList<Long> ids) {
@@ -76,9 +80,13 @@ public class AlicaZMQCommunication extends IAlicaCommunication {
 
     private void initializeMsgPublishers(ZContext context) {
         ZMQ.Socket publisher = context.createSocket(SocketType.PUB);
-        publisher.bind("ipc://" +  ae.getSystemConfig().getOwnAgentID());
+
+//        System.out.println("ZMQ-C agent id "+ ae.getSystemConfig().getOwnAgentID());
+        System.out.println("ZMQ-C agent id "+ agentID);
+
+        publisher.bind("ipc://" +  agentID);
 //        publisher.bind("tcp://*:5556");
-        System.out.println("ZMQ-C: AGENT CHANNEL "+ "ipc://" +  ae.getSystemConfig().getOwnAgentID());
+        System.out.println("ZMQ-C: AGENT CHANNEL "+ "ipc://" +  agentID);
         allocationAuthorityInfoPublisher = new AllocationAuthorityInfoPublisher(topics.getTopic(MessageTopics.Type.allocationAuthorityInfoTopic), publisher);
         alicaEngineInfoPublisher = new AlicaEngineInfoPublisher(topics.getTopic(MessageTopics.Type.alicaEngineInfoTopic), publisher);
         planTreeInfoPublisher = new PlanTreeInfoPublisher(topics.getTopic(MessageTopics.Type.planTreeInfoTopic), publisher);

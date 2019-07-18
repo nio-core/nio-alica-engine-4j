@@ -5,6 +5,7 @@ import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.*;
 import de.uniks.vs.jalica.engine.collections.SuccessCollection;
 import de.uniks.vs.jalica.engine.containers.messages.PlanTreeInfo;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.AbstractPlan;
 import de.uniks.vs.jalica.engine.model.EntryPoint;
 import de.uniks.vs.jalica.engine.model.Plan;
@@ -23,7 +24,7 @@ public class TeamObserver implements ITeamObserver {
     private AlicaEngine engine;
     private TeamManager teamManager;
 
-    private HashMap<Long, SimplePlanTree> simplePlanTrees;
+    private HashMap<ID, SimplePlanTree> simplePlanTrees;
     private ArrayList<Pair<PlanTreeInfo, AlicaTime>> msgQueue;
 
 //    private ArrayList<AgentEngineData> allOtherAgents;
@@ -42,9 +43,10 @@ public class TeamObserver implements ITeamObserver {
         this.teamManager = engine.getTeamManager();
         this.me = this.teamManager.getLocalAgent();
         this.simplePlanTrees = new HashMap<>();
+        this.msgQueue = new ArrayList<>();
     }
 
-    public HashMap<Long, SimplePlanTree> getTeamPlanTrees()  { return this.simplePlanTrees; }
+    public HashMap<ID, SimplePlanTree> getTeamPlanTrees()  { return this.simplePlanTrees; }
 
     private boolean updateTeamPlanTrees() {
 
@@ -54,6 +56,7 @@ public class TeamObserver implements ITeamObserver {
                 SimplePlanTree spt = sptFromMessage(msg.fst.senderID, msg.fst.stateIDs, msg.snd);
 
                 if (spt != null) {
+                    System.out.println("TO: ---------- SimplePlanTree -------\n" + spt + "-------------------------");
                     this.teamManager.setTimeLastMsgReceived(msg.fst.senderID, msg.snd);
                     this.teamManager.setSuccessMarks(msg.fst.senderID, msg.fst.succeededEPs);
 
@@ -70,7 +73,7 @@ public class TeamObserver implements ITeamObserver {
         }
         boolean changedSomeAgent = false;
 
-        for (Map.Entry<Long, Agent> agent : this.teamManager.getActiveAgents().entrySet()) {
+        for (Map.Entry<ID, Agent> agent : this.teamManager.getActiveAgents().entrySet()) {
             boolean changedCurrentAgent = agent.getValue().update();
 
             if (changedCurrentAgent && !agent.getValue().isActive()) {
@@ -95,12 +98,12 @@ public class TeamObserver implements ITeamObserver {
 
         if (root != null) {
             // TODO get rid of this once teamManager gets a datastructure overhaul
-            ArrayList<Long> activeAgents = new ArrayList<Long>(this.teamManager.getActiveAgents().keySet());
+            ArrayList<ID> activeAgents = new ArrayList<ID>(this.teamManager.getActiveAgents().keySet());
 
             ArrayList<SimplePlanTree> updatespts = new ArrayList<>();
-            ArrayList<Long> noUpdates = new ArrayList<>();
+            ArrayList<ID> noUpdates = new ArrayList<>();
 
-            for (Map.Entry<Long, SimplePlanTree> ele : this.simplePlanTrees.entrySet()) {
+            for (Map.Entry<ID, SimplePlanTree> ele : this.simplePlanTrees.entrySet()) {
                 assert(this.teamManager.isAgentActive(ele.getValue().getAgentID()));
 
                 if (ele.getValue().isNewSimplePlanTree()) {
@@ -161,7 +164,7 @@ public class TeamObserver implements ITeamObserver {
         }
         ArrayList<SimplePlanTree > queue = new ArrayList<>();
 
-        for (long key : this.simplePlanTrees.keySet()) {
+        for (ID key : this.simplePlanTrees.keySet()) {
 //          TODO: if (pair.second.operator bool())
             if (this.simplePlanTrees.get(key) != null) {
                 queue.add(this.simplePlanTrees.get(key));
@@ -289,7 +292,7 @@ public class TeamObserver implements ITeamObserver {
         }
     }
 
-    private SimplePlanTree sptFromMessage(long agentId, ArrayList<Long> ids, AlicaTime time) {
+    private SimplePlanTree sptFromMessage(ID agentId, ArrayList<Long> ids, AlicaTime time) {
         if (CommonUtils.TO_DEBUG_debug) System.out.println("Spt from robot " + agentId);
         if (CommonUtils.TO_DEBUG_debug) System.out.println(ids);
 

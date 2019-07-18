@@ -28,6 +28,8 @@ public class JSONStatesHandler extends JSONHandler {
                     State state = modelFactory.createState(jsonObject);
                     plan.getStates().add(state);
                     state.setInPlan(plan);
+//                    (JSONArray) entry.getValue(); "abstractPlans"
+//                    state.getPlans().add()
                 }
                 else if ("SuccessState".equals(jsonObject.get("type")))                {
                     SuccessState state = modelFactory.createSuccessState(jsonObject);

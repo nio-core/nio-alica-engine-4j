@@ -1,17 +1,15 @@
 package de.uniks.vs.jalica.engine;
 
-import de.uniks.vs.jalica.common.utils.CommonUtils;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.*;
 import de.uniks.vs.jalica.engine.planselection.IAssignment;
 import de.uniks.vs.jalica.engine.planselection.PartialAssignment;
-import de.uniks.vs.jalica.engine.planselection.RoleTaskMapping;
 import de.uniks.vs.jalica.engine.planselection.views.PartialAssignmentSuccessView;
+import de.uniks.vs.jalica.engine.planselection.views.PartialAssignmentView;
 import de.uniks.vs.jalica.engine.taskassignment.TaskRole;
-import de.uniks.vs.jalica.engine.views.AssignmentSuccessView;
+import de.uniks.vs.jalica.engine.teammanagement.view.AssignmentSuccessView;
 
-import java.sql.SQLOutput;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 /**
@@ -134,7 +132,10 @@ public class UtilityFunction {
         }
         // SUM UP HEURISTIC PART OF PRIORITY UTILITY
 
-        for (long agentID : ass.getUnassignedAgents()) {
+        PartialAssignmentView unassignedAgents = ass.getUnassignedAgents();
+        System.out.println(unassignedAgents);
+
+        for (ID agentID : ass.getUnassignedAgents()) {
             Double highestPriority = this.roleHighestPriorityMap.get(this.ra.getRole(agentID).getID());
             assert (highestPriority != null);
             priResult.setMax(priResult.getMax() + highestPriority);
@@ -145,7 +146,7 @@ public class UtilityFunction {
             EntryPoint ep = ass.getEntryPoint(i);
             long taskId = ep.getTask().getID();
 
-            for (long agent : ass.getUniqueAgentsWorkingAndFinished(ep)) {
+            for (ID agent : ass.getUniqueAgentsWorkingAndFinished(ep)) {
                 double curPrio = 0;
                 long roleId = this.ra.getRole(agent).getID();
 
@@ -194,7 +195,7 @@ public class UtilityFunction {
 
             if (!newRobots.isEmpty()) {
 
-                for (Long oldRobot : oldRobots.get()) {
+                for (ID oldRobot : oldRobots.get()) {
 
                     if (newRobots.contains(oldRobot)) {
                         simUI.setMin(simUI.getMin() + 1);

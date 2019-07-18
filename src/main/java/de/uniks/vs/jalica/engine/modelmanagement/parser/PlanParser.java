@@ -171,7 +171,7 @@ public class PlanParser {
     public RoleSet parseRoleSet(String roleSetName) {
         String roleSetDir = this.baseRolePath;
 
-        CommonUtils.aboutCallNotification("check rolesetdir: " +roleSetDir);
+        if (CommonUtils.PP_DEBUG_debug) CommonUtils.aboutCallNotification("check rolesetdir: " +roleSetDir);
 
         if (roleSetName.isEmpty()) {
             roleSetName = findDefaultRoleSet(roleSetDir);

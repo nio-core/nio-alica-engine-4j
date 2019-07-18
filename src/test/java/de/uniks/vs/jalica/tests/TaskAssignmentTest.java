@@ -57,9 +57,9 @@ public class TaskAssignmentTest {
         Vector<Long> agents = new Vector<>();
 
         for (long number = 8; number <= 11; number++) {
-            ID agentID = IDManager.generateUUID(number);
+            ID agentID = alicaEngine.getId(number);
             agents.add(agentID.asLong());
-            alicaEngine.getTeamManager().setTimeLastMsgReceived(agentID.asLong(), alicaEngine.getAlicaClock().now());
+            alicaEngine.getTeamManager().setTimeLastMsgReceived(agentID, alicaEngine.getAlicaClock().now());
         }
         // fake inform the team observer about roles of none existing agents
         alicaEngine.getTeamObserver().tick(null);

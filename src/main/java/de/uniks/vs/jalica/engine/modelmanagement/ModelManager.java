@@ -2,9 +2,8 @@ package de.uniks.vs.jalica.engine.modelmanagement;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.PlanRepository;
-import de.uniks.vs.jalica.engine.model.AlicaElement;
-import de.uniks.vs.jalica.engine.model.Plan;
-import de.uniks.vs.jalica.engine.model.RoleSet;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
+import de.uniks.vs.jalica.engine.model.*;
 import de.uniks.vs.jalica.engine.modelmanagement.parser.PlanParser;
 
 import java.util.HashMap;
@@ -25,7 +24,7 @@ public class ModelManager {
 //    private ArrayList<String> filesParsed;
 //
 //    private PlanRepository planRepository;
-    private HashMap<Long, AlicaElement> elements;
+    private HashMap<ID, AlicaElement> elements;
 
     public ModelManager(PlanRepository planRepository, AlicaEngine engine) {
 //        this.planRepository = planRepository;
@@ -53,7 +52,7 @@ public class ModelManager {
         return this.planParser.parseRoleSet(roleSetName);
     }
 
-    public boolean idExists(long id) {
+    public boolean idExists(ID id) {
         return this.elements.containsKey(id);
     }
 
@@ -193,15 +192,27 @@ public class ModelManager {
 //            }
 //        }
 //    }
-//
-//    private void computeReachabilities() {
+//void ModelManager::computeReachabilities()
+//    {
 //        for (const std::pair<const int64_t, EntryPoint*>& ep : this->planRepository->_entryPoints) {
-//            ep.second->computeReachabilitySet();
-//            // set backpointers:
-//            for (const State* s : ep.second->_reachableStates) {
-//                this->planRepository->_states[s->getId()]->_entryPoint = ep.second;
-//            }
+//        ep.second->computeReachabilitySet();
+//        // set backpointers:
+//        for (const State* s : ep.second->_reachableStates) {
+//            this->planRepository->_states[s->getId()]->_entryPoint = ep.second;
 //        }
 //    }
+//    }
+
+    public void computeReachabilities(PlanRepository repo) {
+        for ( EntryPoint ep : repo.getEntryPoints().values()) {
+            ep.computeReachabilitySet();
+
+            for ( State s : ep.getReachableStates()) {
+                repo.getStates().get(s.getID()).setEntryPoint(ep);
+            }
+        }
+    }
+
+
 
 }

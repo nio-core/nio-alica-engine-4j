@@ -21,7 +21,7 @@ public class CommonUtils {
     public static final boolean PP_DEBUG_debug = false;
     public static final boolean CM_DEBUG_debug = false;
     public static final boolean MF_DEBUG_debug = false;
-    public static final boolean RA_DEBUG_debug = false;
+    public static final boolean RA_DEBUG_debug = true;
     public static final boolean FS_DEBUG_debug = false;
     public static final boolean TA_DEBUG_debug = false;
     public static final boolean AM_DEBUG_debug = false;
@@ -32,17 +32,19 @@ public class CommonUtils {
     public static final boolean PS_DEBUG_debug = false;
     public static final boolean SP_DEBUG_debug = false;
     public static final boolean SM_DEBUG_debug = false;
+    public static final boolean RB_DEBUG_debug = false;
+    public static final boolean TC_DEBUG_debug = false;
 
     // Communication
     public static final boolean COMM_debug              = false;
     public static final boolean COMM_D_DEBUG_debug      = false;
 
-    public static final boolean B_DEBUG_debug           = false;
+    public static final boolean B_DEBUG_debug           = true;
     public static final boolean RULE_debug              = false;
     public static final boolean SM_FAILURE_debug        = false;
     public static final boolean SM_MESSAGES_debug       = false;
     public static final boolean UFDEBUG_debug           = false;
-    public static final boolean PB_DEBUG_debug          = false;
+    public static final boolean PB_DEBUG_debug          = true;
     public static final boolean CM_REASON_DEBUG_debug   = false;
     public static final boolean SUCDEBUG_debug          = false;
     public static final boolean CS_DEBUG_debug          = false;
@@ -60,7 +62,7 @@ public class CommonUtils {
 
     // DEBUG Extension
     public static final boolean VERBOSE_ARRAY_LIST_DEBUG        = false;
-    public static final boolean MISSING_IMPLEMENTATION_debug    = true;
+    public static final boolean MISSING_IMPLEMENTATION_debug    = false;
     public static final boolean IMPLEMENTATION_INCOMPLETE_debug = true;
     public static final boolean CALL_debug                      = true;
     public static final boolean WARNING_debug                   = true;

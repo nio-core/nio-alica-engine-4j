@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.engine.authority;
 
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.EntryPoint;
 
 import java.util.Vector;
@@ -9,9 +10,9 @@ import java.util.Vector;
  */
 public class EntryPointAgentPair {
     private final EntryPoint entryPoint;
-    private final long agentID;
+    private final ID agentID;
 
-    public EntryPointAgentPair(EntryPoint ep, long r) {
+    public EntryPointAgentPair(EntryPoint ep, ID r) {
         this.entryPoint = ep;
         this.agentID = r;
     }
@@ -26,7 +27,7 @@ public class EntryPointAgentPair {
         return (other.getAgentID() == this.agentID);
     }
 
-    public long getAgentID() {return agentID;}
+    public ID getAgentID() {return agentID;}
 
     public boolean containedIn(Vector<EntryPointAgentPair> entryPointAgents) {
 

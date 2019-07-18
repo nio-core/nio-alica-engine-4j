@@ -14,6 +14,7 @@ import de.uniks.vs.jalica.engine.teammanagement.TeamObserver;
 
 import java.util.*;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by alex on 13.07.17.
@@ -78,10 +79,19 @@ public class PlanBase implements Runnable {
         this.log = ae.getLog();
         this.statusMessage = null;
         this.stepModeCV = new ConditionVariable(this);
+        this.fpEventWait = new ConditionVariable(this);
         this.ruleBook = new RuleBook(ae, this);
         this.treeDepth = 0;
         this.running = false;
         this.isWaiting = false;
+
+        this.runningPlans = new ArrayList<>();
+
+        this.lastSendTime = new AlicaTime();
+        this.lastSentStatusTime = new AlicaTime();
+
+        this.lomutex = new ReentrantLock();
+        this.stepMutex = new ReentrantLock();
 
         SystemConfig sc = this.ae.getSystemConfig();
 
@@ -146,19 +156,21 @@ public class PlanBase implements Runnable {
 
     public void run() {
         System.out.println("PB: Run-Method of PlanBase started. ");
+
         while (this.running) {
             AlicaTime beginTime = this.alicaClock.now();
             this.log.itertionStarts();
 
             if (this.ae.getStepEngine()) {
+
                 if (CommonUtils.PB_DEBUG_debug) {
-                    System.out.println("PB: ===CUR TREE===");
+                    if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: ===CUR TREE===");
                     if (this.rootNode == null) {
-                        System.out.println("PB: NULL");
+                        if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: NULL");
                     } else {
                         this.rootNode.printRecursive();
                     }
-                    System.out.println("PB: ===END CUR TREE===");
+                    if (CommonUtils.PB_DEBUG_debug) System.out.println("PB: ===END CUR TREE===");
                 }
                 {
 //                    std::unique_lock < std::mutex > lckStep(this.stepMutex);
@@ -212,7 +224,7 @@ public class PlanBase implements Runnable {
                         ++deleteCount;
                     }
                 }
-                System.out.println("PlanBase: " + (totalCount - inActiveCount - retiredCount) + " active " + retiredCount + " retired " + inActiveCount
+                System.out.println("PB: " + (totalCount - inActiveCount - retiredCount) + " active " + retiredCount + " retired " + inActiveCount
                         + " inactive deleted: " + deleteCount);
 
             } else {
@@ -225,7 +237,7 @@ public class PlanBase implements Runnable {
             // lock for fpEvents
             {
 //                std::lock_guard<std::mutex> lock(this.lomutex);
-                synchronized (this.fpEvents) {
+                synchronized (this) {
                     this.fpEvents = new ArrayList<>();
                 }
             }
@@ -285,8 +297,10 @@ public class PlanBase implements Runnable {
             if (availTime.time > AlicaTime.milliseconds(1)) {
 //                std::unique_lock<std::mutex> lock(this.lomutex);
                 Lock lock = this.lomutex;
+                lock.lock();
                 boolean result = this.fpEventWait.cvWaitFor(lock, availTime.inNanoseconds());
                 checkFp = !this.fpEventWait.isInterrupted() == result;
+                lock.unlock();
             }
 
             if (checkFp && this.fpEvents.size() > 0) {

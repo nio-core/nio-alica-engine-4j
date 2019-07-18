@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.engine.model;
 
+import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.BasicCondition;
 import de.uniks.vs.jalica.engine.BasicConstraint;
 import de.uniks.vs.jalica.engine.RunningPlan;
@@ -34,8 +35,7 @@ public class Condition extends AlicaElement {
         this.quantifiers = new ArrayList<>();
     }
 
-    void getConstraint(ProblemDescriptor pd, RunningPlan rp)
-    {
+    void getConstraint(ProblemDescriptor pd, RunningPlan rp) {
         // TODO: fix const cast below
         this.basicConstraint.getConstraint(pd, rp);
     }
@@ -45,8 +45,8 @@ public class Condition extends AlicaElement {
         this.conditionString = conditionString;
     }
 
-    public boolean evaluate(RunningPlan rp)
-    {
+    public boolean evaluate(RunningPlan rp) {
+
         if (this.basicCondition == null) {
             System.err.println("Condition: Missing implementation of condition: ID " + getID());
             return false;
@@ -55,9 +55,10 @@ public class Condition extends AlicaElement {
             try {
                 // TODO: fix const cast below
                 ret = this.basicCondition.evaluate(rp);
-            } catch ( Exception e) {
-                System.err.println("Condition: Exception during evaluation catched: " + "\n" + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("C: Exception during evaluation catched: " + "\n" + e.getMessage());
             }
+            if (CommonUtils.C_DEBUG_debug) System.out.println("C: evaluate " + ret);
             return ret;
         }
     }

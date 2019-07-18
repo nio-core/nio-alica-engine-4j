@@ -11,10 +11,9 @@ import java.util.HashMap;
  * Created by alex on 13.07.17.
  */
 public class SystemConfig {
-    //    static mutex configsMapMutex;
+
     static String DOMAIN_FOLDER = "DOMAIN_FOLDER";
     static String DOMAIN_CONFIG_FOLDER = "DOMAIN_CONFIG_FOLDER";
-    protected char NODE_NAME_SEPERATOR = '_';
 
     protected String rootPath;
     protected String logPath;
@@ -88,26 +87,26 @@ public class SystemConfig {
 
     public String getHostname() {return id;}
 
-    /**
-     * Looks up the own agent's ID with the system config's local hostname.
-     * @return The own agent's ID
-     */
-    public long getOwnAgentID() {
-        return this.getAgentID(this.getHostname());
-    }
-
-    /**
-     * Looks up the agent's ID with the given name.
-     * @return The agent's ID
-     */
-    long getAgentID(String name) {
-        Object id = this.get("Globals").get("Team." + name + ".ID");
-
-        if (id != null)
-            return Integer.valueOf((String) this.get("Globals").get("Team." + name +".ID"));
-        else
-            return IDManager.generateUUID(name).asLong();
-    }
+//    /**
+//     * Looks up the own agent's ID with the system config's local hostname.
+//     * @return The own agent's ID
+//     */
+//    public long getOwnAgentID() {
+//        return this.getAgentID(this.getHostname());
+//    }
+//
+//    /**
+//     * Looks up the agent's ID with the given name.
+//     * @return The agent's ID
+//     */
+//    long getAgentID(String name) {
+//        Object id = this.get("Globals").get("Team." + name + ".ID");
+//
+//        if (id != null)
+//            return Integer.valueOf((String) this.get("Globals").get("Team." + name +".ID"));
+//        else
+//            return -1;
+//    }
 
     public String getRootPath() {
         return rootPath;

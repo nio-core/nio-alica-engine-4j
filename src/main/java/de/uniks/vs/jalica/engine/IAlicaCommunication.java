@@ -83,7 +83,7 @@ public abstract class IAlicaCommunication {
 
     public void tick() { CommonUtils.aboutNoImpl(); };
 
-    protected void sendLogMessage(int level, String message) { CommonUtils.aboutNoImpl(); };
+    protected void sendLogMessage(int level, String message) { CommonUtils.aboutImplIncomplete(level +"  "+ message); };
 
     public AlicaEngine getAe() {
         return ae;

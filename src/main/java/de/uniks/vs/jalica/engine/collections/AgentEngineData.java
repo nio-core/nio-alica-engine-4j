@@ -1,6 +1,7 @@
 package de.uniks.vs.jalica.engine.collections;
 
 import de.uniks.vs.jalica.engine.AlicaEngine;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.idmanagement.IDManager;
 import de.uniks.vs.jalica.engine.model.*;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
@@ -13,7 +14,7 @@ import java.util.*;
 public class AgentEngineData {
 
     private AlicaEngine engine;
-    private long id;
+    private ID id;
     // indicating which EntryPoints it completed.
     private SuccessMarks successMarks;
     HashMap<Variable, DomainVariable> domainVariables = new HashMap<>();
@@ -24,7 +25,7 @@ public class AgentEngineData {
 //    private boolean active;
 //    private double lastMessageTime;
 
-    public AgentEngineData(AlicaEngine engine,  long id) {
+    public AgentEngineData(AlicaEngine engine,  ID id) {
         this.engine = engine;
         this.id = id;
         this.successMarks = new SuccessMarks();
@@ -45,7 +46,8 @@ public class AgentEngineData {
         for (Map.Entry<Long, Quantifier> quantifier : quantifiers) {
 
             for ( Variable variable : quantifier.getValue().getTemplateVariables()) {
-                DomainVariable domainVariable = new DomainVariable(makeUniqueId(variable.getName()), id + "." + variable.getName(), "", variable, id);
+                DomainVariable domainVariable =
+                        new DomainVariable(makeUniqueId(variable.getName()).asLong(), id + "." + variable.getName(), "", variable, id);
                 this.domainVariables.put(variable, domainVariable);
             }
         }
@@ -72,8 +74,8 @@ public class AgentEngineData {
 //        }
     }
 
-    private long makeUniqueId( String s)  {
-        Long uniqueID = IDManager.generateUniqueID(s);
+    private ID makeUniqueId(String s)  {
+        ID uniqueID = engine.getId(s);//generateUniqueID(s);
         assert(!this.engine.getModelManager().idExists(uniqueID));
         return uniqueID;
     }

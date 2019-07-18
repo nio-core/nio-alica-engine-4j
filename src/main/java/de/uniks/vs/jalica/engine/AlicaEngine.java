@@ -7,11 +7,13 @@ import de.uniks.vs.jalica.engine.common.SolverType;
 import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.engine.constrainmodule.VariableSyncModule;
 import de.uniks.vs.jalica.engine.expressions.ExpressionHandler;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.idmanagement.IDManager;
 import de.uniks.vs.jalica.engine.model.Plan;
 import de.uniks.vs.jalica.engine.model.RoleSet;
 import de.uniks.vs.jalica.engine.modelmanagement.ModelManager;
 import de.uniks.vs.jalica.engine.planselection.PartialAssignment;
+import de.uniks.vs.jalica.engine.roleassignment.DynamicRoleAssignment;
 import de.uniks.vs.jalica.engine.roleassignment.StaticRoleAssignment;
 import de.uniks.vs.jalica.engine.syncmodule.SyncModule;
 import de.uniks.vs.jalica.engine.teammanagement.TeamManager;
@@ -86,7 +88,8 @@ public class AlicaEngine {
         if (this.useStaticRoles) {
             this.roleAssignment = new StaticRoleAssignment(this);
         } else {
-            CommonUtils.aboutError("Unknown RoleAssignment Type!");
+            if(CommonUtils.AE_DEBUG_debug)CommonUtils.aboutCallNotification("DynamicRoleAssignment!");
+            this.roleAssignment = new DynamicRoleAssignment(this);
         }
 
         // the communicator is expected to be set before init() is called
@@ -187,24 +190,21 @@ public class AlicaEngine {
         // TODO: implement the trigger function for iteration complete
     }
 
-    public void start()
-    {
+    public void start() {
         this.planBase.start();
         System.out.println("AE: Engine started");
     }
 
-    public void setStepCalled(boolean stepCalled)
-    {
+    public void setStepCalled(boolean stepCalled) {
         this.stepCalled = stepCalled;
     }
 
-    public boolean getStepCalled()
-    {
+    public boolean getStepCalled() {
+        System.out.println("AE: step called " + this.stepCalled);
         return this.stepCalled;
     }
 
-    public boolean getStepEngine()
-    {
+    public boolean getStepEngine() {
         return this.stepEngine;
     }
 
@@ -309,8 +309,12 @@ public class AlicaEngine {
         return this.solvers.get(SolverType.class.hashCode());
     }
 
-    public long getId(int id) {
-        return IDManager.generateUniqueID(String.valueOf(id));
+    public ID getId(long id) {
+        return agentIDManager.getOrGenerateUniqueID(id);
+    }
+
+    public ID getId(String id) {
+        return agentIDManager.getOrGenerateUniqueID(id);
     }
 
     //    public boolean init(SystemConfig sc, IBehaviourCreator bc, IConditionCreator cc, IUtilityFunctionCreator uc, IConstraintCreator crc,

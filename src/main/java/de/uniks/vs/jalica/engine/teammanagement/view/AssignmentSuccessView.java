@@ -1,8 +1,8 @@
-package de.uniks.vs.jalica.engine.views;
+package de.uniks.vs.jalica.engine.teammanagement.view;
 
-import de.uniks.vs.jalica.engine.AgentStatePairs;
 import de.uniks.vs.jalica.engine.Assignment;
 import de.uniks.vs.jalica.engine.common.Pair;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.State;
 
 import java.util.ArrayList;
@@ -28,11 +28,11 @@ public class AssignmentSuccessView {
         return this.assignment != null ? (this.assignment.getAgentStates(this.epIdx).size() + this.assignment.getSuccessData(this.epIdx).size()) : 0;
     }
 
-    public ArrayList<Long> get() {
-        ArrayList<Long> agents = new ArrayList<>();
+    public ArrayList<ID> get() {
+        ArrayList<ID> agents = new ArrayList<>();
         agents.addAll(this.assignment.getSuccessData(this.epIdx));
 
-        for (Pair<Long, State> agent : this.assignment.getAgentStates(this.epIdx).getData()) {
+        for (Pair<ID, State> agent : this.assignment.getAgentStates(this.epIdx).getData()) {
             agents.add(agent.fst);
         }
         return agents;

@@ -6,9 +6,11 @@ import de.uniks.vs.jalica.engine.Assignment;
 import de.uniks.vs.jalica.engine.ITaskAssignment;
 import de.uniks.vs.jalica.engine.SimplePlanTree;
 import de.uniks.vs.jalica.engine.collections.SuccessCollection;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.Plan;
 import de.uniks.vs.jalica.engine.planselection.PartialAssignment;
 import de.uniks.vs.jalica.engine.planselection.PartialAssignmentPool;
+import de.uniks.vs.jalica.engine.teammanagement.Agent;
 import de.uniks.vs.jalica.engine.teammanagement.TeamManager;
 import de.uniks.vs.jalica.engine.teammanagement.TeamObserver;
 
@@ -23,20 +25,23 @@ public class TaskAssignment implements ITaskAssignment {
     private TeamObserver teamObserver;
     private PartialAssignmentPool partialAssignmentPool;
     private ArrayList<Plan> plans;
-    private ArrayList<Long> agents;
+    private ArrayList<ID> agents;
     private ArrayList<SuccessCollection> successData;
     private ArrayList<PartialAssignment> fringe;
 
     private int expansionCount;
 
-    public TaskAssignment(AlicaEngine engine, ArrayList<Plan> planList, ArrayList<Long> paraAgents, PartialAssignmentPool partialAssignmentPool) {
+    public TaskAssignment(AlicaEngine engine, ArrayList<Plan> planList, ArrayList<ID> paraAgents, PartialAssignmentPool partialAssignmentPool) {
         this.agents = paraAgents;
         this.plans = planList;
         this.teamObserver = engine.getTeamObserver();
         this.teamManager = engine.getTeamManager();
         this.partialAssignmentPool = partialAssignmentPool;
         // sort agent ids ascending
-        Collections.sort(agents);
+        //TODO: test sorting
+//        agents.sort((o1, o2) -> (o1.asLong() < o2.asLong() ? -1 : 1));
+        agents.sort(Comparator.comparing(value -> value.asLong()));
+//        Collections.sort(agents);
         this.successData = new ArrayList<>(this.plans.size());
         this.fringe = new ArrayList<>(this.plans.size());
 
@@ -55,7 +60,7 @@ public class TaskAssignment implements ITaskAssignment {
 
     public void preassignOtherAgents() {
         // TODO: fix this call
-        HashMap<Long, SimplePlanTree> simplePlanTreeMap = this.teamObserver.getTeamPlanTrees();
+        HashMap<ID, SimplePlanTree> simplePlanTreeMap = this.teamObserver.getTeamPlanTrees();
         // this call should only be made before the search starts
         assert (this.fringe.size() == this.plans.size());
         // ASSIGN PREASSIGNED OTHER ROBOTS
@@ -74,37 +79,37 @@ public class TaskAssignment implements ITaskAssignment {
         }
     }
 
-    public Assignment getNextBestAssignment(Assignment oldAss) {
-        CommonUtils.aboutCallNotification("TA: Calculating next best PartialAssignment...");
-        PartialAssignment calculatedPa = calcNextBestPartialAssignment(oldAss);
+    public Assignment getNextBestAssignment(Assignment oldAssignment) {
+        System.out.println("TA: Calculating next best PartialAssignment...");
+        PartialAssignment partialAssignment = calcNextBestPartialAssignment(oldAssignment);
 
-        if (calculatedPa == null) {
+        if (partialAssignment == null) {
             return new Assignment();
         }
-        CommonUtils.aboutCallNotification("TA: ... calculated this PartialAssignment:\n" + calculatedPa);
-        Assignment newAss = new Assignment(calculatedPa);
-        CommonUtils.aboutCallNotification("TA: Return this Assignment to PS:" + newAss);
+        System.out.print("TA: ... calculated this PartialAssignment:\n" + partialAssignment);
+        Assignment newAss = new Assignment(partialAssignment);
+        System.out.print("TA: Return this Assignment to PS:" + newAss);
         return newAss;
     }
 
     public String toString() {
-        String  ss = "";
+        String ss = "";
         ss += "\n";
-        ss +=  "--------------------TA:--------------------" +"\n";
-        ss +=  "NumRobots: " + this.agents.size() +"\n";
-        ss +=  "RobotIDs: ";
-        for (long id : this.agents) {
-        ss +=  id + " ";
-    }
-        ss +=  "\n";
-        ss +=  "Initial Fringe (Count " + this.fringe.size() + "):" +"\n";
-        ss +=  "{";
+        ss += "--------------------TA:--------------------" + "\n";
+        ss += "NumRobots: " + this.agents.size() + "\n";
+        ss += "RobotIDs: ";
+        for (ID id : this.agents) {
+            ss += id + " ";
+        }
+        ss += "\n";
+        ss += "Initial Fringe (Count " + this.fringe.size() + "):" + "\n";
+        ss += "{";
         for (PartialAssignment pa : this.fringe) // Initial PartialAssignments
         {
-            ss +=  pa +"\n";
+            ss += pa + "\n";
         }
-        ss +=  "}" +"\n";
-        ss +=  "-------------------------------------------" +"\n";
+        ss += "}" + "\n";
+        ss += "-------------------------------------------" + "\n";
         return ss;
     }
 
@@ -134,8 +139,8 @@ public class TaskAssignment implements ITaskAssignment {
             return goal;
     }
 
-    boolean addAlreadyAssignedRobots(PartialAssignment pa, HashMap<Long, SimplePlanTree> simplePlanTreeMap) {
-        long ownAgentId = this.teamManager.getLocalAgentID();
+    boolean addAlreadyAssignedRobots(PartialAssignment pa, HashMap<ID, SimplePlanTree> simplePlanTreeMap) {
+        ID ownAgentId = this.teamManager.getLocalAgentID();
         boolean haveToRevalute = false;
 
         for (int i = 0; i < this.agents.size(); i++) {
@@ -172,7 +177,7 @@ public class TaskAssignment implements ITaskAssignment {
         return this.agents.size();
     }
 
-    public ArrayList<Long> getAgents() {
+    public ArrayList<ID> getAgents() {
         return this.agents;
     }
 

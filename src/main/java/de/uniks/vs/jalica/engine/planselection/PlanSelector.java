@@ -2,6 +2,7 @@ package de.uniks.vs.jalica.engine.planselection;
 
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.*;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.*;
 import de.uniks.vs.jalica.engine.taskassignment.TaskAssignment;
 
@@ -32,21 +33,21 @@ public class PlanSelector {
 
     RunningPlan getBestSimilarAssignment(RunningPlan rp) {
         // GET ROBOTS TO ASSIGN
-        ArrayList<Long>  robots = new ArrayList<>();
+        ArrayList<ID>  robots = new ArrayList<>();
         rp.getAssignment().getAllAgents(robots);
-        double oldUtil = 0;
+        DoubleWrapper oldUtil = new DoubleWrapper(0);
         return getBestSimilarAssignment(rp, robots, oldUtil);
     }
 
-    public RunningPlan getBestSimilarAssignment(RunningPlan rp, ArrayList<Long> robots, double o_currentUtility) {
+    public RunningPlan getBestSimilarAssignment(RunningPlan rp, ArrayList<ID> robots, DoubleWrapper currentUtility) {
         assert(!rp.isBehaviour());
         // Reset set index of the partial assignment object pool
         this.pap.reset();
         try {
             if (rp.getPlanType() == null) {
-                return createRunningPlan(rp.getParent(), new ArrayList<Plan>(Arrays.asList((Plan)rp.getActivePlan())), robots, rp, null, o_currentUtility);
+                return createRunningPlan(rp.getParent(), new ArrayList<Plan>(Arrays.asList((Plan)rp.getActivePlan())), robots, rp, null, currentUtility);
             } else {
-                return createRunningPlan(rp.getParent(), rp.getPlanType().getPlans(), robots, rp, rp.getPlanType(), o_currentUtility);
+                return createRunningPlan(rp.getParent(), rp.getPlanType().getPlans(), robots, rp, rp.getPlanType(), currentUtility);
             }
         } catch (RuntimeException e) {
         CommonUtils.aboutError(e.getMessage());
@@ -55,40 +56,40 @@ public class PlanSelector {
     }
     }
 
-    public boolean getPlansForState(RunningPlan planningParent, ArrayList<AbstractPlan> plans, ArrayList<Long> robotIDs, ArrayList<RunningPlan> o_plans)
+    public boolean getPlansForState(RunningPlan planningParent, ArrayList<AbstractPlan> plans, ArrayList<ID> robotIDs, ArrayList<RunningPlan> o_plans)
     {
         this.pap.reset();
         try {
             return getPlansForStateInternal(planningParent, plans, robotIDs, o_plans);
         } catch (RuntimeException e) {
             CommonUtils.aboutError(e.getMessage());
-        this.pap.increaseSize();
-        return false;
-    }
-    }
-
-    RunningPlan createRunningPlan(RunningPlan planningParent,ArrayList<Plan>  plans, ArrayList<Long>  robotIDs, RunningPlan oldRp,
-        PlanType relevantPlanType, double o_oldUtility)
-    {
-       ArrayList<Plan>  newPlanList = new ArrayList<>();
-        // REMOVE EVERY PLAN WITH TOO GREAT MIN CARDINALITY
-        for (Plan plan : plans) {
-        // CHECK: number of robots < minimum cardinality of this plan
-        if (plan.getMinCardinality() > ((robotIDs.size()) + this.to.successesInPlan(plan))) {
-           System.out.println("PS: AgentIds: " + robotIDs + "\n"
-                    + "= " + robotIDs.size() + " IDs are not enough for the plan " + plan.getName() + "!");
-        } else {
-            // this plan was ok according to its cardinalities, so we can add it
-            newPlanList.add(plan);
+            this.pap.increaseSize();
+            return false;
         }
     }
+
+    RunningPlan createRunningPlan(RunningPlan planningParent,ArrayList<Plan> plans, ArrayList<ID> robotIDs, RunningPlan oldRp,
+        PlanType relevantPlanType, DoubleWrapper oldUtility)
+    {
+        ArrayList<Plan> newPlanList = new ArrayList<>();
+        // REMOVE EVERY PLAN WITH TOO GREAT MIN CARDINALITY
+        for (Plan plan : plans) {
+            // CHECK: number of robots < minimum cardinality of this plan
+            if (plan.getMinCardinality() > ((robotIDs.size()) + this.to.successesInPlan(plan))) {
+                System.out.println("PS: AgentIds: " + robotIDs + "\n"
+                        + "= " + robotIDs.size() + " IDs are not enough for the plan " + plan.getName() + "!");
+            } else {
+                // this plan was ok according to its cardinalities, so we can add it
+                newPlanList.add(plan);
+            }
+        }
         // WE HAVE NOT ENOUGH ROBOTS TO EXECUTE ANY PLAN
         if (newPlanList.isEmpty()) {
             return null;
         }
 
         TaskAssignment ta = new TaskAssignment(this.ae, newPlanList, robotIDs, this.pap);
-    Assignment oldAss = null;
+        Assignment oldAss = null;
         RunningPlan rp;
         if (oldRp == null) {
             // preassign other robots, because we dont need a similar assignment
@@ -96,14 +97,14 @@ public class PlanSelector {
             ta.preassignOtherAgents();
         } else {
             if (!oldRp.getAssignment().isValid() || !oldRp.isRuntimeConditionValid()) {
-                o_oldUtility = -1.0;
+                oldUtility.value = -1.0;
             } else {
-                assert(!oldRp.isBehaviour());
+                assert (!oldRp.isBehaviour());
                 PartialAssignment ptemp = this.pap.getNext();
                 Plan oldPlan = (Plan) oldRp.getActivePlan();
                 ptemp.prepare(oldPlan, ta);
                 oldRp.getAssignment().fillPartial(ptemp);
-                o_oldUtility = oldPlan.getUtilityFunction().eval(ptemp, oldRp.getAssignment()).getMax();
+                oldUtility.value = oldPlan.getUtilityFunction().eval(ptemp, oldRp.getAssignment()).getMax();
             }
             // dont preassign other robots, because we need a similar assignment (not the same)
             rp = this.pb.makeRunningPlan(oldRp.getPlanType());
@@ -111,12 +112,12 @@ public class PlanSelector {
         }
 
         // some variables for the do while loop
-        long localAgentID = this.ae.getTeamManager().getLocalAgentID();
+        ID localAgentID = this.ae.getTeamManager().getLocalAgentID();
         // PLANNINGPARENT
         rp.setParent(planningParent);
         ArrayList<RunningPlan> rpChildren =  new ArrayList<>();
         boolean found = false;
-        ArrayList<Long> agents = new ArrayList<>();
+        ArrayList<ID> agents = new ArrayList<>();
 
         do {
             rpChildren.clear();
@@ -130,7 +131,7 @@ public class PlanSelector {
             // PLAN (needed for Conditionchecks)
             rp.usePlan(rp.getAssignment().getPlan());
 
-           System.out.println("PS: rp.Assignment of Plan " + rp.getActivePlan().getName() + " is: " + rp.getAssignment());
+           System.out.print("PS: rp.Assignment of Plan " + rp.getActivePlan().getName() + " is: " + rp.getAssignment());
 
             // CONDITIONCHECK
             if (!rp.evalPreCondition()) {
@@ -179,11 +180,11 @@ public class PlanSelector {
 
        System.out.println("PS: Created RunningPlan: \n" + rp);
 
-        return rp; // If we return here, this robot is normal assigned
+        return rp; // If we return here, this agent is normal assigned
     }
 
 
-    private boolean getPlansForStateInternal(RunningPlan planningParent,  ArrayList<AbstractPlan> plans,  ArrayList<Long> robotIDs, ArrayList<RunningPlan> o_plans) {
+    private boolean getPlansForStateInternal(RunningPlan planningParent,  ArrayList<AbstractPlan> plans,  ArrayList<ID> robotIDs, ArrayList<RunningPlan> runningPlans) {
         System.out.println("<######PS: GetPlansForState: Parent:" + (planningParent != null ? planningParent.getActivePlan().getName() : "null")
                                                            + " plan count: " + plans.size() + " robot count: " + robotIDs.size() + " ######>");
         for (AbstractPlan ap : plans) {
@@ -193,30 +194,30 @@ public class PlanSelector {
                 RunningPlan rp = this.pb.makeRunningPlan(beh);
                 // A Behaviour is a Plan too (in this context)
                 rp.usePlan(beh);
-                o_plans.add(rp);
+                runningPlans.add(rp);
                 rp.setParent(planningParent);
 
                 System.out.println("PS: Added Behaviour " + beh.getName());
 
             } else if (ap instanceof Plan) {
                 Plan p = (Plan) ap;
-                double zeroValue = 0;
+                DoubleWrapper zeroValue = new DoubleWrapper(0);
                 RunningPlan rp = createRunningPlan(planningParent, new ArrayList<>(Arrays.asList(p)), robotIDs, null, null, zeroValue);
 
                 if (rp == null) {
                     System.out.println("PS: It was not possible to create a RunningPlan for the Plan " + p.getName() + "!");
                     return false;
                 }
-                o_plans.add(rp);
+                runningPlans.add(rp);
             } else if (ap instanceof PlanType) {
                 PlanType pt = (PlanType) ap;
-                double zeroVal = 0;
+                DoubleWrapper zeroVal = new DoubleWrapper(0);
                 RunningPlan rp = createRunningPlan(planningParent, pt.getPlans(), robotIDs, null, pt, zeroVal);
                 if (rp == null) {
                     System.out.println("PS: It was not possible to create a RunningPlan for the Plan " + pt.getName() + "!");
                     return false;
                 }
-                o_plans.add(rp);
+                runningPlans.add(rp);
             }
         }
         return true;

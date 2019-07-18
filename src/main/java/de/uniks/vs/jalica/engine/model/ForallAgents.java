@@ -3,6 +3,7 @@ package de.uniks.vs.jalica.engine.model;
 import de.uniks.vs.jalica.engine.RunningPlan;
 import de.uniks.vs.jalica.engine.collections.AgentEngineData;
 import de.uniks.vs.jalica.engine.collections.AgentVariables;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.teammanagement.TeamManager;
 
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class ForallAgents extends Quantifier {
         super();
     }
 
-    private Result tryAddId(long id, ArrayList<AgentVariables> io_agentVarsInScope, TeamManager teamManager ) {
+    private Result tryAddId(ID id, ArrayList<AgentVariables> io_agentVarsInScope, TeamManager teamManager ) {
         AgentEngineData robotEngineData = teamManager.getAgentByID(id).getEngineData();
         AgentVariables agentVariables = null;
 
@@ -66,7 +67,7 @@ public class ForallAgents extends Quantifier {
     }
 
     @Override
-    public boolean isAgentInScope(long id,  RunningPlan runningPlan) {
+    public boolean isAgentInScope(ID id,  RunningPlan runningPlan) {
 
         switch (getScopeType()) {
             case PLANSCOPE:
@@ -89,7 +90,7 @@ public class ForallAgents extends Quantifier {
         switch (getScopeType()) {
             case PLANSCOPE:
                 if (p.getActivePlan() == getScopedPlan()) {
-                    for (Long id : p.getAssignment().getAllAgents().get()) {
+                    for (ID id : p.getAssignment().getAllAgents().get()) {
                         Result result = tryAddId(id, ioAgentVarsInScope, teamManager);
                         addedAgent = addedAgent || result == Result.ADDED;
                         changedAgent = changedAgent || result == Result.MODIFIED;
@@ -98,7 +99,7 @@ public class ForallAgents extends Quantifier {
                 break;
             case ENTRYPOINTSCOPE:
                 if (p.getActivePlan() == getScopedEntryPoint().getPlan()) {
-                for (Long id : p.getAssignment().getAgentsWorking(getScopedEntryPoint()).get()) {
+                for (ID id : p.getAssignment().getAgentsWorking(getScopedEntryPoint()).get()) {
                     Result result = tryAddId(id, ioAgentVarsInScope, teamManager);
                     addedAgent = addedAgent || result == Result.ADDED;
                     changedAgent = changedAgent || result == Result.MODIFIED;
@@ -108,7 +109,7 @@ public class ForallAgents extends Quantifier {
 
             case STATESCOPE:
                 if (p.getActivePlan() == getScopedState().getInPlan()) {
-                for (Long id : p.getAssignment().getAgentsInState(getScopedState()).get()) {
+                for (ID id : p.getAssignment().getAgentsInState(getScopedState()).get()) {
                     Result result = tryAddId(id, ioAgentVarsInScope, teamManager);
                     addedAgent = addedAgent || result == Result.ADDED;
                     changedAgent = changedAgent || result == Result.MODIFIED;
@@ -118,7 +119,7 @@ public class ForallAgents extends Quantifier {
         }
 
         if (addedAgent) {
-            ioAgentVarsInScope.sort( Comparator.comparingDouble(value -> value.getId()));
+            ioAgentVarsInScope.sort( Comparator.comparing(value -> value.getId().asLong()));
         }
         return addedAgent || changedAgent;
     }

@@ -24,13 +24,13 @@ public class IAssignment {
         return new PartialAssignmentView(ep.getIndex(), this.impl);
     }
 
-    PartialAssignmentView getAgentsWorking(long  epid) {
+    PartialAssignmentView getAgentsWorking(long epid) {
         ArrayList<EntryPoint> eps = this.impl.getPlan().getEntryPoints();
         for (int i = 0; i < eps.size(); ++i) {
-        if (eps.get(i).getID() == epid) {
-            return new PartialAssignmentView(i, this.impl);
+            if (eps.get(i).getID() == epid) {
+                return new PartialAssignmentView(i, this.impl);
+            }
         }
-    }
         // return safe value that does not exist. Magic number is used for debuggers.
         return new PartialAssignmentView(-42, this.impl);
     }

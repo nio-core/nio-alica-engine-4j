@@ -32,7 +32,7 @@ public class Subscribe extends DomainBehaviour {
             lock.lock();
             stackFullCondition.awaitNanos(countMax);
             count+=2;
-            System.out.println("Publish: " + systemConfig.getOwnAgentID() + "  " + count);
+            System.out.println("Publish: " + ownID + "  " + count);
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {

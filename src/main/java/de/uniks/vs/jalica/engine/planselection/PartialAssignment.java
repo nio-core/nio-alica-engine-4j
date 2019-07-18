@@ -1,9 +1,11 @@
 package de.uniks.vs.jalica.engine.planselection;
 
 import de.uniks.vs.jalica.common.Comparable;
+import de.uniks.vs.jalica.common.ExtArrayList;
 import de.uniks.vs.jalica.engine.Assignment;
 import de.uniks.vs.jalica.engine.UtilityInterval;
 import de.uniks.vs.jalica.engine.SimplePlanTree;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.EntryPoint;
 import de.uniks.vs.jalica.engine.model.Plan;
 import de.uniks.vs.jalica.engine.collections.SuccessCollection;
@@ -22,12 +24,12 @@ public class PartialAssignment implements Comparable<PartialAssignment> {
     private static final long PRECISION = 1073741824;
     private static final int INFINIT = Integer.MAX_VALUE;
 
-    static boolean allowIdling;
+    static boolean allowIdling = true;
 
     Plan plan;
     TaskAssignment problem;
     ArrayList<DynCardinality> cardinalities;
-    ArrayList<Integer> assignment;
+    ExtArrayList<Integer> assignment;
     UtilityInterval utility;
     int numAssignedAgents;
     int nextAgentIdx;
@@ -40,7 +42,19 @@ public class PartialAssignment implements Comparable<PartialAssignment> {
         this.nextAgentIdx = 0;
         this.utility = new UtilityInterval(Double.MIN_VALUE, Double.MAX_VALUE);
         this.cardinalities = new ArrayList<>();
-        this.assignment = new ArrayList<>();
+        this.assignment = new ExtArrayList<Integer>(() -> new Integer(-1));
+    }
+
+
+    public void copy(PartialAssignment partialAssignment) {
+        this.plan = partialAssignment.plan;
+        this.problem = partialAssignment.problem;
+        this.cardinalities = new ArrayList<>(partialAssignment.cardinalities);
+        this.assignment = new ExtArrayList<Integer>(partialAssignment.assignment);
+        this.utility = partialAssignment.utility;
+        this.numAssignedAgents = partialAssignment.numAssignedAgents;
+       this.nextAgentIdx = partialAssignment.nextAgentIdx;
+
     }
 
     public boolean isValid() {
@@ -92,10 +106,7 @@ public class PartialAssignment implements Comparable<PartialAssignment> {
         this.numAssignedAgents = 0;
         this.nextAgentIdx = 0;
         this.assignment.clear();
-        this.assignment.ensureCapacity(problem.getAgentCount());
-        for (int i = 0; i < problem.getAgentCount(); i++) {
-            this.assignment.add(-1);
-        }
+        this.assignment.resize( problem.getAgentCount());
         this.cardinalities.clear();
         this.cardinalities.ensureCapacity(p.getEntryPoints().size() + (this.allowIdling ? 1 : 0));
 
@@ -126,7 +137,7 @@ public class PartialAssignment implements Comparable<PartialAssignment> {
         return false;
     }
 
-    public boolean addIfAlreadyAssigned(SimplePlanTree spt, long agent, int idx) {
+    public boolean addIfAlreadyAssigned(SimplePlanTree spt, ID agent, int idx) {
         if (spt.getEntryPoint().getPlan() == this.plan) {
             int numEps = this.plan.getEntryPoints().size();
 
@@ -150,28 +161,33 @@ public class PartialAssignment implements Comparable<PartialAssignment> {
         return false;
     }
 
-    public boolean expand(ArrayList<PartialAssignment> o_container, PartialAssignmentPool pool, Assignment old) {
+    public boolean expand(ArrayList<PartialAssignment> fringe, PartialAssignmentPool pool, Assignment old) {
         // iterate next idx for cases of pre-assigned agents:
         while (this.nextAgentIdx < this.assignment.size() && this.assignment.get(this.nextAgentIdx) >= 0) {
             this.nextAgentIdx++;
         }
         if (this.nextAgentIdx >= this.assignment.size()) {
-            // No robot left to expand
+            // No agent left to expand
             return false;
         }
         boolean change = false;
         int numChildren = this.cardinalities.size();
 
-        for (int i = 0; i < numChildren; ++i) {
+        for (int i = 0; i < numChildren; i++) {
 
             if (this.cardinalities.get(i).getMax() > 0) {
                 PartialAssignment newPa = pool.getNext();
+                // TODO: check  "*newPa = *this;"
+                newPa.copy(this);
 //            *newPa = *this;
+//                PartialAssignment newPa = pool.setNext(this);
                 newPa.assignUnassignedAgent(this.nextAgentIdx, i);
                 newPa.evaluate(old);
 
                 if (newPa.utility.getMax() > -1.0) {
-                    CommonUtils.upperBound(o_container, newPa, (Comparable<PartialAssignment>) (a, b) -> compare(a, b));
+                    System.out.println("PA: fringe size: " + fringe.size());
+                    int index = CommonUtils.upperBound(fringe, newPa, (Comparable<PartialAssignment>) (a, b) -> compare(a, b));
+                    fringe.add(index, newPa);
 //                    o_container.insert(std::upper_bound (o_container.begin(), o_container.end(), newPa, compare),newPa);
                     change = true;
                 }
@@ -179,6 +195,7 @@ public class PartialAssignment implements Comparable<PartialAssignment> {
         }
         return change;
     }
+
 
     @Override
     public boolean compareTo(PartialAssignment a, PartialAssignment b) {
@@ -199,35 +216,35 @@ public class PartialAssignment implements Comparable<PartialAssignment> {
         long bval = Math.round(b.getUtility().getMax() * PRECISION);
         if (aval < bval) {
             // b has higher possible utility
-            return true;
+            return false;
         } else if (aval > bval) {
             // a has higher possible utility
-            return false;
+            return true;
         }
         // Now we are sure that both partial assignments have the same utility
         else if (a.getPlan().getID() < b.getPlan().getID()) {
-            return false;
-        } else if (b.getPlan().getID() > b.getPlan().getID()) {
             return true;
+        } else if (b.getPlan().getID() > b.getPlan().getID()) {
+            return false;
         }
         // Now we are sure that both partial assignments have the same utility and the same plan id
         if (a.getAssignedAgentCount() < b.getAssignedAgentCount()) {
-            return true;
-        } else if (a.getAssignedAgentCount() > b.getAssignedAgentCount()) {
             return false;
+        } else if (a.getAssignedAgentCount() > b.getAssignedAgentCount()) {
+            return true;
         }
         if (a.getUtility().getMin() < b.getUtility().getMin()) {
             // other has higher actual utility
-            return true;
+            return false;
         } else if (a.getUtility().getMin() > b.getUtility().getMin()) {
             // this has higher actual utility
-            return false;
+            return true;
         }
         for (int i = 0; i < a.assignment.size(); i++) {
             if (a.assignment.get(i) < b.assignment.get(i)) {
-                return true;
-            } else if (a.assignment.get(i) > b.assignment.get(i)) {
                 return false;
+            } else if (a.assignment.get(i) > b.assignment.get(i)) {
+                return true;
             }
         }
         return false;
@@ -240,7 +257,7 @@ public class PartialAssignment implements Comparable<PartialAssignment> {
         out += "Plan: " + (p != null ? p.getName() : "NULL") + "\n";
         out += "Utility: " + this.utility + "\n";
         out += "Agents: ";
-        for (long agent : this.problem.getAgents()) {
+        for (ID agent : this.problem.getAgents()) {
             out += agent + " ";
         }
         out += "\n";
@@ -251,11 +268,13 @@ public class PartialAssignment implements Comparable<PartialAssignment> {
             }
         }
         out += "\n";
-        out += " Assigned Agents: " + "\n";
+        out += "Assigned Agents: ";
         int i = 0;
         for (int idx : this.assignment) {
-            out += "Agent: " + this.problem.getAgents().get(i) + " Ep: " + idx + "\n";
-            ++i;
+            if (idx == -1)
+                break;
+            out += "  Agent: " + this.problem.getAgents().get(i) + " Ep: " + idx + ", ";
+            i++;
         }
         out += "\n";
         return out;

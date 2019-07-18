@@ -95,8 +95,8 @@ public class State extends AlicaElement {
             ss +=((AlicaElement)trans).toString();
         }
         ss +=indent + "\tAbstract Plans: " + "\n";
-        for ( AbstractPlan plans : this.plans) {
-            ss +=((AlicaElement)plans).toString();
+        for ( AbstractPlan plan : this.plans) {
+            ss +=((AlicaElement)plan).toString();
         }
         ss +=indent + "\tVariable Bindings: " + "\n";
         for ( VariableBinding binding : this.variableBindingGrp) {

@@ -4,6 +4,7 @@ import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.RunningPlan;
 import de.uniks.vs.jalica.engine.collections.AgentVariables;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 
 import java.util.ArrayList;
 
@@ -28,7 +29,7 @@ public abstract class Quantifier extends AlicaElement {
         this.scopeType = Scope.PLANSCOPE;
     }
 
-    abstract boolean isAgentInScope(long id, RunningPlan runningPlan) ;
+    abstract boolean isAgentInScope(ID id, RunningPlan runningPlan) ;
     abstract boolean addDomainVariables(RunningPlan p, ArrayList<AgentVariables> ioAgentVarsInScope);
 
     public void setScope( AlicaElement element) {

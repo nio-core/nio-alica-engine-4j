@@ -83,4 +83,9 @@ public class AlicaTime  {
     public AlicaTime add(AlicaTime time) {
         return new AlicaTime().inNanoseconds(this.time + time.time);
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(this.inNanoseconds());
+    }
 }

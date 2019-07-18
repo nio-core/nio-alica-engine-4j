@@ -37,6 +37,7 @@ public class Role extends AlicaElement {
     }
 
     public double getPriority(long taskId) {
+        // TODO: in a future step handle possible unknown tasks
         return roleTaskMapping.getTaskPriorities().get(taskId);
     }
 }

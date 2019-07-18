@@ -1,9 +1,11 @@
 package de.uniks.vs.jalica.engine.authority;
 
+import de.uniks.vs.jalica.common.ExtArrayList;
 import de.uniks.vs.jalica.engine.*;
 import de.uniks.vs.jalica.engine.common.Pair;
 import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.engine.containers.messages.AllocationAuthorityInfo;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.AbstractPlan;
 import de.uniks.vs.jalica.engine.model.EntryPoint;
 import de.uniks.vs.jalica.engine.model.Plan;
@@ -30,12 +32,12 @@ public class CycleManager {
     };
 
     private AlicaEngine ae;
-    private ArrayList<AllocationDifference> allocationHistory;
+    private ExtArrayList<AllocationDifference> allocationHistory;
     private int newestAllocationDifference;
     private int maxAllocationCycles;
     private boolean enabled;
 
-    private long myID;
+    private ID myID;
 
     private AlicaTime overrideTimestamp;
     private double intervalIncFactor;
@@ -67,7 +69,7 @@ public class CycleManager {
         this.intervalDecFactor = Double.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.IntervalDecreaseFactor"));
 
         int historySize = Integer.valueOf((String) sc.get("Alica").get("Alica.CycleDetection.HistorySize"));
-        this.allocationHistory = new ArrayList<>(historySize);
+        this.allocationHistory = new ExtArrayList<>(AllocationDifference::new, historySize);
 
         this.rp = p;
         this.myID = ae.getTeamManager().getLocalAgentID();
@@ -110,7 +112,7 @@ public class CycleManager {
     }
 
     public boolean isOverridden() {
-        return this.state == CycleState.overridden && this.fixedAllocation.authority != -1;
+        return this.state == CycleState.overridden && this.fixedAllocation.authority != null;
     }
 
     public AllocationDifference getNextDifference() {
@@ -140,14 +142,14 @@ public class CycleManager {
                 AgentStatePairs newAgents = newAss.getAgentStates(i);
                 AgentStatePairs oldAgents = oldAss.getAgentStates(i);
 
-                for (Pair<Long, State> oldp : oldAgents.getData()) {
+                for (Pair<ID, State> oldp : oldAgents.getData()) {
 
                     if (!newAgents.hasAgent(oldp.fst)) {
                         aldif.getSubtractions().add(new EntryPointAgentPair(newAss.getEntryPoint(i), oldp.fst));
                     }
                 }
 
-                for (Pair<Long, State> newp : newAgents.getData()) {
+                for (Pair<ID, State> newp : newAgents.getData()) {
 
                     if (!oldAgents.hasAgent(newp.fst)) {
                         aldif.getAdditions().add(new EntryPointAgentPair(newAss.getEntryPoint(i), newp.fst));
@@ -158,13 +160,13 @@ public class CycleManager {
 
             for (int i = 0; i < oldEpCount; ++i) {
 
-                for (Pair<Long, State> oldp : oldAss.getAgentStates(i).getData()) {
+                for (Pair<ID, State> oldp : oldAss.getAgentStates(i).getData()) {
                     aldif.getSubtractions().add(new EntryPointAgentPair(oldAss.getEntryPoint(i), oldp.fst));
                 }
             }
             for (int i = 0; i < newAss.getEntryPointCount(); ++i) {
 
-                for (Pair<Long, State> newp : newAss.getAgentStates(i).getData()) {
+                for (Pair<ID, State> newp : newAss.getAgentStates(i).getData()) {
                     aldif.getAdditions().add(new EntryPointAgentPair(newAss.getEntryPoint(i), newp.fst));
                 }
             }
@@ -181,11 +183,11 @@ public class CycleManager {
         if (!enabled) {
             return;
         }
-        long rid = aai.authority;
+        ID rid = aai.authority;
         if (rid == myID) {
             return;
         }
-        if (rid > myID) {
+        if (rid.asLong() > myID.asLong()) {
             System.out.println("CM: Assignment overridden in " + this.rp.getActivePlan().getName());
             this.state = CycleState.overridden;
             this.overrideShoutTime = this.ae.getAlicaClock().now();
@@ -223,7 +225,7 @@ public class CycleManager {
     public boolean applyAssignment() {
         System.out.println("CM: Setting authorative assignment for plan " + rp.getActivePlan().getName());
 
-        if (this.fixedAllocation.authority == -1) {
+        if (this.fixedAllocation.authority == null) {
             return false;
         }
         EntryPoint myEntryPoint = null;
@@ -241,7 +243,7 @@ public class CycleManager {
         modifiedSelf = true;
     } else {
         for (EntryPointAgents epr : this.fixedAllocation.entryPointAgents) {
-            for (long robot : epr.agents) {
+            for (ID robot : epr.agents) {
                  EntryPoint e = this.ae.getPlanRepository().getEntryPoints().get(epr.entrypoint);
                 boolean changed = rp.getAssignment().updateAgent(robot, e);
                 if (changed) {
@@ -263,7 +265,7 @@ public class CycleManager {
             rp.setAllocationNeeded(true);
         } else {
             if (rp.getActiveState() != null) {
-                ArrayList<Long> robotsJoined = new ArrayList<>();
+                ArrayList<ID> robotsJoined = new ArrayList<>();
                 rp.getAssignment().getAgentsInState(rp.getActiveState(), robotsJoined);
                 for (RunningPlan c : rp.getChildren()) {
                     c.limitToRobots(robotsJoined);

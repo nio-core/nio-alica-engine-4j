@@ -56,7 +56,7 @@ public class StaticRoleAssignment extends IRoleAssignment {
 
             for ( Role role : roles.values()) {
                 // make entry in the map if the roles match
-                if (role.getName() == prop.getDefaultRole()) {
+                if (role.getName().equals(prop.getDefaultRole())) {
                     System.out.println("Static RA: Setting Role " + role.getName() + " for robot ID " + agent.getId());
                     this.robotRoleMapping.put(agent.getId(), role);
 
@@ -76,7 +76,7 @@ public class StaticRoleAssignment extends IRoleAssignment {
             }
 
             if (!roleIsAssigned) {
-                CommonUtils.aboutWarning("RA: Could not set a role (Default: " + prop.getDefaultRole() + ") for robot: " + agent.getId());
+                CommonUtils.aboutError("RA: Could not set a role (Default: " + prop.getDefaultRole() + ") for robot: " + agent.getId());
             }
         }
     }

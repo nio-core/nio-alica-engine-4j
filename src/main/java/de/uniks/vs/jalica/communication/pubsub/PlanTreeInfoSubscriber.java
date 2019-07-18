@@ -32,11 +32,11 @@ public class PlanTreeInfoSubscriber extends ZMQSubscriber {
                         continue;
 
                     if (CommonUtils.COMM_debug) System.out.println("PTI-Sub(" + alicaZMQCommunication.getAe().getTeamManager().getLocalAgent().getName() +") " + string);
-
-
                         JSONObject jsonObject = (JSONObject)JSONValue.parseWithException(string.replace(topic, ""));
                         PlanTreeInfo pti = new PlanTreeInfo();
-                        pti.senderID = (Long) jsonObject.get("senderID");
+//                        pti.senderID = (Long) jsonObject.get("senderID");
+//                        pti.senderID = alicaZMQCommunication.getAe().getId((String)jsonObject.get("senderID"));
+                        pti.senderID = alicaZMQCommunication.getAe().getId((Long)jsonObject.get("senderID"));
 
                         for ( Object i : (JSONArray) jsonObject.get("stateIDs")) {
                             pti.stateIDs.add((Long) i);
@@ -45,7 +45,8 @@ public class PlanTreeInfoSubscriber extends ZMQSubscriber {
                         for (Object i : (JSONArray) jsonObject.get("succeededEPs")) {
                             pti.succeededEPs.add((Long) i);
                         }
-//                        if (CommonUtils.COMM_debug) System.out.println("PTI-Sub: pti" + pti);
+                        if (CommonUtils.COMM_debug) {};
+                        System.out.println("PTI-Sub("+alicaZMQCommunication.getAe().getTeamManager().getLocalAgentID()+"): pti " + pti);
                         alicaZMQCommunication.handlePlanTreeInfo(pti);
                     } catch (ParseException e) {
                         e.printStackTrace();

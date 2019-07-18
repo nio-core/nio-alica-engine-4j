@@ -12,12 +12,20 @@ public class ID {
 
     private final UUID uuid;
 
+    private long longID = -1;
+
     public ID() {
         uuid = generateUUIDV4();
+        longID = this.getLongID();
     }
 
     public ID(String namespace, String name) {
         uuid = generateUUIDV3(namespace, name);
+        longID = this.getLongID();
+    }
+
+    public long asLong() {
+        return this.longID;
     }
 
     public String hyphenEliminated() {
@@ -39,7 +47,7 @@ public class ID {
         return UUID.nameUUIDFromBytes(bytes);
     }
 
-    public long asLong() {
+    private long getLongID() {
         long longID = uuid.getMostSignificantBits() & Long.MAX_VALUE;
         if (longID < 0) CommonUtils.aboutError("Negative long ID");
         return longID;
@@ -55,5 +63,10 @@ public class ID {
 //            longID = uuid.getMostSignificantBits() & Long.MAX_VALUE;
 //            System.out.println(val);
 //        }
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(this.longID);
     }
 }

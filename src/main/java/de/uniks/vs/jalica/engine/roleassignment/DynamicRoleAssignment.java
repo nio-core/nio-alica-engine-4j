@@ -4,6 +4,7 @@ import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.IRoleAssignment;
 import de.uniks.vs.jalica.engine.common.SystemConfig;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.Characteristic;
 import de.uniks.vs.jalica.engine.collections.AgentProperties;
 import de.uniks.vs.jalica.engine.containers.RoleSwitch;
@@ -22,7 +23,7 @@ public class DynamicRoleAssignment extends IRoleAssignment {
     private AlicaEngine ae;
     private boolean updateRoles;
 
-    private HashMap<Long, Agent> activeAgents;
+    private HashMap<ID, Agent> activeAgents;
     private ArrayList<RoleUtility> sortedAgentRoleUtility;
     private Agent localAgent;
 
@@ -133,6 +134,8 @@ public class DynamicRoleAssignment extends IRoleAssignment {
                 continue;
             }
             if (CommonUtils.RA_DEBUG_debug) System.out.println("DRA(" + this.localAgent.getProperties().extractID(name, sc) + "):     put teamObserver mapping (agentID:" + agentRoleUtility.getAgent().getProperties().extractID(name, sc) + " role:" + agentRoleUtility.getRole().getName() + ")");
+
+
             this.robotRoleMapping.put(agentRoleUtility.getAgent().getProperties().extractID(name, sc), agentRoleUtility.getRole());
 
             if (this.localAgent.getProperties().extractID(name, sc) == agentRoleUtility.getAgent().getProperties().extractID(name, sc)) {
@@ -162,6 +165,8 @@ public class DynamicRoleAssignment extends IRoleAssignment {
         SystemConfig sc = this.ae.getSystemConfig();
         System.out.print("DRA("+this.localAgent.getProperties().extractID(name, sc)+"): Available agents: " + this.activeAgents.size());
         System.out.print("   agent Ids: ");
+        System.out.println("\nDRA("+this.localAgent.getProperties().extractID(name, sc)+"): " + this.activeAgents.size());
+        System.out.println("DRA("+this.localAgent.getProperties().extractID(name, sc)+"): " + this.activeAgents.keySet());
 
         for (Agent agent : this.activeAgents.values()) {
             System.out.print(agent.getProperties().extractID(name, sc) + ":" + agent.getProperties().getName() + " , ");

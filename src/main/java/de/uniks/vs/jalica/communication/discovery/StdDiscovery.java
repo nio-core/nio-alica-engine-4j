@@ -9,10 +9,7 @@ import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.NetworkInterface;
+import java.net.*;
 import java.util.*;
 
 public class StdDiscovery extends Discovery implements Runnable {
@@ -35,7 +32,7 @@ public class StdDiscovery extends Discovery implements Runnable {
 
 
     public StdDiscovery(AlicaZMQCommunication communication, ZContext context, ZMQ.Socket subscriber, MessageTopics topics) {
-        this.ownID = communication.getAe().getSystemConfig().getOwnAgentID();
+        this.ownID = communication.getAe().getTeamManager().getLocalAgentID();
         this.communication = communication;
         this.context = context;
         this.subscriber = subscriber;
@@ -48,7 +45,7 @@ public class StdDiscovery extends Discovery implements Runnable {
         try {
             initMulticastListener();
         } catch (IOException e) {
-            e.printStackTrace();
+            return;
         }
         startDiscovery();
     }
@@ -61,6 +58,9 @@ public class StdDiscovery extends Discovery implements Runnable {
             interfaceName = interfaces.get(0).getName();
         }
         NetworkInterface networkInterface = NetworkInterface.getByName(interfaceName);
+
+        if(networkInterface  == null)
+            return;
         Enumeration<InetAddress> inetAddresses = networkInterface.getInetAddresses();
         InetAddress inetAddress = inetAddresses.nextElement();
 
@@ -115,13 +115,17 @@ public class StdDiscovery extends Discovery implements Runnable {
                         DatagramPacket pack = new DatagramPacket(buf, buf.length);
                         multicastSocket.receive(pack);
                         String message = new String(pack.getData(), 0, pack.getLength());
-                        hosts.put(pack.getAddress().getHostAddress(), System.currentTimeMillis());
-                        Long agentID = Long.valueOf(message);
+                        System.out.println("SD: Multicast to Agent("+ownID+")  "+getAvailableHosts() + " " + message);
+
+                        try {
+                            Long agentID = Long.parseLong(message);
+                            hosts.put(pack.getAddress().getHostAddress(), System.currentTimeMillis());
 //                        System.out.println("Agent("+ownID+")  "+getAvailableHosts() + " " + message);
 
-                        if (!commNodes.containsKey(agentID)) {
-                            commNodes.put(agentID, new NetworkNode(context, agentID, topics, communication, subscriber));
-                        }
+                            if (!commNodes.containsKey(agentID)) {
+                                commNodes.put(agentID, new NetworkNode(context, agentID, topics, communication, subscriber));
+                            }
+                        } catch (NumberFormatException e) {}
                     }
                     multicastSocket.leaveGroup(InetAddress.getByName(MULTICAST_IP));
                 } catch (IOException e) {

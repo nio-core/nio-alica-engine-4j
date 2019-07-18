@@ -7,6 +7,7 @@ import de.uniks.vs.jalica.engine.Assignment;
 import de.uniks.vs.jalica.engine.RunningPlan;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.containers.EntryPointAgents;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 
 import java.util.Vector;
 import java.util.concurrent.locks.Lock;
@@ -19,12 +20,12 @@ public class AuthorityManager {
 
     Vector<AllocationAuthorityInfo> queue = new Vector<>();
     AlicaEngine engine;
-    long localAgentID;
+    ID localAgentID;
     Lock mutex;
 
     public AuthorityManager(AlicaEngine ae) {
         this.engine = ae;
-        this.localAgentID = -1;
+        this.localAgentID = null;
     }
 
     public void init() {
@@ -38,10 +39,10 @@ public class AuthorityManager {
         }
         if ((aai.senderID) != this.localAgentID) {
             this.engine.getTeamManager().setTimeLastMsgReceived(aai.senderID, now);
-            if ((aai.senderID) > this.localAgentID) {
+            if ((aai.senderID.asLong()) > this.localAgentID.asLong()) {
                 // notify TO that evidence about other robots is available
                 for (EntryPointAgents epr : aai.entryPointAgents) {
-                    for (long rid : epr.agents) {
+                    for (ID rid : epr.agents) {
                         if (rid != this.localAgentID) {
                             this.engine.getTeamManager().setTimeLastMsgReceived(rid, now);
                         }

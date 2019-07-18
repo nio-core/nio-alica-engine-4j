@@ -20,7 +20,7 @@ public class UDPMulticastSender extends Thread {
             send("SenderThread: hi");
     }
 
-    public void send(String message) {
+    public boolean send(String message) {
         try {
             MulticastSocket socket = new MulticastSocket();
             socket.setTimeToLive(1);
@@ -30,9 +30,10 @@ public class UDPMulticastSender extends Thread {
             socket.close();
             sleep(50);
         } catch (IOException e) {
-            e.printStackTrace();
+            return false;
         } catch (InterruptedException e) {
             // we don't care about sleep() being interrupted
         }
+        return true;
     }
 }

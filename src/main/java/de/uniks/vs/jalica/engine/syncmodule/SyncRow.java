@@ -1,6 +1,7 @@
 package de.uniks.vs.jalica.engine.syncmodule;
 
 import de.uniks.vs.jalica.engine.common.SyncData;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -13,7 +14,7 @@ public class SyncRow {
     SyncData syncData;
     boolean haveData;
     // this vector always has to be sorted
-    ArrayList<Long> receivedBy;
+    ArrayList<ID> receivedBy;
 
     public SyncRow() {
         this.haveData = false;
@@ -26,12 +27,15 @@ public class SyncRow {
         this.receivedBy = new ArrayList<>();
     }
 
-    ArrayList<Long> getReceivedBy() {
-        this.receivedBy.sort(Comparator.naturalOrder());
+    ArrayList<ID> getReceivedBy() {
+        //TODO: check sorting
+        this.receivedBy.sort(Comparator.comparing(value -> value.asLong()));
+//        this.receivedBy.sort((o1, o2) -> (o1.asLong() < o2.asLong() ? -1 : 1));
+//        this.receivedBy.sort(Comparator.naturalOrder());
         return this.receivedBy;
     }
 
-    void setReceivedBy(ArrayList<Long> receivedBy) {
+    void setReceivedBy(ArrayList<ID> receivedBy) {
         this.receivedBy = receivedBy;
     }
 
@@ -53,10 +57,10 @@ public class SyncRow {
 
 
     @Override
-    public java.lang.String toString() { // TODO: fix this method (doesnt produce a string, but write to cout)
+    public String toString() { // TODO: fix this method (doesnt produce a string, but write to cout)
         String s = "SyncRow" + "\n";
         s += "ReceivedBy: " + "\n";
-        for (long i : this.receivedBy) {
+        for (ID i : this.receivedBy) {
             s += i + " ";
         }
         s += "\n";

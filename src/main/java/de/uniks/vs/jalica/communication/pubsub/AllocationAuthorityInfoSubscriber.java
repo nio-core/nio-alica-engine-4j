@@ -40,9 +40,10 @@ public class AllocationAuthorityInfoSubscriber extends ZMQSubscriber {
                             JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(string.replace(topic, ""));
                             AllocationAuthorityInfo allocationAuthorityInfo = new AllocationAuthorityInfo();
 
-                            allocationAuthorityInfo.senderID = (Long) jsonObject.get("senderID");
+//                            allocationAuthorityInfo.senderID = (Long) jsonObject.get("senderID");
+                            allocationAuthorityInfo.senderID = alicaZMQCommunication.getAe().getId((String) jsonObject.get("senderID"));
                             allocationAuthorityInfo.planType = (Long) jsonObject.get("planType");
-                            allocationAuthorityInfo.authority = (Long) jsonObject.get("planType");
+                            allocationAuthorityInfo.authority = alicaZMQCommunication.getAe().getId((String)jsonObject.get("authority"));
                             allocationAuthorityInfo.planID = (Long) jsonObject.get("planID");
                             allocationAuthorityInfo.parentState = (Long) jsonObject.get("parentState");
 
@@ -52,7 +53,7 @@ public class AllocationAuthorityInfoSubscriber extends ZMQSubscriber {
                                 entryPointAgents.entrypoint = (long) obj.get("entryPoint");
 
                                 for (Object _i : (JSONArray) obj.get("robots")) {
-                                    entryPointAgents.agents.add((long) _i);
+                                    entryPointAgents.agents.add(alicaZMQCommunication.getAe().getId((String) _i));
                                 }
                                 allocationAuthorityInfo.entryPointAgents.add(entryPointAgents);
                             }

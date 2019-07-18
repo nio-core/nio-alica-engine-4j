@@ -3,7 +3,7 @@ package de.uniks.vs.jalica.engine;
 import de.uniks.vs.jalica.engine.model.AbstractPlan;
 import de.uniks.vs.jalica.engine.model.EntryPoint;
 import de.uniks.vs.jalica.engine.model.Plan;
-import de.uniks.vs.jalica.engine.views.AssignmentView;
+import de.uniks.vs.jalica.engine.teammanagement.view.AssignmentView;
 
 public class ThreadSafePlanInterface {
 

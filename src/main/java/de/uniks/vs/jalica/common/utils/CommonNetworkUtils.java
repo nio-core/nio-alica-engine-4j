@@ -158,7 +158,9 @@ public class CommonNetworkUtils {
             return false;
         receiverThread.start();
         final UDPMulticastSender senderThread = new UDPMulticastSender("230.0.0.1", 4447);
-        senderThread.send("PING");
+
+        if (!senderThread.send("PING"))
+            return false;
         receiverThread.interrupt();
         senderThread.interrupt();
         return (receiverThread.getHosts().size() > 0 && (receiverThread.getHosts().values().contains("PING"))) ? true : false;

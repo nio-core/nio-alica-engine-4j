@@ -15,6 +15,7 @@ import java.util.Map;
  */
 public class Behaviour extends AbstractPlan {
 
+    BasicBehaviour implementation;
     /**
      * Specifies whether this Behaviour is run eventDriven. If it is not event driven, a timer will call it according to
      * Frequency and Deferring.
@@ -56,6 +57,10 @@ public class Behaviour extends AbstractPlan {
     public PreCondition getPreCondition()  { return this.preCondition; }
     public PostCondition getPostCondition()  { return this.postCondition; }
     public HashMap<String, String> getParameters()  { return this.parameters; }
+    public BasicBehaviour getImplementation() {
+        return implementation;
+    }
+
 
     public void setDeferring(int deferring) {
         this.deferring = deferring;
@@ -109,8 +114,12 @@ public class Behaviour extends AbstractPlan {
         this.parameters = parameters;
     }
 
+    public void setImplementation(BasicBehaviour implementation) {
+        this.implementation = implementation;
+    }
+
     public boolean isFinished() {
-        CommonUtils.aboutImplIncomplete("reimplement (see old behaviour version)");
-        return false;
+//        CommonUtils.aboutImplIncomplete("reimplement (see old behaviour version)");
+        return getImplementation().isFinished() || getImplementation().isSuccess();
     }
 }

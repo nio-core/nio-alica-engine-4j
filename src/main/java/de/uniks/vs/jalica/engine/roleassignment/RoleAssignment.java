@@ -3,6 +3,7 @@ package de.uniks.vs.jalica.engine.roleassignment;
 import de.uniks.vs.jalica.engine.IAlicaCommunication;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.IRoleAssignment;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.Role;
 import de.uniks.vs.jalica.engine.model.RoleSet;
 import de.uniks.vs.jalica.engine.collections.AgentProperties;
@@ -60,7 +61,8 @@ public abstract class RoleAssignment extends IRoleAssignment {
     }
 
     @Override
-    public Role getRole(long agentID) {
+    public Role getRole(ID agentID) {
+        CommonUtils.aboutNoImpl();
 //        Role role = this.agentRoleMapping.get(agentID);
 //
 //        if (role != null) {

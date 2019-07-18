@@ -1,11 +1,11 @@
 package de.uniks.vs.jalica.engine;
 
-import de.uniks.vs.jalica.engine.common.SystemConfig;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.*;
 import de.uniks.vs.jalica.engine.authority.AllocationDifference;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
+import de.uniks.vs.jalica.engine.planselection.DoubleWrapper;
 import de.uniks.vs.jalica.engine.planselection.PlanSelector;
-import de.uniks.vs.jalica.engine.syncmodule.ISyncModule;
 import de.uniks.vs.jalica.engine.syncmodule.SyncModule;
 import de.uniks.vs.jalica.engine.teammanagement.TeamManager;
 import de.uniks.vs.jalica.engine.teammanagement.TeamObserver;
@@ -62,7 +62,7 @@ public class RuleBook {
             changeRecord = PlanChange.NoChange;
             changeRecord = updateChange(changeRecord, synchTransitionRule(r));
             PlanChange transChange = transitionRule(r);
-            while (transChange != PlanChange.NoChange && ++changes < this.maxConsecutiveChanges) {
+            while (transChange != PlanChange.NoChange && changes++ < this.maxConsecutiveChanges) {
                 changeRecord = updateChange(changeRecord, transChange);
                 transChange = transitionRule(r);
             }
@@ -120,9 +120,10 @@ public class RuleBook {
     }
 
     public RunningPlan initialisationRule( Plan masterPlan) {
-        System.out.println("RB: Init-Rule called.");
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: Init-Rule called.");
+
         if (masterPlan.getEntryPoints().size() != 1) {
-            System.out.println("RB: Masterplan does not have exactly one task!");
+            if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: Masterplan does not have exactly one task!");
         }
 
         RunningPlan main = this.pb.makeRunningPlan(masterPlan);
@@ -139,8 +140,8 @@ public class RuleBook {
 
     PlanChange dynamicAllocationRule(RunningPlan r) {
         assert(!r.isRetired());
-        System.out.println("RB: dynAlloc-Rule called.");
-        System.out.println("RB: dynAlloc RP \n" + r);
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: dynAlloc-Rule called.");
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: dynAlloc RP \n" + r);
 
         if (r.isAllocationNeeded() || r.isBehaviour()) {
             return PlanChange.NoChange;
@@ -154,9 +155,9 @@ public class RuleBook {
 
         RunningPlan parent = r.getParent();
 
-        ArrayList<Long> robots = new ArrayList<>();
+        ArrayList<ID> robots = new ArrayList<>();
         parent.getAssignment().getAgentsInState(parent.getActiveState(), robots);
-        double curUtil = 0.0;
+        DoubleWrapper curUtil = new DoubleWrapper(0);
         RunningPlan newr = this.ps.getBestSimilarAssignment(r, robots, curUtil);
 
         if (newr == null) {
@@ -165,12 +166,12 @@ public class RuleBook {
         Plan p = (Plan)(r.getActivePlan());
 
         double possibleUtil = newr.getAssignment().getLastUtilityValue();
-        System.out.println("RB: Old U " + curUtil + " | "
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: Old U " + curUtil + " | "
                 + " New U:" + possibleUtil);
-        CommonUtils.aboutWarningNotification(curUtil < -0.99, "#############Assignment is valid?: " + r.getAssignment().isValid() + "\n" + r);
-        System.out.println("RB: New Assignment" + newr.getAssignment() + "\n" + "RB: Old Assignment" + r.getAssignment());
+        CommonUtils.aboutWarningNotification(curUtil.value < -0.99, "#############Assignment is valid?: " + r.getAssignment().isValid() + "\n" + r);
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: New Assignment" + newr.getAssignment() + "\n" + "RB: Old Assignment" + r.getAssignment());
 
-        if (possibleUtil - curUtil > p.getUtilityThreshold()) {
+        if (possibleUtil - curUtil.value > p.getUtilityThreshold()) {
             // cout + "RB: AllocationDifference.Reason.utility " + endl;
             r.getCycleManagement().setNewAllocDiff(r.getAssignment(), newr.getAssignment(), AllocationDifference.Reason.utility);
          State before = r.getActiveState();
@@ -179,7 +180,7 @@ public class RuleBook {
                 r.setAllocationNeeded(true);
             }
 
-            System.out.println("RB: B4 dynChange: Util is " + curUtil + " | "
+            if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: B4 dynChange: Util is " + curUtil + " | "
                     + " suggested is " + possibleUtil + " | "
                     + " threshold " + p.getUtilityThreshold() + "\n"
                     + "RB: DynAlloc in " + p.getName());
@@ -192,26 +193,25 @@ public class RuleBook {
 
     PlanChange authorityOverrideRule(RunningPlan r) {
         assert(!r.isRetired());
-        System.out.println("RB: AuthorityOverride-Rule called.");
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: AuthorityOverride-Rule called.");
 
         if (r.isBehaviour()) {
             return PlanChange.NoChange;
         }
-        System.out.println("RB: AuthorityOverride RP \n" + r);
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: AuthorityOverride RP \n" + r);
 
         if (r.getCycleManagement().isOverridden()) {
             if (r.getCycleManagement().applyAssignment()) {
                this.log.eventOccurred("AuthorityOverride(", r.getActivePlan().getName(), ")");
-                System.out.println("RB: Authorative set assignment of " + r.getActivePlan().getName() + " is:" + r.getAssignment());
+                if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: Authorative set assignment of " + r.getActivePlan().getName() + " is:" + r.getAssignment());
                 return PlanChange.InternalChange;
             }
         }
         return PlanChange.NoChange;
     }
 
-    PlanChange planAbortRule(RunningPlan r)
-    {
-        assert(!r.isRetired());
+    PlanChange planAbortRule(RunningPlan r) {
+        assert (!r.isRetired());
         if (r.isFailureHandlingNeeded())
             return PlanChange.NoChange;
         if (r.isBehaviour())
@@ -223,21 +223,25 @@ public class RuleBook {
 
         if ((r.getActiveState() != null && r.getActiveState().isFailureState()) || !r.getAssignment().isValid() || !r.isRuntimeConditionValid()) {
 
-        System.out.println("RB: PlanAbort-Rule called.");
-        System.out.println("RB: PlanAbort RP \n" + r);
-        System.out.println("RB: PlanAbort " + r.getActivePlan().getName());
-        r.addFailure();
-       this.log.eventOccurred("PAbort(", r.getActivePlan().getName(), ")");
-        return PlanChange.FailChange;
-    }
+            System.out.println("RB: PlanAbort "+ (r.getActiveState() != null && r.getActiveState().isFailureState()));
+            System.out.println("RB: PlanAbort "+ !r.getAssignment().isValid());
+            System.out.println("RB: PlanAbort "+ !r.isRuntimeConditionValid());
+
+            if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanAbort-Rule called.");
+            if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanAbort RP \n" + r);
+            if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanAbort " + r.getActivePlan().getName());
+            r.addFailure();
+            this.log.eventOccurred("PAbort(", r.getActivePlan().getName(), ")");
+            return PlanChange.FailChange;
+        }
         return PlanChange.NoChange;
     }
 
     PlanChange planRedoRule(RunningPlan r)
     {
         assert(!r.isRetired());
-        System.out.println("RB: PlanRedoRule-Rule called.");
-        System.out.println("RB: PlanRedoRule RP \n" + r);
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanRedoRule-Rule called.");
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanRedoRule RP \n" + r);
 
         if (r.getParent() == null || !r.isFailureHandlingNeeded() || r.isBehaviour())
             return PlanChange.NoChange;
@@ -247,7 +251,7 @@ public class RuleBook {
             return PlanChange.NoChange;
         if (r.getActiveState() == r.getActiveEntryPoint().getState()) {
         r.addFailure();
-        System.out.println("RB: PlanRedoRule not executed for " + r.getActivePlan().getName()
+            if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanRedoRule not executed for " + r.getActivePlan().getName()
                 + "- Unable to repair, as the current state is already the initial state.");
 
         return PlanChange.FailChange;
@@ -260,7 +264,7 @@ public class RuleBook {
         r.useState(r.getActiveEntryPoint().getState());
         r.setAllocationNeeded(true);
 
-        System.out.println("RB: PlanRedoRule executed for " + r.getActivePlan().getName());
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanRedoRule executed for " + r.getActivePlan().getName());
 
        this.log.eventOccurred("PRedo(", r.getActivePlan().getName(), ")");
         return PlanChange.InternalChange;
@@ -269,8 +273,8 @@ public class RuleBook {
     PlanChange planReplaceRule(RunningPlan r)
     {
         assert(!r.isRetired());
-        System.out.println("RB: PlanReplace-Rule called.");
-        System.out.println("RB: PlanReplace RP \n" + r);
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanReplace-Rule called.");
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanReplace RP \n" + r);
 
         if (r.getParent() == null || !r.isFailureHandlingNeeded() || r.isBehaviour())
             return PlanChange.NoChange;
@@ -288,17 +292,16 @@ public class RuleBook {
         }
         r.setFailureHandlingNeeded(false);
 
-        System.out.println("RB: PlanReplace" + r.getActivePlan().getName());
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanReplace" + r.getActivePlan().getName());
 
        this.log.eventOccurred("PReplace(", r.getActivePlan().getName(), ")");
         return PlanChange.FailChange;
     }
 
-    PlanChange planPropagationRule(RunningPlan r)
-    {
-        assert(!r.isRetired());
-        System.out.println("RB: PlanPropagation-Rule called.");
-        System.out.println("RB: PlanPropagation RP \n" + r);
+    PlanChange planPropagationRule(RunningPlan r) {
+        assert (!r.isRetired());
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanPropagation-Rule called.");
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanPropagation RP \n" + r);
 
         if (r.getParent() == null || !r.isFailureHandlingNeeded() || r.isBehaviour())
             return PlanChange.NoChange;
@@ -307,39 +310,39 @@ public class RuleBook {
         r.getParent().addFailure();
         r.setFailureHandlingNeeded(false);
 
-        System.out.println("RB: PlanPropagation " + r.getActivePlan().getName());
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanPropagation " + r.getActivePlan().getName());
 
-       this.log.eventOccurred("PProp(", r.getActivePlan().getName(), ")");
+        this.log.eventOccurred("PProp(", r.getActivePlan().getName(), ")");
         return PlanChange.FailChange;
     }
 
-    PlanChange allocationRule(RunningPlan rp)
-    {
+    PlanChange allocationRule(RunningPlan rp) {
         assert(!rp.isRetired());
-        System.out.println("RB: Allocation-Rule called.");
-        System.out.println("RB: Allocation RP \n" + rp);
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: Allocation-Rule called.");
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: Allocation RP \n" + rp);
 
         if (!rp.isAllocationNeeded()) {
             return PlanChange.NoChange;
         }
         rp.setAllocationNeeded(false);
 
-        ArrayList<Long> agents = new ArrayList<>();
+        ArrayList<ID> agents = new ArrayList<>();
         rp.getAssignment().getAgentsInState(rp.getActiveState(), agents);
 
-        System.out.println(rp.getActiveState().getPlans().size() + " Plans in State " + rp.getActiveState().getName());
+        if (CommonUtils.RB_DEBUG_debug) System.out.println(rp.getActiveState().getPlans().size() + " Plans in State " + rp.getActiveState().getName());
 
         ArrayList<RunningPlan> children = new ArrayList<>();
-        boolean ok =this.ps.getPlansForState(rp, rp.getActiveState().getPlans(), agents, children);
+        boolean ok = this.ps.getPlansForState(rp, rp.getActiveState().getPlans(), agents, children);
+
         if (!ok || children.size() < rp.getActiveState().getPlans().size()) {
-        rp.addFailure();
-        System.out.println("RB: PlanAllocFailed " + rp.getActivePlan().getName());
-        return PlanChange.FailChange;
-    }
+            rp.addFailure();
+            if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanAllocFailed " + rp.getActivePlan().getName());
+            return PlanChange.FailChange;
+        }
         rp.addChildren(children);
 
-        System.out.println("RB: after add children");
-        System.out.println("RB: PlanAlloc " + rp.getActivePlan().getName());
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: after add children");
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanAlloc " + rp.getActivePlan().getName());
 
         if (!children.isEmpty()) {
            this.log.eventOccurred("PAlloc(", rp.getActivePlan().getName(), " in State ", rp.getActiveState().getName(), ")");
@@ -351,8 +354,9 @@ public class RuleBook {
     PlanChange topFailRule(RunningPlan r)
     {
         assert(!r.isRetired());
-        System.out.println("RB: TopFail-Rule called.");
-        System.out.println("RB: TopFail RP \n" + r);
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: TopFail-Rule called.");
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: TopFail RP \n" + r);
+        if (CommonUtils.RB_DEBUG_debug) System.out.flush();
 
         if (r.getParent() != null)
             return PlanChange.NoChange;
@@ -370,7 +374,7 @@ public class RuleBook {
             r.useState(ep.getState());
             r.clearFailedChildren();
 
-            System.out.println("RB: PlanTopFail " + r.getActivePlan().getName());
+            if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: PlanTopFail " + r.getActivePlan().getName());
 
            this.log.eventOccurred("TopFail");
             return PlanChange.InternalChange;
@@ -378,47 +382,45 @@ public class RuleBook {
         return PlanChange.NoChange;
     }
 
-    PlanChange transitionRule(RunningPlan r)
-    {
-        assert(!r.isRetired());
-        System.out.println("RB: Transition-Rule called.");
-        System.out.println("RB: Transition RP \n" + r);
+    PlanChange transitionRule(RunningPlan r) {
+        assert (!r.isRetired());
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: Transition-Rule called.");
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: Transition RP \n" + r);
 
         if (r.getActiveState() == null)
             return PlanChange.NoChange;
-            State nextState = null;
+        State nextState = null;
 
         for (Transition t : r.getActiveState().getOutTransitions()) {
-        if (t.getSynchronisation() != null)
-            continue;
-        if (t.evalCondition(r)) {
-            nextState = t.getOutState();
-            r.getConstraintStore().addCondition(t.getPreCondition());
-            break;
+            if (t.getSynchronisation() != null)
+                continue;
+            if (t.evalCondition(r)) {
+                nextState = t.getOutState();
+                r.getConstraintStore().addCondition(t.getPreCondition());
+                break;
+            }
         }
-    }
         if (nextState == null) {
             return PlanChange.NoChange;
         }
 
-        System.out.println("RB: Transition " + r.getActivePlan().getName());
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: Transition " + r.getActivePlan().getName());
 
         r.moveState(nextState);
 
         r.setAllocationNeeded(true);
-       this.log.eventOccurred("Transition(", r.getActivePlan().getName(), " to State ", r.getActiveState().getName(), ")");
+        this.log.eventOccurred("Transition(", r.getActivePlan().getName(), " to State ", r.getActiveState().getName(), ")");
         if (r.getActiveState().isSuccessState())
-        return PlanChange.SuccessChange;
-    else if (r.getActiveState().isFailureState())
-        return PlanChange.FailChange;
+            return PlanChange.SuccessChange;
+        else if (r.getActiveState().isFailureState())
+            return PlanChange.FailChange;
         return PlanChange.InternalChange;
     }
 
-    PlanChange synchTransitionRule(RunningPlan r)
-    {
+    PlanChange synchTransitionRule(RunningPlan r) {
         assert(!r.isRetired());
-        System.out.println("RB: Sync-Rule called.");
-        System.out.println("RB: Sync RP \n" + r);
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: Sync-Rule called.");
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: Sync RP \n" + r);
 
         if (r.getActiveState() == null) {
             return PlanChange.NoChange;
@@ -446,7 +448,7 @@ public class RuleBook {
             return PlanChange.NoChange;
         }
 
-        System.out.println("RB: SynchTransition" + r.getActivePlan().getName());
+        if (CommonUtils.RB_DEBUG_debug) System.out.println("RB: SynchTransition" + r.getActivePlan().getName());
 
         r.moveState(nextState);
 

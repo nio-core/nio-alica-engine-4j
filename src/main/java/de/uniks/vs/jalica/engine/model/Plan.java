@@ -195,20 +195,20 @@ public class Plan extends AbstractPlan {
         ss += indent + "\tIsMasterPlan: " + this.masterPlan + "\n";
         ss += indent + "\tUtility Threshold: " + this.utilityThreshold + "\n";
         if (this.preCondition != null) {
-        ss += this.preCondition.toString();
-    }
+            ss += this.preCondition.toString();
+        }
         if (this.runtimeCondition != null) {
-        ss += this.runtimeCondition.toString();
-    }
-        for ( EntryPoint ep : this.entryPoints) {
-        ss += ep.toString() + "\t";
-    }
-        for ( State state : this.states) {
-        ss += state.toString() + "\t";
-    }
-        for ( Variable var : this.getVariables()) {
-        ss += var.toString() + "\t";
-    }
+            ss += this.runtimeCondition.toString();
+        }
+        for (EntryPoint ep : this.entryPoints) {
+            ss += ep.toString() + "\t";
+        }
+        for (State state : this.states) {
+            ss += state.toString() + "\t";
+        }
+        for (Variable var : this.getVariables()) {
+            ss += var.toString() + "\t";
+        }
 
         ss += indent + "#EndPlan:" + "\n";
         return ss;

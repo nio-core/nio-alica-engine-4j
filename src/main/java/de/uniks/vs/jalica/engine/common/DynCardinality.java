@@ -54,4 +54,9 @@ public class DynCardinality {
     public boolean contains(int c) {
         return min <= c && c <= max ;
     }
+
+    @Override
+    public String toString() {
+        return"[" + this.getMin() + ", " + this.getMax() + "]";
+    }
 }

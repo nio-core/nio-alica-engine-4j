@@ -5,6 +5,7 @@ import de.uniks.vs.jalica.engine.AlicaTime;
 import de.uniks.vs.jalica.engine.common.Capability;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.*;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.idmanagement.IDManager;
 import de.uniks.vs.jalica.engine.model.*;
 import de.uniks.vs.jalica.engine.AlicaEngine;
@@ -109,11 +110,12 @@ public class ModelFactory {
     public void computeReachabilities() {
         if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Computing Reachability sets...");
 
-        for (Plan plan : this.planRepository.getPlans().values()) {
-            for (EntryPoint entryPoint : plan.getEntryPoints()) {
-                entryPoint.computeReachabilitySet();
-            }
-        }
+        this.alicaEngine.getModelManager().computeReachabilities(this.planRepository);
+//        for (Plan plan : this.planRepository.getPlans().values()) {
+//            for (EntryPoint entryPoint : plan.getEntryPoints()) {
+//                entryPoint.computeReachabilitySet();
+//            }
+//        }
         if (CommonUtils.MF_DEBUG_debug) System.out.println("MF: Computing Reachability sets...done!");
 
     }
@@ -1530,8 +1532,7 @@ public class ModelFactory {
         for (Object obj : configurations) {
             JSONObject confObj = (JSONObject) obj;
             long confID = planParser.fetchId(confObj.get("id").toString());
-
-
+            elements.put(confID, beh);
 
 //            if (configurations.equals(val)) {
 //                BehaviourConfiguration bc = createBehaviourConfiguration(confObj);
@@ -1809,7 +1810,15 @@ public class ModelFactory {
         for (Object obj : roles) {
             JSONObject role = (JSONObject) obj;
             RoleTaskMapping rtm = createRoleTaskMapping(role);
-             roleSet.getRoleTaskMappings().add(rtm);
+            rtm.getRole().setRoleSet(roleSet);
+
+            for (Task task : this.planRepository.getTasks().values()) {
+                if (!rtm.getTaskPriorities().keySet().contains(task.getID())) {
+                    rtm.getTaskPriorities().put(task.getID(), roleSet.getDefaultPriority());
+                }
+            }
+
+            roleSet.getRoleTaskMappings().add(rtm);
 //            } else {
 //                System.out.println("MF: Unhandled RoleSet Child:", curChild.getNodeValue());
 //            }
@@ -1858,15 +1867,17 @@ public class ModelFactory {
     private RoleTaskMapping createRoleTaskMapping(JSONObject jsonObject) {
         RoleTaskMapping rtm = new RoleTaskMapping();
         // role task mapping is only a list, hense a UUID is needed
-        long id = IDManager.generateUniqueID();
+        ID id = alicaEngine.getId(jsonObject.toJSONString()); //generateUniqueID();
 //        long id = this.planParser.fetchId(jsonObject.get("id").toString());
-        rtm.setID(id);
+        rtm.setID(id.asLong());
         setAlicaElementAttributes(rtm, jsonObject);
         addElement(rtm);
 //        Role role = new Role();
 //        role.setName((String) jsonObject.get("name"));
 //        role.setID(id);
         Role role = createRole(jsonObject);
+        rtm.setRole(role);
+        role.setRoleTaskMapping(rtm);
         this.rtmRoleReferences.add(new Pair<>(rtm.getID(), role.getID()));
 //        Node curChild = getNodeChild(element);
         JSONObject priorities = (JSONObject) jsonObject.get("taskPriorities");

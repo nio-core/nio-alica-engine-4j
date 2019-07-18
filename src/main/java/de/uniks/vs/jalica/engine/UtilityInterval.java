@@ -41,4 +41,9 @@ public class UtilityInterval {
     public double size() {
         return max - min;
     }
+
+    @Override
+    public String toString() {
+        return"[" + this.getMin() + ", " + this.getMax() + "]";
+    }
 }

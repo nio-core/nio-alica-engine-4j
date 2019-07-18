@@ -4,6 +4,7 @@ import de.uniks.vs.jalica.common.CVCondition;
 import de.uniks.vs.jalica.common.Trigger;
 import de.uniks.vs.jalica.common.TimerEvent;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.Behaviour;
 import de.uniks.vs.jalica.engine.model.Variable;
 import de.uniks.vs.jalica.common.ConditionVariable;
@@ -20,7 +21,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Created by alex on 14.07.17.
  * update 21.6.19
  */
-public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
+public abstract class BasicBehaviour implements Runnable {
 
     private String name;
     private Behaviour behaviour;
@@ -132,6 +133,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
     public void setBehaviour( Behaviour beh) {
         assert(this.behaviour == null);
         this.behaviour = beh;
+        beh.setImplementation(this);
 
         if (this.behaviour.isEventDriven()) {
 //            this.runThread = new Thread(BasicBehaviour::runInternalTriggered, this);
@@ -150,9 +152,10 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
                 }
             };
         }
+        this.runThread.start();
     }
 
-    public long getOwnId() {
+    public ID getOwnId() {
         return this.engine.getTeamManager().getLocalAgentID();
     }
 
@@ -168,7 +171,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
         this.running = true;
 
         if (!this.behaviour.isEventDriven()) {
-            this.runCV.notifyAll();
+            this.runCV.notifyAllThreads();
         }
         return true;
     }
@@ -217,6 +220,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
             {
 //                std::unique_lock<std::mutex> lck(_runLoopMutex);
                 Lock lck = this.runLoopMutex;
+                lck.lock();
                 if (!this.running) {
 
                     if (this.contextInRun != null) {
@@ -252,7 +256,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
             }
             long duration = System.nanoTime() - start;
             CommonUtils.aboutWarningNotification(duration > this.msInterval + 100000 /*100 microseconds*/,
-                    "BB: Behaviour " + this.name + "exceeded runtime:  " + duration + "ms!");
+                    "BB: Behaviour " + this.name + " exceeded runtime:  " + duration + "ms!");
             if (duration < this.msInterval) {
                 try {
                     Thread.sleep(this.msInterval - duration);
@@ -272,6 +276,7 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
                 }
 //                std::unique_lock<std::mutex> lck(this.runLoopMutex);
                 Lock lck = this.runLoopMutex;
+                lck.lock();
                 this.contextInRun = null;
 //                this.runCV.wait(lck, [this] { return !this.started || (this.behaviourTrigger.isNotifyCalled(this.runCV) && this.running); });
                 this.runCV.cvWait(lck, this, () -> !this.started || (this.behaviourTrigger.isNotifyCalled(this.runCV) && this.running));
@@ -326,15 +331,12 @@ public abstract class BasicBehaviour implements /*IBehaviourCreator*/ Runnable {
     protected void onTermination() {}
 
 
-
     // ---- NEW -----------------
-    BasicBehaviour implementation;
     boolean loop;
     boolean finished;
 
     public boolean isFinished() {
         return this.finished;
-//        return getImplementation().isFinished() || getImplementation().isSuccess();
     }
 
     public void isLoop(boolean loop) {

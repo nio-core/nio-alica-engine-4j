@@ -3,6 +3,7 @@ package de.uniks.vs.jalica.engine.constrainmodule;
 import de.uniks.vs.jalica.engine.AlicaTime;
 import de.uniks.vs.jalica.engine.common.VarValue;
 import de.uniks.vs.jalica.engine.containers.SolverVar;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,12 +17,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class ResultEntry {
 
-    private long id;
+    private ID id;
     HashMap<Long, VarValue> values;
     Lock valueLock;
 
-    public ResultEntry(long robotId) {
+    public ResultEntry(ID robotId) {
         this.id = robotId;
+        this.values = new HashMap<>();
     }
 
     public ResultEntry(ResultEntry o) {
@@ -31,7 +33,7 @@ public class ResultEntry {
         this.valueLock = new ReentrantLock();
     }
 
-    long getId() {
+    public ID getId() {
         return this.id;
     }
 

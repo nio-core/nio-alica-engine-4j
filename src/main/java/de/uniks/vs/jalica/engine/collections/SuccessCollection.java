@@ -1,5 +1,7 @@
 package de.uniks.vs.jalica.engine.collections;
 
+import de.uniks.vs.jalica.common.ExtArrayList;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.EntryPoint;
 import de.uniks.vs.jalica.engine.model.Plan;
 
@@ -12,7 +14,7 @@ import java.util.ArrayList;
 public class SuccessCollection {
 
     private Plan plan;
-    private ArrayList<ArrayList<Long>> successData;
+    private ExtArrayList<ArrayList<ID>> successData;
 
     // Type definitions --------------------
     // AgentGrp = ArrayList<Long>
@@ -27,17 +29,17 @@ public class SuccessCollection {
 
     public SuccessCollection() {
         this.plan = null;
-        this.successData = new ArrayList<>();
+        this.successData = new ExtArrayList<>();
     }
 
     public SuccessCollection(Plan plan) {
         this.plan = plan;
-        this.successData = new ArrayList<>(plan.getEntryPoints().size());
+        this.successData = new ExtArrayList<ArrayList<ID>>(ArrayList::new, plan.getEntryPoints().size());
     }
 
 
 
-    public void setSuccess(long agentId, EntryPoint ep) {
+    public void setSuccess(ID agentId, EntryPoint ep) {
 
         if (ep.getPlan() == this.plan) {
             this.successData.get(ep.getIndex()).add(agentId);
@@ -45,19 +47,19 @@ public class SuccessCollection {
     }
 
     public void clear() {
-        for (ArrayList<Long> ag : this.successData) {
+        for (ArrayList<ID> ag : this.successData) {
             ag.clear();
         }
     }
 
-     public ArrayList<Long> getAgents(EntryPoint ep) {
+     public ArrayList<ID> getAgents(EntryPoint ep) {
         if (ep.getPlan() == this.plan) {
             return this.successData.get(ep.getIndex());
         }
         return null;
     }
 
-    ArrayList<Long> getAgentsById(long id) {
+    ArrayList<ID> getAgentsById(long id) {
         ArrayList<EntryPoint> eps = new ArrayList<>(this.plan.getEntryPoints());
 
         for (int i = 0; i < eps.size(); i++) {
@@ -69,7 +71,7 @@ public class SuccessCollection {
         return null;
     }
 
-    public ArrayList<Long> getAgentsByIndex(int index) {
+    public ArrayList<ID> getAgentsByIndex(int index) {
         return this.successData.get(index);
     }
 
@@ -85,11 +87,11 @@ public class SuccessCollection {
 
     ArrayList<EntryPoint> getEntryPoints() { return new ArrayList<>(this.plan.getEntryPoints()); }
 
-    public ArrayList<ArrayList<Long>> getRaw() {
+    public ArrayList<ArrayList<ID>> getRaw() {
         return this.getData();
     }
 
-    public ArrayList<ArrayList<Long>> getData() {
+    public ArrayList<ArrayList<ID>> getData() {
         return this.successData;
     }
 
@@ -99,13 +101,14 @@ public class SuccessCollection {
         boolean haveAny = false;
         ArrayList<EntryPoint> eps = this.plan.getEntryPoints();
         for (int i = 0; i < eps.size(); ++i) {
+
             if (!this.successData.get(i).isEmpty()) {
                 if (!haveAny) {
                     out += "Success:" + "\n";
                 }
                 haveAny = true;
                 out += eps.get(i).getID() + " (" + eps.get(i).getTask().getName() + "): ";
-                for (long r : this.successData.get(i)) {
+                for (ID r : this.successData.get(i)) {
                     out += r + " ";
                 }
                 out += "\n";

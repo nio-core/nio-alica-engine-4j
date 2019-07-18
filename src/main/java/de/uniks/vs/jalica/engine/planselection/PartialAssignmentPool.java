@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.engine.planselection;
 
+import de.uniks.vs.jalica.common.ExtArrayList;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.model.EntryPoint;
 import de.uniks.vs.jalica.engine.model.Task;
@@ -17,17 +18,17 @@ public class PartialAssignmentPool {
     public int curIndex;
     public Task idleTask;
     public EntryPoint idleEP;
-    public ArrayList<PartialAssignment> pool;
+    public ExtArrayList<PartialAssignment> pool;
 
     public PartialAssignmentPool(int initialSize) {
-        this.pool = new ArrayList<>(initialSize);
+        this.pool = new ExtArrayList<>(PartialAssignment::new, initialSize);
         this.curIndex = 0;
         this.idleEP = EntryPoint.generateIdleEntryPoint();
         this.idleTask = this.idleEP.getTask();
     }
 
     void increaseSize() {
-        this.pool.ensureCapacity(this.pool.size() * 2 + 5);
+        this.pool.resize(this.pool.size() * 2 + 5);
     }
 
     public PartialAssignment getNext() {
@@ -41,6 +42,11 @@ public class PartialAssignmentPool {
 
     void reset() {
         this.curIndex = 0;
+    }
+
+    public PartialAssignment setNext(PartialAssignment partialAssignment) {
+        this.pool.add(this.curIndex, partialAssignment);
+        return partialAssignment;
     }
 
     private class PoolExhaustedException extends RuntimeException {

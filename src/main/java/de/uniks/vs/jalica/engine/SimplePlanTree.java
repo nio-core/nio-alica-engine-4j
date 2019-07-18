@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.engine;
 
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.AbstractPlan;
 import de.uniks.vs.jalica.engine.model.EntryPoint;
 import de.uniks.vs.jalica.engine.model.State;
@@ -24,7 +25,7 @@ public class SimplePlanTree {
     /**
      * The id of the agent teamObserver which this tree refers teamObserver
      */
-    private long agentID = -1;
+    private ID agentID;
     private boolean isNew = true;
     /**
      * The timestamp denoting when this tree was received.
@@ -81,9 +82,9 @@ public class SimplePlanTree {
         return receiveTime;
     }
 
-    public long getAgentID() {return agentID;}
+    public ID getAgentID() {return agentID;}
 
-    public void setAgentID(long agentID) {this.agentID = agentID;}
+    public void setAgentID(ID agentID) {this.agentID = agentID;}
 
     public void setProcessed() { this.isNew = false; }
 
@@ -93,5 +94,45 @@ public class SimplePlanTree {
 
     public void setParent(SimplePlanTree parent) {
         this.parent = parent;
+    }
+
+    @Override
+    public String toString() {
+        String out = "";
+        out += "RobotID: " + this.agentID + "\n";
+        out += "Parent: ";
+
+        if (this.parent != null) {
+            out += this.parent.getState().getID();
+        }
+        out += "\n";
+
+        out += "State: ";
+        if (this.state != null) {
+            out += this.state.getID();
+            out += " " + this.state.getName();
+        } else {
+            out += "ERROR !!!NO STATE !!!";
+        }
+
+        out += "\n";
+
+        out += "EntryPoint: ";
+
+        if (this.entryPoint != null) {
+            out += this.entryPoint.getID() + " " + this.entryPoint.getTask().getName();
+        } else {
+            out += "NoEntryPoint";
+        }
+        out += "\n";
+
+        out += "Children: " + this.children.size() + "\n";
+        for ( SimplePlanTree c : this.children) {
+            out += c;
+        }
+
+        out += "\n";
+
+        return out;
     }
 }

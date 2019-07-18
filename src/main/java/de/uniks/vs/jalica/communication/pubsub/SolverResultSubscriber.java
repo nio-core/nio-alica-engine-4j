@@ -39,7 +39,7 @@ public class SolverResultSubscriber extends ZMQSubscriber {
                         System.out.println("SR-Sub: " + string);
                         JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(string.replace(topic, ""));
                         SolverResult solverResult = new SolverResult();
-                        solverResult.senderID = (Long) jsonObject.get("senderID");
+                        solverResult.senderID = alicaZMQCommunication.getAe().getId((String)jsonObject.get("senderID"));
 
                         for (Object sv : (JSONArray) jsonObject.get("vars")) {
                             JSONObject object = (JSONObject) sv;

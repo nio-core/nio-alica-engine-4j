@@ -1,11 +1,13 @@
 package de.uniks.vs.jalica.engine.planselection.views;
 
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.planselection.PartialAssignment;
+import de.uniks.vs.jalica.engine.planselection.views.iterators.PartialAssignmentIterator;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Vector;
 
-public class PartialAssignmentView extends Vector<Long> {
+public class PartialAssignmentView extends ArrayList<ID> {
 
     private int epIdx;
     private PartialAssignment pas;
@@ -14,8 +16,8 @@ public class PartialAssignmentView extends Vector<Long> {
         this.epIdx = epIdx;
         this.pas = pas;
     }
-    public PartialAssignmentIterator begin()  { return new PartialAssignmentIterator(0, epIdx, pas); }
-    public PartialAssignmentIterator end()  { return new PartialAssignmentIterator(this.pas.getTotalAgentCount(), epIdx, pas); }
+    public PartialAssignmentIterator begin() { return new PartialAssignmentIterator(0, epIdx, pas); }
+    public PartialAssignmentIterator end() { return new PartialAssignmentIterator(this.pas.getTotalAgentCount(), epIdx, pas); }
     public int size() { return distance(begin(), end()); }
 
     private int distance(PartialAssignmentIterator begin, PartialAssignmentIterator end) {
@@ -25,10 +27,16 @@ public class PartialAssignmentView extends Vector<Long> {
             begin = begin.increase();
             count++;
         }
-        return count;
+        return count-1;
     }
 
-//    public class PartialAssignmentIterator implements Iterator<Long> {
+    @Override
+    public Iterator<ID> iterator() {
+        return begin();
+    }
+
+
+    //    public class PartialAssignmentIterator implements Iterator<Long> {
 //
 //        private PartialAssignment pas;
 //

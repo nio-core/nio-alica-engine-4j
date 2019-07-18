@@ -1,5 +1,7 @@
 package de.uniks.vs.jalica.engine.idmanagement;
 
+import de.uniks.vs.jalica.engine.collections.AgentProperties;
+
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -10,23 +12,34 @@ import java.util.concurrent.locks.Lock;
 
 public class IDManager {
 
-    static HashMap<ID, Object> uuids = new HashMap();
-    static HashSet<Long> uids = new HashSet<>();
+    HashMap<ID, Object> uuids = new HashMap();
+    HashSet<Long> uids = new HashSet<>();
     HashMap<Identifier, Integer> ids;
     Lock idsMutex;
 
 
-    public static ID generateUUID(Object object) {
+    public ID generateUUID(Object object) {
         ID id = new ID();
         uuids.put(id, object);
         return id;
     }
 
-    public static UUID stringToUUID(String string) {
+    public ID getOrGenerateUUID(Object object) {
+
+        for (ID id : uuids.keySet()) {
+
+            if (uuids.get(id) == object) {
+                return id;
+            }
+        }
+        return generateUUID(object);
+    }
+
+    public UUID stringToUUID(String string) {
         return UUID.fromString(string);
     }
 
-    public static Long generateUniqueID() {
+    public Long generateUniqueID() {
         Long uniqueID = -1l;
 
         do {
@@ -42,10 +55,32 @@ public class IDManager {
         return uniqueID;
     }
 
-    public static Long generateUniqueID(String string) {
+    public ID getOrGenerateUniqueID(String string) {
+
+        for (ID id : uuids.keySet()) {
+
+            if (uuids.get(id) == string) {
+                return id;
+            }
+        }
+        return generateUniqueID(string);
+    }
+
+    public ID getOrGenerateUniqueID(long longID) {
+
+        for (ID id : uuids.keySet()) {
+
+            if (id.asLong() == longID) {
+                return id;
+            }
+        }
+        return generateUniqueID(String.valueOf(longID));
+    }
+
+    private ID generateUniqueID(String string) {
         ID id = new ID();
         uuids.put(id, string);
-        return id.asLong();
+        return id;
     }
 
     public long getIDFromBytes(byte idBytes, int idSize, byte type) {
@@ -69,6 +104,7 @@ public class IDManager {
     private Integer getIntValue(byte idBytes) {
         return idBytes & 0xff;
     }
+
 
     private class Identifier {
 

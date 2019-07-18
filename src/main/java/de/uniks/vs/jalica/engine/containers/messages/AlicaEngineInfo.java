@@ -1,6 +1,7 @@
 package de.uniks.vs.jalica.engine.containers.messages;
 
 import de.uniks.vs.jalica.engine.containers.Message;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 
 import java.util.ArrayList;
 import java.util.Vector;
@@ -9,10 +10,10 @@ import java.util.Vector;
  * Created by alex on 13.07.17.
  */
 public class AlicaEngineInfo implements Message {
-    public long senderID;
+    public ID senderID;
     public String masterPlan;
     public String currentPlan;
-    public ArrayList<Long> agentIDsWithMe = new ArrayList<>();
+    public ArrayList<ID> agentIDsWithMe = new ArrayList<>();
     public String currentTask;
     public String currentState;
     public String currentRole;

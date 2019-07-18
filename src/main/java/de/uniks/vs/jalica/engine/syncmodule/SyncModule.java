@@ -4,6 +4,7 @@ import de.uniks.vs.jalica.engine.IAlicaCommunication;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.PlanRepository;
 import de.uniks.vs.jalica.engine.common.SyncData;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.Synchronisation;
 import de.uniks.vs.jalica.engine.model.Transition;
 import de.uniks.vs.jalica.engine.containers.SyncReady;
@@ -23,7 +24,7 @@ public class SyncModule {
 
     private boolean running;
     private AlicaEngine ae;
-    private long myId;
+    private ID myId;
     private long ticks;
     private PlanRepository pr;
     private HashMap<Synchronisation, SynchronisationProcess> synchSet;
@@ -33,7 +34,7 @@ public class SyncModule {
 
     public SyncModule(AlicaEngine ae) {
         this.ae = ae;
-        this.myId = -1;
+        this.myId = null;
         this.pr = null;
         this.running = false;
         this.ticks = 0;

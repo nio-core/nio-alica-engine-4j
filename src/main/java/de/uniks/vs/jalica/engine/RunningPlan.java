@@ -2,13 +2,14 @@ package de.uniks.vs.jalica.engine;
 
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.SystemConfig;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.*;
 import de.uniks.vs.jalica.engine.authority.AllocationDifference;
 import de.uniks.vs.jalica.engine.authority.CycleManager;
 import de.uniks.vs.jalica.engine.authority.EntryPointAgentPair;
 import de.uniks.vs.jalica.engine.constrainmodule.ConditionStore;
-import de.uniks.vs.jalica.engine.views.AgentsInStateView;
-import de.uniks.vs.jalica.engine.views.AssignmentView;
+import de.uniks.vs.jalica.engine.teammanagement.view.AgentsInStateView;
+import de.uniks.vs.jalica.engine.teammanagement.view.AssignmentView;
 
 import java.util.*;
 import java.util.concurrent.locks.Lock;
@@ -59,7 +60,7 @@ public class RunningPlan {
         this.behaviour = false;
         this.assignment = new Assignment();
         this.cycleManagement = new CycleManager(ae, this);
-        this.basicBehaviour =null;
+        this.basicBehaviour = null;
         this.parent = null;
     }
 
@@ -75,7 +76,7 @@ public class RunningPlan {
         this.behaviour = false;
         this.assignment = new Assignment(plan);
         this.cycleManagement = new CycleManager(ae, this);
-        this.basicBehaviour =null;
+        this.basicBehaviour = null;
         this.parent = null;
         this.activeTriple.abstractPlan = plan;
     }
@@ -92,7 +93,7 @@ public class RunningPlan {
         this.behaviour = false;
         this.assignment = new Assignment();
         this.cycleManagement = new CycleManager(ae, this);
-        this.basicBehaviour =null;
+        this.basicBehaviour = null;
         this.parent = null;
     }
 
@@ -276,7 +277,7 @@ public class RunningPlan {
     public void useEntryPoint(EntryPoint value) {
 
         if (this.activeTriple.entryPoint != value) {
-            long mid = getOwnID();
+            ID mid = getOwnID();
             this.assignment.removeAgent(mid);
             this.activeTriple.entryPoint = value;
 
@@ -290,7 +291,8 @@ public class RunningPlan {
     public void useState(State s) {
 
         if (this.activeTriple.state != s) {
-            CommonUtils.aboutError(String.valueOf(s == null || (this.activeTriple.entryPoint != null && this.activeTriple.entryPoint.isStateReachable(s))));
+//            ALICA_ASSERT(s == nullptr || (_activeTriple.entryPoint && _activeTriple.entryPoint->isStateReachable(s))) //TODO: is this correct???
+            assert(!(s == null || (this.activeTriple.entryPoint != null && !this.activeTriple.entryPoint.isStateReachable(s))));
             this.activeTriple.state = s;
             this.status.stateStartTime = this.alicaEngine.getAlicaClock().now();
 
@@ -299,7 +301,7 @@ public class RunningPlan {
                 if (s.isFailureState()) {
                     this.status.status = PlanStatus.Status.Failed;
                 } else if (s.isSuccessState()) {
-                    long mid = getOwnID();
+                    ID mid = getOwnID();
                     this.assignment.getSuccessData(this.activeTriple.entryPoint).add(mid);
                     this.alicaEngine.getTeamManager().setSuccess(mid, this.activeTriple.abstractPlan, this.activeTriple.entryPoint);
                 }
@@ -307,7 +309,7 @@ public class RunningPlan {
         }
     }
 
-    PlanStatus.Status getStatus() {
+    public PlanStatus.Status getStatus() {
         if (this.basicBehaviour != null) {
             if (this.basicBehaviour.isSuccess()) {
                 return PlanStatus.Status.Success;
@@ -323,7 +325,7 @@ public class RunningPlan {
         return this.status.status;
     }
 
-    void clearFailures() {
+    public void clearFailures() {
         this.status.failCount = 0;
     }
 
@@ -331,12 +333,12 @@ public class RunningPlan {
         this.failedSubPlans.clear();
     }
 
-    void addFailure() {
+    public void addFailure() {
         ++this.status.failCount;
         setFailureHandlingNeeded(true);
     }
 
-    int getFailureCount() {
+    public int getFailureCount() {
         return this.status.failCount;
     }
 
@@ -353,7 +355,7 @@ public class RunningPlan {
         this.children.clear();
     }
 
-    void adaptAssignment( RunningPlan replacement) {
+    public void adaptAssignment( RunningPlan replacement) {
         this.assignment.adaptTaskChangesFrom(replacement.getAssignment());
      State newState = this.assignment.getStateOfAgent(getOwnID());
 
@@ -367,7 +369,7 @@ public class RunningPlan {
             addChildren(replacement.getChildren());
             reactivate = true;
         } else {
-            ArrayList<Long> robotsJoined = new ArrayList<>();
+            ArrayList<ID> robotsJoined = new ArrayList<>();
             this.assignment.getAgentsInState(newState, robotsJoined);
             for (RunningPlan c : this.children) {
                 c.limitToRobots(robotsJoined);
@@ -382,7 +384,7 @@ public class RunningPlan {
         }
     }
 
-    void setFailedChild( AbstractPlan child) {
+    public void setFailedChild( AbstractPlan child) {
         Integer integer = this.failedSubPlans.get(child);
 
         if (integer != null) {
@@ -403,7 +405,7 @@ public class RunningPlan {
         this.status.failHandlingNeeded = failHandlingNeeded;
     }
 
-    void accept(IPlanTreeVisitor vis) {
+    public void accept(IPlanTreeVisitor vis) {
         vis.visit(this);
 
         for (RunningPlan child : this.children) {
@@ -477,7 +479,7 @@ public class RunningPlan {
     }
 
 
-    public void limitToRobots(ArrayList<Long> robots) {
+    public void limitToRobots(ArrayList<ID> robots) {
         if (isBehaviour()) {
             return;
         }
@@ -512,7 +514,7 @@ public class RunningPlan {
         }
     }
 
-   public boolean recursiveUpdateAssignment(ArrayList<SimplePlanTree> spts, ArrayList<Long> availableAgents, ArrayList<Long> noUpdates, AlicaTime now)
+   public boolean recursiveUpdateAssignment(ArrayList<SimplePlanTree> spts, ArrayList<ID> availableAgents, ArrayList<ID> noUpdates, AlicaTime now)
     {
         if (isBehaviour()) {
             return false;
@@ -525,7 +527,7 @@ public class RunningPlan {
        boolean ret = false;
         AllocationDifference aldif = this.cycleManagement.getNextDifference();
         for (SimplePlanTree spt : spts) {
-        long id = spt.getAgentID();
+        ID id = spt.getAgentID();
        boolean freezeAgent = keepState && this.assignment.getStateOfAgent(id) == getActiveState();
         if (freezeAgent) {
             continue;
@@ -565,18 +567,18 @@ public class RunningPlan {
         }
     }
 
-        ArrayList<Long> rem = new ArrayList<>();
+        ArrayList<ID> rem = new ArrayList<>();
         if (!keepTask) { // remove any robot no longer available in the spts (auth flag obey here, as robot might be
             // unavailable)
             // EntryPoint[] eps = this.Assignment.GetEntryPoints();
-            long ownId = getOwnID();
+            ID ownId = getOwnID();
 
             for (int i = 0; i < this.assignment.getEntryPointCount(); ++i) {
             EntryPoint ep = this.assignment.getEntryPoint(i);
                 rem.clear();
                 AssignmentView robs = this.assignment.getAgentsWorking(i);
 
-                for (long rob : robs.get()) {
+                for (ID rob : robs.get()) {
 
                     if (rob == ownId) {
                         continue;
@@ -613,7 +615,7 @@ public class RunningPlan {
             EntryPoint ep = this.assignment.getEntryPoint(i);
                 rem.clear();
                 AssignmentView robs = this.assignment.getAgentsWorking(i);
-                for (Long rob : robs.get()) {
+                for (ID rob : robs.get()) {
                boolean freezeAgent = keepState && this.assignment.getStateOfAgent(rob) == getActiveState();
                     if (freezeAgent) {
                         continue;
@@ -638,7 +640,7 @@ public class RunningPlan {
         if (!auth) {
             AgentsInStateView agentsJoined = this.assignment.getAgentsInState(getActiveState());
 
-            for (Long iter : availableAgents) {
+            for (ID iter : availableAgents) {
 
                 if (!agentsJoined.get().contains(iter)) {
                     availableAgents.remove(iter);
@@ -650,7 +652,7 @@ public class RunningPlan {
         } else { // in case of authority, remove all that are not assigned to same task
             AssignmentView agentsJoined = this.assignment.getAgentsWorking(getActiveEntryPoint());
 
-            for (Long iter : availableAgents) {
+            for (ID iter : availableAgents) {
 
                 if (!agentsJoined.get().contains(iter)) {
                     availableAgents.remove(iter);
@@ -708,54 +710,54 @@ public class RunningPlan {
     public String toString() {
         StringBuffer out = new StringBuffer();
 
-        System.out.println( "######## RP ##########");
+        out.append("######## RP " + alicaEngine.getTeamManager().getLocalAgentID() + " ##########\n");
         PlanStateTriple ptz = getActiveTriple();
-        System.out.println(  "Plan: " + (ptz.abstractPlan != null ? ptz.abstractPlan.getName() : "NULL") );
-        System.out.println(  "PlanType: " + (getPlanType() != null ? getPlanType().getName() : "NULL") );
-        System.out.println(  "ActState: " + (ptz.state != null ? ptz.state.getName() : "NULL") );
-        System.out.println(  "Task: " + (ptz.entryPoint != null ? ptz.entryPoint.getTask().getName() : "NULL") );
-        System.out.print(  "IsBehaviour: " + isBehaviour() + "\t");
+        out.append("Plan: " + (ptz.abstractPlan != null ? ptz.abstractPlan.getName() : "NULL") + "\n");
+        out.append("PlanType: " + (getPlanType() != null ? getPlanType().getName() : "NULL") + "\n");
+        out.append("ActState: " + (ptz.state != null ? ptz.state.getName() : "NULL") + "\n");
+        out.append("Task: " + (ptz.entryPoint != null ? ptz.entryPoint.getTask().getName() : "NULL") + "\n");
+        out.append("IsBehaviour: " + isBehaviour() + "\t");
         if (isBehaviour()) {
-            System.out.println(  "Behaviour: " + (getBasicBehaviour() == null ? "NULL" : getBasicBehaviour().getName()));
+            out.append("Behaviour: " + (getBasicBehaviour() == null ? "NULL" : getBasicBehaviour().getName()) + "\n");
         }
-    PlanStatusInfo psi = getStatusInfo();
-        System.out.println(  "AllocNeeded: " + psi.allocationNeeded );
-        System.out.print(  "FailHandlingNeeded: " + psi.failHandlingNeeded + "\t");
-        System.out.println( "FailCount: " + psi.failCount );
-        System.out.println( "Activity: " + PlanActivity.getPlanActivityName(psi.active) );
-        System.out.println( "Status: " + PlanStatus.getPlanStatusName(psi.status) );
-        System.out.println();
+        PlanStatusInfo psi = getStatusInfo();
+        out.append("AllocNeeded: " + psi.allocationNeeded + "\n");
+        out.append("FailHandlingNeeded: " + psi.failHandlingNeeded + "\t");
+        out.append("FailCount: " + psi.failCount + "\n");
+        out.append("Activity: " + PlanActivity.getPlanActivityName(psi.active) + "\n");
+        out.append("Status: " + PlanStatus.getPlanStatusName(psi.status) + "\n");
+        out.append("\n");
         if (!isBehaviour()) {
-            System.out.print(  "Assignment:" + this.assignment);
+            out.append("Assignment: " + this.assignment);
         }
-        System.out.print(  "Children: " + this.children.size());
+        out.append("Children: " + this.children.size());
         if (!this.children.isEmpty()) {
-            System.out.print(  " ( ");
-            for ( RunningPlan c : this.children) {
+            out.append(" ( ");
+            for (RunningPlan c : this.children) {
                 if (c.activeTriple.abstractPlan == null) {
-                    System.out.print(  "NULL PLAN, ");
+                    out.append("NULL PLAN, ");
                 } else
-                    System.out.print(  c.activeTriple.abstractPlan.getName() + ", ");
+                    out.append(c.activeTriple.abstractPlan.getName() + ", ");
             }
-            System.out.print(  ")");
+            out.append(")");
         }
-        System.out.println( "\nCycleManagement - Assignment Overridden: " + (this.cycleManagement.isOverridden() ? "true" : "false") );
-        System.out.println( "\n########## ENDRP ###########");
+        out.append("\nCycleManagement - Assignment Overridden: " + (this.cycleManagement.isOverridden() ? "true" : "false") + "\n");
+        out.append("\n########## ENDRP " + alicaEngine.getTeamManager().getLocalAgentID() + " ###########" + "\n");
         return out.toString();
     }
     // -- getter setter --
 
     // Read/Write lock access, currently map to a single mutex
     // for future use already defined apart
-    ScopedReadLock getReadLock() { return new ScopedReadLock(this.accessMutex); }
-    ScopedWriteLock getWriteLock() { return new ScopedWriteLock(this.accessMutex); }
+    public ScopedReadLock getReadLock() { return new ScopedReadLock(this.accessMutex); }
+    public ScopedWriteLock getWriteLock() { return new ScopedWriteLock(this.accessMutex); }
 
     public boolean isBehaviour()  { return this.behaviour; };
-    boolean isAllocationNeeded()  { return this.status.allocationNeeded; }
-    boolean isFailureHandlingNeeded()  { return this.status.failHandlingNeeded; }
-    AlicaTime getPlanStartTime()  { return this.status.planStartTime; }
-    AlicaTime getStateStartTime()  { return this.status.stateStartTime; }
-    boolean isActive()  { return this.status.active == PlanActivity.Activity.Active; }
+    public boolean isAllocationNeeded()  { return this.status.allocationNeeded; }
+    public boolean isFailureHandlingNeeded()  { return this.status.failHandlingNeeded; }
+    public AlicaTime getPlanStartTime()  { return this.status.planStartTime; }
+    public AlicaTime getStateStartTime()  { return this.status.stateStartTime; }
+    public boolean isActive()  { return this.status.active == PlanActivity.Activity.Active; }
     public boolean isRetired()  { return this.status.active == PlanActivity.Activity.Retired; }
 
     // Read/Write lock access, currently map to a single mutex
@@ -763,25 +765,25 @@ public class RunningPlan {
 //    ScopedReadLock getReadLock()  { return ScopedReadLock(this.accessMutex); }
 //    ScopedWriteLock getWriteLock() { return ScopedWriteLock(this.accessMutex); }
 
-     public ArrayList <RunningPlan> getChildren()  { return this.children; }
-     public RunningPlan getParent()  { return this.parent; }
+    public ArrayList <RunningPlan> getChildren()  { return this.children; }
+    public RunningPlan getParent()  { return this.parent; }
 
-     public PlanType getPlanType()  { return this.planType; }
+    public PlanType getPlanType()  { return this.planType; }
 
-    PlanStateTriple getActiveTriple()  { return this.activeTriple; }
-     PlanStatusInfo getStatusInfo()  { return this.status; }
-     public State getActiveState()  { return this.activeTriple.state; }
-     EntryPoint getActiveEntryPoint()  { return this.activeTriple.entryPoint; }
-     public AbstractPlan getActivePlan()  { return this.activeTriple.abstractPlan; }
-     Plan getActivePlanAsPlan()  { return isBehaviour() ? null  : (Plan) this.activeTriple.abstractPlan; }
-     public Assignment getAssignment()  { return this.assignment; }
-    BasicBehaviour getBasicBehaviour()  { return this.basicBehaviour; }
+    public PlanStateTriple getActiveTriple()  { return this.activeTriple; }
+    public PlanStatusInfo getStatusInfo()  { return this.status; }
+    public State getActiveState()  { return this.activeTriple.state; }
+    public EntryPoint getActiveEntryPoint()  { return this.activeTriple.entryPoint; }
+    public AbstractPlan getActivePlan()  { return this.activeTriple.abstractPlan; }
+    public Plan getActivePlanAsPlan()  { return isBehaviour() ? null  : (Plan) this.activeTriple.abstractPlan; }
+    public Assignment getAssignment()  { return this.assignment; }
+    public BasicBehaviour getBasicBehaviour()  { return this.basicBehaviour; }
 
     public void setParent(RunningPlan parent) { this.parent = parent; }
     public void setAssignment(Assignment assignment) { this.assignment = assignment; }
-    void setBasicBehaviour(BasicBehaviour basicBehaviour) { this.basicBehaviour = basicBehaviour; }
+    public void setBasicBehaviour(BasicBehaviour basicBehaviour) { this.basicBehaviour = basicBehaviour; }
 
-    ConditionStore getConstraintStore()  { return this.constraintStore; }
+    public ConditionStore getConstraintStore()  { return this.constraintStore; }
 
     public CycleManager getCycleManagement()  { return this.cycleManagement; }
 
@@ -800,7 +802,7 @@ public class RunningPlan {
         }
     }
 
-    long getOwnID()  { return this.alicaEngine.getTeamManager().getLocalAgentID(); }
+    ID getOwnID()  { return this.alicaEngine.getTeamManager().getLocalAgentID(); }
     public AlicaEngine getAlicaEngine()  { return this.alicaEngine; }
 }
 

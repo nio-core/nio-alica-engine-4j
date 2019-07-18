@@ -5,10 +5,11 @@ import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.AlicaTime;
 import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.engine.common.config.ConfigPair;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.AbstractPlan;
 import de.uniks.vs.jalica.engine.model.DomainVariable;
 import de.uniks.vs.jalica.engine.model.EntryPoint;
-import de.uniks.vs.jalica.engine.views.ActiveAgentIdView;
+import de.uniks.vs.jalica.engine.teammanagement.view.ActiveAgentIdView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -24,7 +25,7 @@ public class TeamManager {
     private AlicaTime teamTimeOut;
     private Agent localAgent;
     private AlicaEngine engine;
-    private HashMap<Long, Agent> agents;
+    private HashMap<ID, Agent> agents;
     private boolean useConfigForTeam;
 
     public TeamManager(AlicaEngine engine) {
@@ -47,20 +48,21 @@ public class TeamManager {
         }
     }
 
-    public void setTimeLastMsgReceived(long id, AlicaTime timeLastMsgReceived) {
+    public void setTimeLastMsgReceived(ID id, AlicaTime timeLastMsgReceived) {
         Agent agent = this.agents.get(id);
 
         if (agent != null) {
             agent.setTimeLastMsgReceived(timeLastMsgReceived);
         } else {
-            // TODO alex robot properties protokoll anstoßen
+            // TODO alex agent properties protokoll anstoßen
+            System.out.println("TM: msg from new agent " + id);
             agent = new Agent(this.engine, this.teamTimeOut, id);
             agent.setTimeLastMsgReceived(timeLastMsgReceived);
             this.agents.put(id, agent);
         }
     }
 
-    boolean isAgentActive(long agentId) {
+    boolean isAgentActive(ID agentId) {
         Agent agentEntry = this.agents.get(agentId);
 
         if (agentEntry != null) {
@@ -74,7 +76,7 @@ public class TeamManager {
      * Checks if an agent is ignored
      * @param agentId an essentials::AgentID identifying the agent
      */
-    public boolean isAgentIgnored(long agentId) {
+    public boolean isAgentIgnored(ID agentId) {
         Agent agentEntry = this.agents.get(agentId);
 
         if (agentEntry != null) {
@@ -84,7 +86,7 @@ public class TeamManager {
         }
     }
 
-    void setAgentIgnored(long agentId, boolean ignored) {
+    void setAgentIgnored(ID agentId, boolean ignored) {
         Agent agentEntry = this.agents.get(agentId);
 
         if (agentEntry != null) {
@@ -92,7 +94,7 @@ public class TeamManager {
         }
     }
 
-    public boolean setSuccess(long agentId, AbstractPlan plan, EntryPoint entryPoint) {
+    public boolean setSuccess(ID agentId, AbstractPlan plan, EntryPoint entryPoint) {
         Agent agentEntry = this.agents.get(agentId);
 
         if (agentEntry != null) {
@@ -102,7 +104,7 @@ public class TeamManager {
         return false;
     }
 
-    boolean setSuccessMarks(long agentId, ArrayList suceededEps) {
+    boolean setSuccessMarks(ID agentId, ArrayList suceededEps) {
         Agent agentEntry = this.agents.get(agentId);
 
         if (agentEntry != null) {
@@ -112,7 +114,7 @@ public class TeamManager {
         return false;
     }
 
-    DomainVariable getDomainVariable(long agentId, String sort) {
+    DomainVariable getDomainVariable(ID agentId, String sort) {
         Agent agentEntry = this.agents.get(agentId);
 
         if (agentEntry != null) {
@@ -124,7 +126,7 @@ public class TeamManager {
     public int getTeamSize() {
         int teamSize = 0;
 
-        for (Map.Entry<Long, Agent> agentEntry : this.agents.entrySet()) {
+        for (Map.Entry<ID, Agent> agentEntry : this.agents.entrySet()) {
 
             if (agentEntry.getValue().isActive())
                 teamSize++;
@@ -132,7 +134,7 @@ public class TeamManager {
         return teamSize;
     }
 
-    public Agent getAgentByID(long agentId) {
+    public Agent getAgentByID(ID agentId) {
         return this.agents.get(agentId);
     }
 
@@ -143,8 +145,15 @@ public class TeamManager {
         boolean foundSelf = false;
 
         for (String agentName : agentNames) {
-            int id = Integer.valueOf((String) sc.get("Globals").get("Team." + agentName + ".ID"));
-            agent = new Agent(this.engine, this.teamTimeOut, this.engine.getId(id), agentName);
+            int id = -1;
+            Object idObject = sc.get("Globals").get("Team." + agentName + ".ID");
+
+            if (idObject!= null) {
+                id = Integer.valueOf((String) idObject);           //TODO: generate ID for -1 instead of else case
+                agent = new Agent(this.engine, this.teamTimeOut, this.engine.getId(id), agentName);
+            }
+            else
+                agent = new Agent(this.engine, this.teamTimeOut, this.engine.getId(agentName), agentName);
 
             if (!foundSelf && agentName.equals(localAgentName)) {
                 foundSelf = true;
@@ -152,12 +161,13 @@ public class TeamManager {
                 this.localAgent.setLocal(true);
             } else {
 
-                for ( Map.Entry<Long, Agent> agentEntry : this.agents.entrySet()) {
+                for ( Map.Entry<ID, Agent> agentEntry : this.agents.entrySet()) {
 
                     if ((agentEntry.getKey()) == (agent.getId()))
                         CommonUtils.aboutError("TM: Two robots with the same ID in Globals.conf. ID: " + agent.getId());
                 }
             }
+            System.out.println("TM: new agent " + agent.getId());
             this.agents.put(agent.getId(), agent);
         }
         if (!foundSelf)
@@ -165,7 +175,7 @@ public class TeamManager {
 
         if (sc.get("Alica").get("Alica.TeamBlackList.InitiallyFull") != null) {
 
-            for (Map.Entry<Long, Agent> agentEntry : this.agents.entrySet()) {
+            for (Map.Entry<ID, Agent> agentEntry : this.agents.entrySet()) {
                 agentEntry.getValue().setIgnored(true);
             }
         }
@@ -179,7 +189,7 @@ public class TeamManager {
         this.localAgent = localAgent;
     }
 
-    public HashMap<Long, Agent> getActiveAgents() {
+    public HashMap<ID, Agent> getActiveAgents() {
         return agents;
     }
 
@@ -187,7 +197,7 @@ public class TeamManager {
         return new ActiveAgentIdView(this.agents);
     }
 
-    public long getLocalAgentID() {
+    public ID getLocalAgentID() {
         return this.localAgent.getId();
     }
 }

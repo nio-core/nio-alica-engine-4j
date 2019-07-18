@@ -3,6 +3,7 @@ package de.uniks.vs.jalica.engine.collections;
 import de.uniks.vs.jalica.engine.common.config.ConfigPair;
 import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.common.SystemConfig;
+import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.Characteristic;
 import de.uniks.vs.jalica.engine.idmanagement.IDManager;
 
@@ -14,7 +15,7 @@ import java.util.HashMap;
  */
 public class AgentProperties {
 
-    private long id;
+    private ID id;
     private String name;
     private AlicaEngine ae;
     private String defaultRole;
@@ -77,13 +78,14 @@ public class AgentProperties {
         return characteristicMap;
     }
 
-    public long extractID(String name, SystemConfig sc) {
+    public ID extractID(String name, SystemConfig sc) {
         Object id = sc.get("Globals").get("Team." + name + ".ID");
 
         if (id != null)
-            return Integer.valueOf((String) id);
+//            return Integer.valueOf((String) id);
+            return ae.getId((String) id);
         else
-            return IDManager.generateUUID(this).asLong();
+            return ae.getId(name);//getOrGenerateUUID(this).asLong();
     }
 
 //    private void extractCharacteristicsWithCapabilities(String name, SystemConfig sc) {
@@ -126,7 +128,7 @@ public class AgentProperties {
         return name;
     }
 
-    public long getID() {
+    public ID getID() {
         return id;
     }
 
