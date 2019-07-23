@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.engine.containers.messages;
 
+import de.uniks.vs.jalica.engine.AlicaEngine;
 import de.uniks.vs.jalica.engine.containers.Message;
 import de.uniks.vs.jalica.engine.idmanagement.ID;
 
@@ -13,6 +14,15 @@ public class PlanTreeInfo implements Message {
     public ID senderID;
     public ArrayList<Long> stateIDs = new ArrayList<>();
     public ArrayList<Long> succeededEPs = new ArrayList<>();
+
+    public String toString(AlicaEngine ae) {
+        String s = " Sender:" +senderID + " | ";
+
+        for (Long state : stateIDs)
+               s += " States: "+ (ae.getPlanRepository().getStates().get(state)!= null ? ae.getPlanRepository().getStates().get(state).getName() : state) + " | ";
+        s += " succeeded EntryPoints:"+succeededEPs;
+        return s;
+    }
 
     @Override
     public String toString() {

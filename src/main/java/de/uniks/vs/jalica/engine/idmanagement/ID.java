@@ -24,6 +24,13 @@ public class ID {
         longID = this.getLongID();
     }
 
+    public ID(long ID) {
+        uuid = new UUID( ID, ID);
+        longID = this.getLongID();
+
+        if (longID != ID) CommonUtils.aboutError("ID: error in uuid generation " + longID + " != " + ID);
+    }
+
     public long asLong() {
         return this.longID;
     }
@@ -49,7 +56,8 @@ public class ID {
 
     private long getLongID() {
         long longID = uuid.getMostSignificantBits() & Long.MAX_VALUE;
-        if (longID < 0) CommonUtils.aboutError("Negative long ID");
+        if (longID < 0)
+            CommonUtils.aboutError("Negative long ID");
         return longID;
 //        long longID = -1;
 //

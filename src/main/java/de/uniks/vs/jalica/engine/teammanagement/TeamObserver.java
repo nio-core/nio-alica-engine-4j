@@ -56,7 +56,7 @@ public class TeamObserver implements ITeamObserver {
                 SimplePlanTree spt = sptFromMessage(msg.fst.senderID, msg.fst.stateIDs, msg.snd);
 
                 if (spt != null) {
-                    System.out.println("TO: ---------- SimplePlanTree -------\n" + spt + "-------------------------");
+                    System.out.println("TO: ---------- SimplePlanTree -------\n" + spt.toString("    ") + "-------------------------");
                     this.teamManager.setTimeLastMsgReceived(msg.fst.senderID, msg.snd);
                     this.teamManager.setSuccessMarks(msg.fst.senderID, msg.fst.succeededEPs);
 

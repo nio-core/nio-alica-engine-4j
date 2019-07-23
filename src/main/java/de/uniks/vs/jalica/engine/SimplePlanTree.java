@@ -96,6 +96,42 @@ public class SimplePlanTree {
         this.parent = parent;
     }
 
+
+    public String toString(String pst) {
+        String out = "";
+        out += pst+ "RobotID: " + this.agentID + "\n";
+        out += pst+ "Parent: ";
+
+        if (this.parent != null) {
+            out += pst+ this.parent.getState().getID();
+        }
+        out += "\n";
+        out += pst+ "State: ";
+
+        if (this.state != null) {
+            out += pst+ this.state.getID();
+            out += pst+ "    " + this.state.getName();
+        } else {
+            out += pst+ "ERROR !!!NO STATE !!!";
+        }
+        out += "\n";
+        out += pst+ "EntryPoint: ";
+
+        if (this.entryPoint != null) {
+            out += pst+ this.entryPoint.getID() + " " + this.entryPoint.getTask().getName();
+        } else {
+            out += pst+ "NoEntryPoint";
+        }
+        out += "\n";
+        out += pst+ "Children: " + this.children.size() + "\n";
+
+        for ( SimplePlanTree c : this.children) {
+            out += pst+ c;
+        }
+        out += "\n";
+        return out;
+    }
+
     @Override
     public String toString() {
         String out = "";

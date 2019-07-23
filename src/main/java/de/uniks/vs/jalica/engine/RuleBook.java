@@ -211,6 +211,7 @@ public class RuleBook {
     }
 
     PlanChange planAbortRule(RunningPlan r) {
+        System.out.println("RB: planAbortRule");
         assert (!r.isRetired());
         if (r.isFailureHandlingNeeded())
             return PlanChange.NoChange;

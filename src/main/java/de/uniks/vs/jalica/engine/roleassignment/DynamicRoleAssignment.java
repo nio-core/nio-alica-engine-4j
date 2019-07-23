@@ -62,6 +62,9 @@ public class DynamicRoleAssignment extends IRoleAssignment {
             String name = null;
 
             for ( Characteristic agentCharacteristic : agentProperties.getCharacteristics().values()) {
+
+                if (agentCharacteristic.getValue() == null || roleCharacteristic.getValue() == null)
+                    continue;
                 double _similarity = agentCharacteristic.calculateSimilarityTo(roleCharacteristic) * roleCharacteristic.getWeight();
 
                 if(similarity < _similarity) {

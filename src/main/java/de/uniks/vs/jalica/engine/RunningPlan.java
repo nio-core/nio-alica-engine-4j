@@ -81,7 +81,7 @@ public class RunningPlan {
         this.activeTriple.abstractPlan = plan;
     }
 
-    public RunningPlan(AlicaEngine ae,  PlanType pt) {
+    public RunningPlan(AlicaEngine ae, PlanType pt) {
         this.failedSubPlans = new LinkedHashMap<>();
         this.children = new ArrayList<>();
         this.activeTriple = new PlanStateTriple();
@@ -292,7 +292,9 @@ public class RunningPlan {
 
         if (this.activeTriple.state != s) {
 //            ALICA_ASSERT(s == nullptr || (_activeTriple.entryPoint && _activeTriple.entryPoint->isStateReachable(s))) //TODO: is this correct???
-            assert(!(s == null || (this.activeTriple.entryPoint != null && !this.activeTriple.entryPoint.isStateReachable(s))));
+            assert(s == null || (this.activeTriple.entryPoint != null && this.activeTriple.entryPoint.isStateReachable(s)));
+
+            System.err.println("RP("+this.getActivePlan().getName() + " " + this.hashCode() + "): change state " + (this.activeTriple.state != null ? this.activeTriple.state.getName(): "null") + "->"+ s.getName());
             this.activeTriple.state = s;
             this.status.stateStartTime = this.alicaEngine.getAlicaClock().now();
 
@@ -344,8 +346,8 @@ public class RunningPlan {
 
     public void deactivateChildren() {
         for (RunningPlan r : this.children) {
-        r.deactivate();
-    }
+            r.deactivate();
+        }
     }
 
     public void clearChildren() {
@@ -683,7 +685,7 @@ public class RunningPlan {
         return ret;
     }
 
-    void toMessage(ArrayList<Long> message, RunningPlan o_deepestNode, int o_depth, int curDepth) {
+    void toMessage(ArrayList<Long> message, RunningPlan deepestNode, int depth, int curDepth) {
 
         if (isBehaviour() || isRetired()) {
             return;
@@ -693,14 +695,14 @@ public class RunningPlan {
         } else {
             return;
         }
-        if (curDepth > o_depth) {
-            o_depth = curDepth;
-            o_deepestNode = this;
+        if (curDepth > depth) {
+            depth = curDepth;
+            deepestNode = this;
         }
         if (this.children.size() > 0) {
             message.add(-1l);
             for ( RunningPlan r : this.children) {
-                r.toMessage(message, o_deepestNode, o_depth, curDepth + 1);
+                r.toMessage(message, deepestNode, depth, curDepth + 1);
             }
             message.add(-2l);
         }

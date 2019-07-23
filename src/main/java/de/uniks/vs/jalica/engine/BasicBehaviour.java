@@ -216,7 +216,8 @@ public abstract class BasicBehaviour implements Runnable {
 
     protected void runInternalTimed() {
 
-        while (this.started) {
+        System.out.println("BB: " + this.behaviour.getImplementation().getClass().getSimpleName() + " initialized --------------------------------- " );
+        while (this.started && !this.isFinished()) {
             {
 //                std::unique_lock<std::mutex> lck(_runLoopMutex);
                 Lock lck = this.runLoopMutex;
@@ -229,14 +230,18 @@ public abstract class BasicBehaviour implements Runnable {
                     this.contextInRun = null;
 //                    this.runCV.wait(lck, [this] { return this.running || !this.started; }); // wait for signal to run
                     this.runCV.cvWait(lck, this, () -> running || !started); // wait for signal to run
+                    System.out.println("BB: " + this.behaviour.getImplementation().getClass().getSimpleName() + " started --------------------------------- " );
+
                 }
                 this.contextInRun = this.context;
                 lck.unlock();
             }
+
             if (!this.started) {
                 this.contextInRun = null;
                 return;
             }
+
             if (this.callInit) {
                 if (this.msDelayedStart > 0) {
                     try {
@@ -247,6 +252,7 @@ public abstract class BasicBehaviour implements Runnable {
                 }
                 initInternal();
             }
+
             long start = System.nanoTime();//std::chrono::high_resolution_clock::now();
             try {
                 run(null);
@@ -264,10 +270,14 @@ public abstract class BasicBehaviour implements Runnable {
                     e.printStackTrace();
                 }
             }
+            System.out.println("BB: " + this.behaviour.getImplementation().getClass().getSimpleName() + " finished --------------------------------- " );
         }
+
     }
 
     protected void runInternalTriggered() {
+
+        System.out.println("BB: " + this.behaviour.getImplementation().getClass().getSimpleName() + " initialized --------------------------------- " );
 
         while (this.started) {
             {
@@ -280,6 +290,7 @@ public abstract class BasicBehaviour implements Runnable {
                 this.contextInRun = null;
 //                this.runCV.wait(lck, [this] { return !this.started || (this.behaviourTrigger.isNotifyCalled(this.runCV) && this.running); });
                 this.runCV.cvWait(lck, this, () -> !this.started || (this.behaviourTrigger.isNotifyCalled(this.runCV) && this.running));
+                System.out.println("BB: " + this.behaviour.getImplementation().getClass().getSimpleName() + " started --------------------------------- " );
                 this.contextInRun = this.started ? this.context : null;
                 lck.unlock();
             }
@@ -298,6 +309,7 @@ public abstract class BasicBehaviour implements Runnable {
             }
             this.behaviourTrigger.setNotifyCalled(false, this.runCV);
         }
+        System.out.println("BB: " + this.behaviour.getImplementation().getClass().getSimpleName() + " finished --------------------------------- " );
     }
 
     public void sendLogMessage(int level, String message) {

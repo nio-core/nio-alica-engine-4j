@@ -16,7 +16,7 @@ public class SuccessCollection {
     private Plan plan;
     private ExtArrayList<ArrayList<ID>> successData;
 
-    // Type definitions --------------------
+    // ------------------ Type definitions --------------------
     // AgentGrp = ArrayList<Long>
     // EntryPointGrp = ArrayList<EntryPoint>
     // IdGrp = ArrayList<Long>

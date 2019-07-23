@@ -84,8 +84,12 @@ public class AgentProperties {
         if (id != null)
 //            return Integer.valueOf((String) id);
             return ae.getId((String) id);
-        else
+        else {
+
+            if (ae == null)
+                System.out.println(this);
             return ae.getId(name);//getOrGenerateUUID(this).asLong();
+        }
     }
 
 //    private void extractCharacteristicsWithCapabilities(String name, SystemConfig sc) {
@@ -134,5 +138,15 @@ public class AgentProperties {
 
     public HashMap<String, Characteristic> getCharacteristics() {
         return characteristics;
+    }
+
+    @Override
+    public String toString() {
+        String s = "";
+        s +=  "  AP: Default Role: " + this.getDefaultRole() +"\n";
+        s +=  "  AP: ID: " + this.getID() +"\n";
+        s +=  "  AP: Name: " + this.getName() +"\n";
+        s +=  "  AP: Characteristics: " + this.getCharacteristics() +"\n";
+        return s;
     }
 }

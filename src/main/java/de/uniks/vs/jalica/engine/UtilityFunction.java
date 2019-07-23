@@ -18,13 +18,13 @@ import java.util.LinkedHashMap;
  */
 public class UtilityFunction {
 
-    protected static final double DIFFERENCE_THRESHOLD = 0.0001;
+    private static final double DIFFERENCE_THRESHOLD = 0.0001;
     private Plan plan;
     private ArrayList<USummand> utilSummands;
     private LinkedHashMap<TaskRole, Double> priorityMartix;
     private LinkedHashMap<Long, Double> roleHighestPriorityMap;  // Role, Priority
-    protected double priorityWeight;
-    protected double similarityWeight;
+    private double priorityWeight;
+    private double similarityWeight;
     private AlicaEngine ae;
     private IRoleAssignment ra;
 
@@ -50,7 +50,7 @@ public class UtilityFunction {
         // Sum up priority summand
         UtilityInterval prioUI = getPriorityResult(wrapper);
         if (prioUI.getMax() <= -1.0) {
-            // one robot have a negativ priority for his task -> (-1.0, -1.0) for the complete assignment
+            // one agent have a negativ priority for his task -> (-1.0, -1.0) for the complete assignment
             return prioUI;
         }
 //        sumOfUI += this.priorityWeight * prioUI;

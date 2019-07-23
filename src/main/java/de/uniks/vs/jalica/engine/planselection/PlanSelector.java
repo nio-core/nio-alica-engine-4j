@@ -50,10 +50,10 @@ public class PlanSelector {
                 return createRunningPlan(rp.getParent(), rp.getPlanType().getPlans(), robots, rp, rp.getPlanType(), currentUtility);
             }
         } catch (RuntimeException e) {
-        CommonUtils.aboutError(e.getMessage());
-        this.pap.increaseSize();
-        return null;
-    }
+            CommonUtils.aboutError(e.getMessage());
+            this.pap.increaseSize();
+            return null;
+        }
     }
 
     public boolean getPlansForState(RunningPlan planningParent, ArrayList<AbstractPlan> plans, ArrayList<ID> robotIDs, ArrayList<RunningPlan> o_plans)
@@ -62,7 +62,7 @@ public class PlanSelector {
         try {
             return getPlansForStateInternal(planningParent, plans, robotIDs, o_plans);
         } catch (RuntimeException e) {
-            CommonUtils.aboutError(e.getMessage());
+            System.err.println(e.getMessage());
             this.pap.increaseSize();
             return false;
         }

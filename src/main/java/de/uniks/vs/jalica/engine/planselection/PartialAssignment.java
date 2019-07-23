@@ -50,7 +50,7 @@ public class PartialAssignment implements Comparable<PartialAssignment> {
         this.plan = partialAssignment.plan;
         this.problem = partialAssignment.problem;
         this.cardinalities = new ArrayList<>(partialAssignment.cardinalities);
-        this.assignment = new ExtArrayList<Integer>(partialAssignment.assignment);
+        this.assignment = new ExtArrayList<Integer>(partialAssignment.assignment, () -> new Integer(-1));
         this.utility = partialAssignment.utility;
         this.numAssignedAgents = partialAssignment.numAssignedAgents;
        this.nextAgentIdx = partialAssignment.nextAgentIdx;
@@ -176,11 +176,11 @@ public class PartialAssignment implements Comparable<PartialAssignment> {
         for (int i = 0; i < numChildren; i++) {
 
             if (this.cardinalities.get(i).getMax() > 0) {
-                PartialAssignment newPa = pool.getNext();
+//                PartialAssignment newPa = pool.getNext();
                 // TODO: check  "*newPa = *this;"
-                newPa.copy(this);
+//                newPa.copy(this);
 //            *newPa = *this;
-//                PartialAssignment newPa = pool.setNext(this);
+                PartialAssignment newPa = pool.setNext(this);
                 newPa.assignUnassignedAgent(this.nextAgentIdx, i);
                 newPa.evaluate(old);
 
@@ -248,6 +248,35 @@ public class PartialAssignment implements Comparable<PartialAssignment> {
             }
         }
         return false;
+    }
+
+    public String toString(String pst) {
+        String out = "";
+        Plan p = this.plan;
+        out += pst + "Plan: " + (p != null ? p.getName() : "NULL") + "\n";
+        out += pst + "Utility: " + this.utility + "\n";
+        out += pst + "Agents: ";
+        for (ID agent : this.problem.getAgents()) {
+            out += pst + agent + " ";
+        }
+        out += "\n";
+        if (p != null) {
+            for (int i = 0; i < this.cardinalities.size() - (this.allowIdling ? 1 : 0); i++) {
+                out += pst + "EPid: " + p.getEntryPoints().get(i).getID() + " Task: " + p.getEntryPoints().get(i).getTask().getName()
+                        + " cardinality: " + this.cardinalities.get(i);
+            }
+        }
+        out += "\n";
+        out += pst + "Assigned Agents: ";
+        int i = 0;
+        for (int idx : this.assignment) {
+            if (idx == -1)
+                break;
+            out += pst + "  Agent: " + this.problem.getAgents().get(i) + " Ep: " + idx + ", ";
+            i++;
+        }
+        out += "\n";
+        return out;
     }
 
     @Override

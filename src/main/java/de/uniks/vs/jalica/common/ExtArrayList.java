@@ -19,8 +19,9 @@ public class ExtArrayList<T> extends ArrayList<T> {
         this.supplier = supplier;
     }
 
-    public ExtArrayList(ExtArrayList<T> list) {
+    public ExtArrayList(ExtArrayList<T> list, Supplier<T> supplier) {
         super(list);
+        this.supplier = supplier;
     }
 
     T createContents() {

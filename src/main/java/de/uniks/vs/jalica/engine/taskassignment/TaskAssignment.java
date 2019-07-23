@@ -86,7 +86,7 @@ public class TaskAssignment implements ITaskAssignment {
         if (partialAssignment == null) {
             return new Assignment();
         }
-        System.out.print("TA: ... calculated this PartialAssignment:\n" + partialAssignment);
+        System.out.print("TA: ... calculated this PartialAssignment:\n" + partialAssignment.toString("    "));
         Assignment newAss = new Assignment(partialAssignment);
         System.out.print("TA: Return this Assignment to PS:" + newAss);
         return newAss;

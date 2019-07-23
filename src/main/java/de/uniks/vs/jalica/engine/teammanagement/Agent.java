@@ -36,7 +36,8 @@ public class Agent {
         this.id = id;
         this.name = name;
         this.engine = engine;
-        this.properties =  !name.isEmpty() ? new AgentProperties(engine, name) : new AgentProperties();
+//        this.properties =  !name.isEmpty() ? new AgentProperties(engine, name) : new AgentProperties();
+        this.properties = new AgentProperties(engine, name);
         this.engineData = new AgentEngineData(engine, id);
 //        this.engineData = new AgentProperties(engine, id);
         this.timeout = timeout;

@@ -94,7 +94,7 @@ public class StdDiscovery extends Discovery implements Runnable {
 
         while (true) {
             try {
-                Thread.sleep(random.nextInt(20)* 1000);
+                Thread.sleep(random.nextInt(20)* 100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

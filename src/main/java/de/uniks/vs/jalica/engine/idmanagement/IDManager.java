@@ -74,7 +74,13 @@ public class IDManager {
                 return id;
             }
         }
-        return generateUniqueID(String.valueOf(longID));
+        return generateUniqueID(longID);
+    }
+
+    private ID generateUniqueID(long longID) {
+        ID id = new ID(longID);
+        uuids.put(id, longID);
+        return id;
     }
 
     private ID generateUniqueID(String string) {
