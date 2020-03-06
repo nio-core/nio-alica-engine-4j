@@ -77,7 +77,7 @@ public class StdDiscovery extends Discovery implements Runnable {
         if(CommonUtils.COMM_D_DEBUG_debug) System.out.println("SD: Loopback mode : " + multicastSocket.getLoopbackMode());
 
         InetAddress group = InetAddress.getByName(MULTICAST_IP);
-        System.out.println("SD: is multicast " +group.isMulticastAddress());
+        System.out.println("SD: "+ group + " is multicast " + group.isMulticastAddress());
         multicastSocket.joinGroup(group);
     }
 

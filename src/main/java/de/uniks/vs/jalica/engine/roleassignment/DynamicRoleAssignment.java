@@ -158,7 +158,7 @@ public class DynamicRoleAssignment extends IRoleAssignment {
             }
         }
         if (!roleIsAssigned) {
-            System.out.println("RA: Could not set a role for agent " + this.localAgent.getProperties().getName() + " with default role " + this.localAgent.getProperties().getDefaultRole() + "!");
+            System.out.println("DRA: Could not set a role for agent " + this.localAgent.getProperties().getName() + " with default role " + this.localAgent.getProperties().getDefaultRole() + "!");
         }
     }
 

@@ -62,7 +62,7 @@ public class BehaviourPool implements IBehaviourPool {
     }
 
 
-    public void   startBehaviour(RunningPlan   rp) {
+    public void startBehaviour(RunningPlan rp) {
         if (rp.getActivePlan() instanceof Behaviour) {
 
             Behaviour beh = (Behaviour) rp.getActivePlan();

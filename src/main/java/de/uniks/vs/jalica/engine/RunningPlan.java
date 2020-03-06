@@ -471,13 +471,14 @@ public class RunningPlan {
     void activate() {
         assert(this.status.active != PlanActivity.Activity.Retired);
         this.status.active = PlanActivity.Activity.Active;
+        System.out.println("TETETERTETETETET " + this.getActivePlan().getName());
         if (isBehaviour()) {
             this.alicaEngine.getBehaviourPool().startBehaviour(this);
         }
         attachPlanConstraints();
         for (RunningPlan r : this.children) {
-        r.activate();
-    }
+            r.activate();
+        }
     }
 
 

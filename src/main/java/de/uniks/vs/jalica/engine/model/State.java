@@ -67,10 +67,10 @@ public class State extends AlicaElement {
 
      public Plan getInPlan()  { return this.inPlan; }
      public EntryPoint getEntryPoint()  { return this. entryPoint; }
-     public ArrayList<AbstractPlan> getPlans()  { return this. plans; }
-     public ArrayList<Transition> getInTransitions()  { return this. inTransitions; }
-     public ArrayList<Transition> getOutTransitions()  { return this. outTransitions; }
-     public ArrayList<VariableBinding> getParametrisation()  { return this. variableBindingGrp; }
+     public ArrayList<AbstractPlan> getPlans()  { return this.plans; }
+     public ArrayList<Transition> getInTransitions()  { return this.inTransitions; }
+     public ArrayList<Transition> getOutTransitions()  { return this.outTransitions; }
+     public ArrayList<VariableBinding> getParametrisation()  { return this.variableBindingGrp; }
 
     boolean isTerminal()  { return this. type != StateType.NORMAL; }
     public boolean isSuccessState()  { return this. type == StateType.SUCCESS; }
