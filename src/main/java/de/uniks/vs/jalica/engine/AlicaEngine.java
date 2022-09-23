@@ -15,6 +15,7 @@ import de.uniks.vs.jalica.engine.modelmanagement.ModelManager;
 import de.uniks.vs.jalica.engine.planselection.PartialAssignment;
 import de.uniks.vs.jalica.engine.roleassignment.DynamicRoleAssignment;
 import de.uniks.vs.jalica.engine.roleassignment.StaticRoleAssignment;
+import de.uniks.vs.jalica.engine.skillmanagement.SkillModule;
 import de.uniks.vs.jalica.engine.syncmodule.SyncModule;
 import de.uniks.vs.jalica.engine.teammanagement.TeamManager;
 import de.uniks.vs.jalica.engine.teammanagement.TeamObserver;
@@ -31,6 +32,7 @@ public class AlicaEngine {
     private TeamObserver teamObserver;
     private ExpressionHandler expressionHandler;
     private BehaviourPool behaviourPool;
+    private SkillModule skills;
     private RoleSet roleSet;
     private VariableSyncModule variableSyncModule;
     private AuthorityManager auth;
@@ -88,7 +90,7 @@ public class AlicaEngine {
         if (this.useStaticRoles) {
             this.roleAssignment = new StaticRoleAssignment(this);
         } else {
-            if(CommonUtils.AE_DEBUG_debug)CommonUtils.aboutCallNotification("DynamicRoleAssignment!");
+            if(CommonUtils.AE_DEBUG_debug) CommonUtils.aboutCallNotification("DynamicRoleAssignment!");
             this.roleAssignment = new DynamicRoleAssignment(this);
         }
 
@@ -200,72 +202,62 @@ public class AlicaEngine {
     }
 
     public boolean getStepCalled() {
-        System.out.println("AE: step called " + this.stepCalled);
+        if(CommonUtils.AE_DEBUG_debug) System.out.println("AE: step called " + this.stepCalled);
         return this.stepCalled;
     }
 
     public boolean getStepEngine() {
         return this.stepEngine;
     }
-
-    public void setAlicaClock(AlicaClock clock) {
-        this.alicaClock = clock;
-    }
-
-    public void setTeamObserver(TeamObserver teamObserver)
-    {
-        this.teamObserver = teamObserver;
-    }
-
-    public void setSyncModul(SyncModule syncModul)
-    {
-        this.syncModul = syncModul;
-    }
-
-    public void setAuth(AuthorityManager auth)
-    {
-        this.auth = auth;
-    }
-
-    public void setRoleAssignment(IRoleAssignment roleAssignment)
-    {
-        this.roleAssignment = roleAssignment;
-    }
-
-    public void setStepEngine(boolean stepEngine)
-    {
-        this.stepEngine = stepEngine;
-    }
-
     public String getRobotName()
     {
         return sc.getHostname();
     }
-
-    public void setLog(Logger log)
-    {
-        this.log = log;
-    }
-
     public boolean isTerminating()
     {
         return terminating;
     }
 
+    public void setAlicaClock(AlicaClock clock) {
+        this.alicaClock = clock;
+    }
+    public void setTeamObserver(TeamObserver teamObserver)
+    {
+        this.teamObserver = teamObserver;
+    }
+    public void setSyncModul(SyncModule syncModul)
+    {
+        this.syncModul = syncModul;
+    }
+    public void setAuth(AuthorityManager auth)
+    {
+        this.auth = auth;
+    }
+    public void setRoleAssignment(IRoleAssignment roleAssignment)
+    {
+        this.roleAssignment = roleAssignment;
+    }
+    public void setStepEngine(boolean stepEngine)
+    {
+        this.stepEngine = stepEngine;
+    }
+    public void setLog(Logger log)
+    {
+        this.log = log;
+    }
     public void setMaySendMessages(boolean maySendMessages)
     {
         this.maySendMessages = maySendMessages;
     }
-
     public void setCommunicator(IAlicaCommunication communicator)
     {
         this.communicator = communicator;
     }
-
     public void setResultStore(VariableSyncModule resultStore)
     {
         this.variableSyncModule = resultStore;
     }
+    public void setSkillModule(SkillModule skills) { this.skills = skills;  }
 
     public void stepNotify() {
         this.setStepCalled(true);
@@ -300,6 +292,7 @@ public class AlicaEngine {
     public SystemConfig getSystemConfig() {
         return sc;
     }
+    public SkillModule getSkillModule() { return skills; }
 
     public void addSolver(int identifier, SolverType solver) {
         this.solvers.put(identifier, solver);

@@ -1,10 +1,9 @@
 package de.uniks.vs.jalica.engine;
 
 import de.uniks.vs.jalica.common.utils.CommonUtils;
+import de.uniks.vs.jalica.engine.common.Pair;
 import de.uniks.vs.jalica.engine.model.EntryPoint;
 import de.uniks.vs.jalica.engine.planselection.IAssignment;
-import javafx.util.Pair;
-
 import java.util.HashMap;
 import java.util.Vector;
 

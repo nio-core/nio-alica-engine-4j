@@ -33,6 +33,7 @@ public class AuthorityManager {
     }
 
     public void handleIncomingAuthorityMessage(AllocationAuthorityInfo aai) {
+        System.out.println("AM: handleIncomingAuthorityMessage ----------------");
         AlicaTime now = this.engine.getAlicaClock().now();
         if (this.engine.getTeamManager().isAgentIgnored(aai.senderID)) {
             return;
@@ -71,10 +72,13 @@ public class AuthorityManager {
     }
 
     void processPlan(RunningPlan rp) {
+        System.out.println("AM: processPlan");
+
         if (rp.isBehaviour()) {
             return;
         }
         if (rp.getCycleManagement().needsSending()) {
+            System.out.println("AM: AAI sended");
             sendAllocation(rp);
             rp.getCycleManagement().sent();
         }

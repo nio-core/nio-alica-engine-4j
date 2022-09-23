@@ -11,12 +11,13 @@ public class AllocationAuthorityInfoPublisher extends ZMQPublisher {
 
     public AllocationAuthorityInfoPublisher(String topic, ZMQ.Socket publisher) {
         super(topic, publisher);
+        System.out.println("AAI-Pub: started ");
     }
 
     @Override
     public void publish(Message message) {
         AllocationAuthorityInfo authorityInfo = (AllocationAuthorityInfo) message;
-
+        System.out.println("AAI-Pub: publish ");
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("senderID", authorityInfo.senderID);
         jsonObject.put("planID", authorityInfo.planID);
@@ -33,7 +34,7 @@ public class AllocationAuthorityInfoPublisher extends ZMQPublisher {
             jsonArray.add(newEP);
         }
         jsonObject.put("entrypoints", jsonArray);
-        System.out.println("AA-Pub: publish " + jsonObject.toJSONString());
+        System.out.println("AAI-Pub: publish " + jsonObject.toJSONString());
         publisher.send(topic + " " + jsonObject.toJSONString(), 0);
     }
 }

@@ -7,6 +7,5 @@ import de.uniks.vs.jalica.engine.BasicBehaviour;
  * Created by alex on 14.07.17.
  */
 public interface IBehaviourCreator {
-
-    public BasicBehaviour createBehaviour(Long key, AlicaEngine ae);
+    public BasicBehaviour createBehaviour(long key, Object context);
 }

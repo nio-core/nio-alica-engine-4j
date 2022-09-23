@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.Vector;
 
 import static de.uniks.vs.jalica.engine.authority.AllocationDifference.Reason.utility;
-import static jdk.nashorn.internal.objects.NativeMath.min;
 
 /**
  * Created by alex on 27.07.17.

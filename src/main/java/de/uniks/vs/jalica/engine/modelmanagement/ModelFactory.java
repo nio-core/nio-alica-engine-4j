@@ -1,6 +1,5 @@
 package de.uniks.vs.jalica.engine.modelmanagement;
 
-import com.sun.tools.javac.util.Pair;
 import de.uniks.vs.jalica.engine.AlicaTime;
 import de.uniks.vs.jalica.engine.common.Capability;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
@@ -13,7 +12,7 @@ import de.uniks.vs.jalica.engine.modelmanagement.parser.PlanParser;
 import de.uniks.vs.jalica.engine.PlanRepository;
 import de.uniks.vs.jalica.engine.planselection.RoleTaskMapping;
 import de.uniks.vs.jalica.engine.model.Characteristic;
-import org.hamcrest.Factory;
+//import org.hamcrest.Factory;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.w3c.dom.Document;

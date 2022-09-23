@@ -1,9 +1,9 @@
 package de.uniks.vs.jalica.engine.teammanagement;
 
-import com.sun.tools.javac.util.Pair;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.*;
 import de.uniks.vs.jalica.engine.collections.SuccessCollection;
+import de.uniks.vs.jalica.engine.common.Pair;
 import de.uniks.vs.jalica.engine.containers.messages.PlanTreeInfo;
 import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.AbstractPlan;

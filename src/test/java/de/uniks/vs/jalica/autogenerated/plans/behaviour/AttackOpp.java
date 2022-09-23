@@ -9,8 +9,8 @@ public class AttackOpp extends DomainBehaviour {
     /*PROTECTED REGION ID(staticVars1402489351885) ENABLED START*/ //initialise static variables here
     /*PROTECTED REGION END*/
 
-    public AttackOpp(AlicaEngine ae) {
-        super("AttackOpp", ae);
+    public AttackOpp(Object context) {
+        super("AttackOpp", context);
         /*PROTECTED REGION ID(con1402489351885) ENABLED START*/ //Add additional options here
         /*PROTECTED REGION END*/
     }

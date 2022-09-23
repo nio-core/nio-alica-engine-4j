@@ -1,5 +1,6 @@
 package de.uniks.vs.jalica.engine;
 
+import de.uniks.vs.jalica.common.ExtArrayList;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.common.SystemConfig;
 import de.uniks.vs.jalica.engine.idmanagement.ID;
@@ -471,7 +472,7 @@ public class RunningPlan {
     void activate() {
         assert(this.status.active != PlanActivity.Activity.Retired);
         this.status.active = PlanActivity.Activity.Active;
-        System.out.println("TETETERTETETETET " + this.getActivePlan().getName());
+        System.out.println("RP: activate plan " + this.getActivePlan().getName());
         if (isBehaviour()) {
             this.alicaEngine.getBehaviourPool().startBehaviour(this);
         }
@@ -640,30 +641,40 @@ public class RunningPlan {
 
         // If Assignment Protection Time for newly started plans is over, limit available robots to those in this active
         // state.
+
+        ArrayList<ID> removableAgents = new ArrayList();
         if (!auth) {
             AgentsInStateView agentsJoined = this.assignment.getAgentsInState(getActiveState());
 
             for (ID iter : availableAgents) {
 
                 if (!agentsJoined.get().contains(iter)) {
-                    availableAgents.remove(iter);
+                    removableAgents.add(iter);
                 }
 //                else {
 //                    ++iter;
 //                }
             }
+            for (ID id: removableAgents) {
+                availableAgents.remove(id);
+            }
+            removableAgents.clear();
         } else { // in case of authority, remove all that are not assigned to same task
             AssignmentView agentsJoined = this.assignment.getAgentsWorking(getActiveEntryPoint());
 
             for (ID iter : availableAgents) {
 
                 if (!agentsJoined.get().contains(iter)) {
-                    availableAgents.remove(iter);
+                    removableAgents.add(iter);
                 }
 //                else {
 //                    ++iter;
 //                }
             }
+            for (ID id: removableAgents) {
+                availableAgents.remove(id);
+            }
+            removableAgents.clear();
         }
         // Give Plans to children
         for (RunningPlan r : this.children) {

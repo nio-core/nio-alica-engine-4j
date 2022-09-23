@@ -16,8 +16,9 @@ public abstract class DomainBehaviour extends BasicBehaviour {
 //    protected double maxTranslation;
     protected ID ownID;
 
-    public DomainBehaviour(String name, AlicaEngine ae) {
+    public DomainBehaviour(String name, Object context) {
         super(name);
+        AlicaEngine ae = (AlicaEngine) context;
         this.systemConfig = ae.getSystemConfig();
         this.agentName = ae.getTeamManager().getLocalAgent().getName();
         this.ownID = ae.getTeamManager().getLocalAgentID();

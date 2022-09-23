@@ -1,6 +1,5 @@
 package de.uniks.vs.jalica.common.utils;
 
-import com.sun.tools.javac.util.Pair;
 import de.uniks.vs.jalica.common.CVCondition;
 import de.uniks.vs.jalica.common.Comparable;
 import de.uniks.vs.jalica.common.TimerEvent;
@@ -21,7 +20,7 @@ public class CommonUtils {
     public static final boolean PP_DEBUG_debug = false;
     public static final boolean CM_DEBUG_debug = false;
     public static final boolean MF_DEBUG_debug = false;
-    public static final boolean RA_DEBUG_debug = true;
+    public static final boolean RA_DEBUG_debug = false;
     public static final boolean FS_DEBUG_debug = false;
     public static final boolean TA_DEBUG_debug = false;
     public static final boolean AM_DEBUG_debug = false;
@@ -36,15 +35,15 @@ public class CommonUtils {
     public static final boolean TC_DEBUG_debug = false;
 
     // Communication
-    public static final boolean COMM_debug              = false;
+    public static final boolean COMM_debug              = true;
     public static final boolean COMM_D_DEBUG_debug      = false;
 
-    public static final boolean B_DEBUG_debug           = true;
+    public static final boolean B_DEBUG_debug           = false;
     public static final boolean RULE_debug              = false;
     public static final boolean SM_FAILURE_debug        = false;
     public static final boolean SM_MESSAGES_debug       = false;
     public static final boolean UFDEBUG_debug           = false;
-    public static final boolean PB_DEBUG_debug          = true;
+    public static final boolean PB_DEBUG_debug          = false;
     public static final boolean CM_REASON_DEBUG_debug   = false;
     public static final boolean SUCDEBUG_debug          = false;
     public static final boolean CS_DEBUG_debug          = false;
@@ -63,9 +62,9 @@ public class CommonUtils {
     // DEBUG Extension
     public static final boolean VERBOSE_ARRAY_LIST_DEBUG        = false;
     public static final boolean MISSING_IMPLEMENTATION_debug    = false;
-    public static final boolean IMPLEMENTATION_INCOMPLETE_debug = true;
-    public static final boolean CALL_debug                      = true;
-    public static final boolean WARNING_debug                   = true;
+    public static final boolean IMPLEMENTATION_INCOMPLETE_debug = false;
+    public static final boolean CALL_debug                      = false;
+    public static final boolean WARNING_debug                   = false;
     public static final boolean ERROR_debug                     = true;
 
     public static final int EXIT_FAILURE = 1;
@@ -193,6 +192,8 @@ public class CommonUtils {
 
 
     public static void aboutImplIncomplete(String s) {
+        if (!IMPLEMENTATION_INCOMPLETE_debug)
+            return;
         try {
             throw new Exception();
         } catch (Exception e) {
@@ -243,6 +244,8 @@ public class CommonUtils {
     }
 
     public static void aboutCalledFrom() {
+        if (!CALL_debug)
+            return;
         try {
             throw new Exception();
         } catch (Exception e) {
@@ -254,6 +257,8 @@ public class CommonUtils {
     }
 
     public static void aboutCalledFrom(String msg) {
+        if (!CALL_debug)
+            return;
         try {
             throw new Exception();
         } catch (Exception e) {
@@ -373,7 +378,8 @@ public class CommonUtils {
 //    }
 
     public static void aboutWarningNotification(boolean condition, String msg) {
-
+        if (!WARNING_debug)
+            return;
         if (condition){
             try {
                 throw new Exception();

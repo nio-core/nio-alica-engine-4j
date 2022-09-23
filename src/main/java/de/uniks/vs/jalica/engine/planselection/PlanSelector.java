@@ -186,7 +186,7 @@ public class PlanSelector {
 
     private boolean getPlansForStateInternal(RunningPlan planningParent,  ArrayList<AbstractPlan> plans,  ArrayList<ID> robotIDs, ArrayList<RunningPlan> runningPlans) {
         System.out.println("<######PS: GetPlansForState: Parent:" + (planningParent != null ? planningParent.getActivePlan().getName() : "null")
-                                                           + " plan count: " + plans.size() + " robot count: " + robotIDs.size() + " ######>");
+                                                           + " plan count: " + plans.size() + " agent count: " + robotIDs.size() + " ######>");
         for (AbstractPlan ap : plans) {
 
             if (ap instanceof Behaviour) {

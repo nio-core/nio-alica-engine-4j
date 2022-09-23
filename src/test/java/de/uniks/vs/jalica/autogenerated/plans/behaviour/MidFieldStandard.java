@@ -9,7 +9,7 @@ public class MidFieldStandard extends BasicBehaviour {
     /*PROTECTED REGION ID(staticVars1402489351885) ENABLED START*/ //initialise static variables here
     /*PROTECTED REGION END*/
 
-    public MidFieldStandard(AlicaEngine ae) {
+    public MidFieldStandard(Object context) {
         super("MidFieldStandard");
         /*PROTECTED REGION ID(con1402489351885) ENABLED START*/ //Add additional options here
         /*PROTECTED REGION END*/

@@ -14,8 +14,8 @@ public class Publish extends DomainBehaviour {
     private int count;
     /*PROTECTED REGION END*/
 
-    public Publish(AlicaEngine ae) {
-        super("Publish", ae);
+    public Publish(Object context) {
+        super("Publish", context);
         /*PROTECTED REGION ID(con1528125245680) ENABLED START*/ //Add additional options here
         countMax = 5;
         count = 0;

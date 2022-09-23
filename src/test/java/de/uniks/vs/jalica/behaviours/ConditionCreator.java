@@ -16,7 +16,7 @@ public class ConditionCreator implements IConditionCreator {
     public ConditionCreator() { }
 
     @Override
-    public BasicCondition createConditions(long conditionConfId) {
+    public BasicCondition createConditions(long conditionConfId, Object context) {
 
         if (conditionConfId == 1528125190720l) {
             return new TransitionCondition1528125190720();

@@ -115,7 +115,7 @@ public class PlanParser {
             CommonUtils.aboutError("PP: BaseRolePath does not exists " + baseRolePath);
         }
         if (!(FileSystem.pathExists(baseTaskPath))) {
-            CommonUtils.aboutError("PP: BaseRolePath does not exists " + baseTaskPath);
+            CommonUtils.aboutError("PP: BaseTaskPath does not exists " + baseTaskPath);
         }
 
     }
@@ -589,7 +589,7 @@ public class PlanParser {
             String path = this.currentDirectory + locator;
 
             if (locator.endsWith(".tsk")) {
-                path = path.replace(this.planDir,this.taskDir);
+                path = path.replace("/" + this.planDir, "/" + this.taskDir);
             }
             //not working no clue why
             //char s[2048];

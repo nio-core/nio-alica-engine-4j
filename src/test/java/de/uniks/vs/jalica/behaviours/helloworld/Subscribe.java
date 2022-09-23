@@ -13,8 +13,8 @@ public class Subscribe extends DomainBehaviour {
     private int countMax;
     private int count;
     /*PROTECTED REGION END*/
-    public Subscribe(AlicaEngine ae) {
-        super("Subscribe", ae);
+    public Subscribe(Object context) {
+        super("Subscribe", context);
         /*PROTECTED REGION ID(con1528125245680) ENABLED START*/ //Add additional options here
         countMax = 5;
         count = 0;

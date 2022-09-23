@@ -16,7 +16,7 @@ public class ConstraintCreator implements IConstraintCreator {
     public ConstraintCreator() { }
 
     @Override
-    public BasicConstraint createConstraint(long constraintConfId) {
+    public BasicConstraint createConstraint(long constraintConfId, Object context) {
 
         if (constraintConfId == 1528124991817l) {
             return new Constraint1470042926317();

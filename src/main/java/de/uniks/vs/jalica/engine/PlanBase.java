@@ -352,7 +352,7 @@ public class PlanBase implements Runnable {
         }
 
         if (this.mainThread != null) {
-            this.mainThread.destroy();
+            this.mainThread.stop();
         }
         this.mainThread = null;
     }
@@ -396,7 +396,6 @@ public class PlanBase implements Runnable {
     public Plan getMasterPlan()  { return this.masterPlan; }
     public boolean isWaiting()  { return this.isWaiting; }
 
-    // factory functions
     public RunningPlan makeRunningPlan( Plan plan) {
         this.runningPlans.add(new RunningPlan(this.ae, plan));
         return this.runningPlans.get(this.runningPlans.size()-1);

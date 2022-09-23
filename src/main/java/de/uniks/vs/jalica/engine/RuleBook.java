@@ -213,14 +213,22 @@ public class RuleBook {
     PlanChange planAbortRule(RunningPlan r) {
         System.out.println("RB: planAbortRule");
         assert (!r.isRetired());
-        if (r.isFailureHandlingNeeded())
+        if (r.isFailureHandlingNeeded()) {
+            System.out.println("RB:     NoChange isFailureHandlingNeeded");
             return PlanChange.NoChange;
-        if (r.isBehaviour())
+        }
+        if (r.isBehaviour()) {
+            System.out.println("RB:     NoChange isBehaviour");
             return PlanChange.NoChange;
-        if (r.getStatus() == PlanStatus.Status.Success)
+        }
+        if (r.getStatus() == PlanStatus.Status.Success){
+            System.out.println("RB:     NoChange Status.Success");
             return PlanChange.NoChange;
-        if (!r.getCycleManagement().mayDoUtilityCheck())
+        }
+        if (!r.getCycleManagement().mayDoUtilityCheck()) {
+            System.out.println("RB:     NoChange getCycleManagement().mayDoUtilityCheck()");
             return PlanChange.NoChange;
+        }
 
         if ((r.getActiveState() != null && r.getActiveState().isFailureState()) || !r.getAssignment().isValid() || !r.isRuntimeConditionValid()) {
 
@@ -235,6 +243,7 @@ public class RuleBook {
             this.log.eventOccurred("PAbort(", r.getActivePlan().getName(), ")");
             return PlanChange.FailChange;
         }
+        System.out.println("RB:     NoChange");
         return PlanChange.NoChange;
     }
 

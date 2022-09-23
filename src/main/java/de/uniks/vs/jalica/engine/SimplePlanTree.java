@@ -99,7 +99,7 @@ public class SimplePlanTree {
 
     public String toString(String pst) {
         String out = "";
-        out += pst+ "RobotID: " + this.agentID + "\n";
+        out += pst+ "AgentID: " + this.agentID + "\n";
         out += pst+ "Parent: ";
 
         if (this.parent != null) {
@@ -135,7 +135,7 @@ public class SimplePlanTree {
     @Override
     public String toString() {
         String out = "";
-        out += "RobotID: " + this.agentID + "\n";
+        out += "AgentID: " + this.agentID + "\n";
         out += "Parent: ";
 
         if (this.parent != null) {

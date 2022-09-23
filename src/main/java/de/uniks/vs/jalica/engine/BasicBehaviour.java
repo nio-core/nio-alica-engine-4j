@@ -6,9 +6,11 @@ import de.uniks.vs.jalica.common.TimerEvent;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
 import de.uniks.vs.jalica.engine.idmanagement.ID;
 import de.uniks.vs.jalica.engine.model.Behaviour;
+import de.uniks.vs.jalica.engine.model.Role;
 import de.uniks.vs.jalica.engine.model.Variable;
 import de.uniks.vs.jalica.common.ConditionVariable;
 import de.uniks.vs.jalica.engine.model.BehaviourConfiguration;
+import de.uniks.vs.jalica.engine.skillmanagement.SkillModule;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -107,8 +109,9 @@ public abstract class BasicBehaviour implements Runnable {
 
     void terminate() {
         this.started = false;
-        this.runCV.notifyAll();
-
+        synchronized (this.runCV) {
+            this.runCV.notifyAll();
+        }
         if (this.runThread != null) {
             try {
                 this.runThread.join();
@@ -210,8 +213,8 @@ public abstract class BasicBehaviour implements Runnable {
         try {
             initialiseParameters();
         } catch ( Exception e) {
-        CommonUtils.aboutError("BB: Exception in Behaviour-INIT of: " + getName() + "\n" + e.getMessage());
-    }
+            CommonUtils.aboutError("BB: Exception in Behaviour-INIT of: " + getName() + "\n" + e.getMessage());
+        }
     }
 
     protected void runInternalTimed() {
@@ -270,7 +273,7 @@ public abstract class BasicBehaviour implements Runnable {
                     e.printStackTrace();
                 }
             }
-            System.out.println("BB: " + this.behaviour.getImplementation().getClass().getSimpleName() + " finished --------------------------------- " );
+//            System.out.println("BB: " + this.behaviour.getImplementation().getClass().getSimpleName() + " finished --------------------------------- " );
         }
 
     }
@@ -357,6 +360,18 @@ public abstract class BasicBehaviour implements Runnable {
 
     public void notifyLoopFinished() {
         this.finished = !this.loop;
+    }
+
+    public String getRobotName() {
+        return this.getEngine().getRobotName();
+    }
+
+    public SkillModule getSkillModule() {
+        return this.getEngine().getSkillModule();
+    }
+
+    public Role getOwnRole() {
+        return this.getEngine().getRoleAssignment().getOwnRole();
     }
 
 

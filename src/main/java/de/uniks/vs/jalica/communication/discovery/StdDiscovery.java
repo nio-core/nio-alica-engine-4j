@@ -5,6 +5,7 @@ import de.uniks.vs.jalica.communication.NetworkNode;
 import de.uniks.vs.jalica.communication.MessageTopics;
 import de.uniks.vs.jalica.common.utils.CommonNetworkUtils;
 import de.uniks.vs.jalica.common.utils.CommonUtils;
+import org.zeromq.Utils;
 import org.zeromq.ZContext;
 import org.zeromq.ZMQ;
 
@@ -115,7 +116,7 @@ public class StdDiscovery extends Discovery implements Runnable {
                         DatagramPacket pack = new DatagramPacket(buf, buf.length);
                         multicastSocket.receive(pack);
                         String message = new String(pack.getData(), 0, pack.getLength());
-                        System.out.println("SD: Multicast to Agent("+ownID+")  "+getAvailableHosts() + " " + message);
+                        if(CommonUtils.COMM_D_DEBUG_debug) System.out.println("SD: Multicast to Agent("+ownID+")  "+getAvailableHosts() + " " + message);
 
                         try {
                             Long agentID = Long.parseLong(message);

@@ -34,7 +34,8 @@ public class ExpressionHandler {
 
                 if (p.getPreCondition().isEnabled()) {
                     p.getPreCondition().setBasicCondition(
-                        this.conditionCreator.createConditions(p.getPreCondition().getID()));
+                            //TODO: FIX Parameter .., null
+                        this.conditionCreator.createConditions(p.getPreCondition().getID(), null));
                     attachConstraint(p.getPreCondition());
                 }
 				else {
@@ -44,7 +45,8 @@ public class ExpressionHandler {
 
             if (p.getRuntimeCondition() != null) {
                 p.getRuntimeCondition().setBasicCondition(
-                    this.conditionCreator.createConditions(p.getRuntimeCondition().getID()));
+                        //TODO: FIX Parameter .., null
+                    this.conditionCreator.createConditions(p.getRuntimeCondition().getID(), null));
                 attachConstraint(p.getRuntimeCondition());
             }
 
@@ -53,7 +55,8 @@ public class ExpressionHandler {
                 if (t.getPreCondition() != null) {
 
                     if (t.getPreCondition().isEnabled()) {
-                        t.getPreCondition().setBasicCondition(this.conditionCreator.createConditions(t.getPreCondition().getID()));
+                        //TODO: FIX Parameter .., null
+                        t.getPreCondition().setBasicCondition(this.conditionCreator.createConditions(t.getPreCondition().getID(), null));
                         attachConstraint(t.getPreCondition());
                     }
 					else {
@@ -79,7 +82,7 @@ public class ExpressionHandler {
             c.setBasicConstraint(new DummyConstraint());
         }
         else {
-            c.setBasicConstraint(this.constraintCreator.createConstraint(c.getID()));
+            c.setBasicConstraint(this.constraintCreator.createConstraint(c.getID(), null));
         }
     }
 }

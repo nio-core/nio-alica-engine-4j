@@ -8,7 +8,7 @@ import de.uniks.vs.jalica.engine.AlicaEngine;
 public class BehaviourCreator implements IBehaviourCreator {
 
     @Override
-    public BasicBehaviour createBehaviour(Long behaviourConfId, AlicaEngine ae) {
+    public BasicBehaviour createBehaviour(long behaviourConfId, Object context) {
 
 //        if (behaviourConfId == 1428508367402l) {
 //            return new TriggerC(ae);
@@ -27,7 +27,7 @@ public class BehaviourCreator implements IBehaviourCreator {
 //        }
 
         if (behaviourConfId == 1402489366699l) {
-            return new AttackOpp(ae);
+            return new AttackOpp(context);
         }
 
 //        if (behaviourConfId == 1428508312886l) {
@@ -35,19 +35,19 @@ public class BehaviourCreator implements IBehaviourCreator {
 //        }
 
         if (behaviourConfId == 1402488866727l) {
-            return new Attack(ae);
+            return new Attack(context);
         }
 
         if (behaviourConfId == 1402488712657l) {
-            return new MidFieldStandard(ae);
+            return new MidFieldStandard(context);
         }
 
         if (behaviourConfId == 1402488763903l) {
-            return new DefendMid(ae);
+            return new DefendMid(context);
         }
 
         if (behaviourConfId == 1402488956661l) {
-            return new Tackle(ae);
+            return new Tackle(context);
         }
 
 

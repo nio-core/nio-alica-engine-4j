@@ -8,8 +8,8 @@ import de.uniks.vs.jalica.common.utils.CommonUtils;
  */
 public class DummyBehaviour extends DomainBehaviour {
 
-    public DummyBehaviour(AlicaEngine ae) {
-        super("DummyBehaviour", ae);
+    public DummyBehaviour(Object context) {
+        super("DummyBehaviour", context);
         /*PROTECTED REGION ID(con1482486255763) ENABLED START*/ //Add additional options here
         CommonUtils.aboutCallNotification();
         /*PROTECTED REGION END*/

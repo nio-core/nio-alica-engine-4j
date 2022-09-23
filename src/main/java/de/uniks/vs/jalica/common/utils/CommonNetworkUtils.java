@@ -2,7 +2,7 @@ package de.uniks.vs.jalica.common.utils;
 
 import de.uniks.vs.jalica.common.udp.UDPMulticastReceiver;
 import de.uniks.vs.jalica.common.udp.UDPMulticastSender;
-import sun.net.util.IPAddressUtil;
+//import sun.net.util.IPAddressUtil;
 
 import java.io.IOException;
 import java.net.*;
@@ -109,8 +109,8 @@ public class CommonNetworkUtils {
                         System.out.println("CNU: not reachable");
                     }
                     infos.add(String.valueOf(testIsMulticastInterface(ni)));
-                    System.out.println("CNU: IP address: " + ip.toString() + "   "+  isIPv4Address(ip.toString().replaceFirst("/", ""))
-                    + "   " + IPAddressUtil.isIPv4LiteralAddress(ip.toString().replaceFirst("/", ""))+"   ");
+                    System.out.println("CNU: IP address: " + ip.toString() + "   "+  isIPv4Address(ip.toString().replaceFirst("/", "")));
+//                    + "   " + IPAddressUtil.isIPv4LiteralAddress(ip.toString().replaceFirst("/", ""))+"   ");
                 }
                 results.add(infos);
                 System.out.println();

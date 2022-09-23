@@ -13,8 +13,8 @@ public class Attack extends DomainBehaviour {
 
     /*PROTECTED REGION ID(staticVars1402488848841) ENABLED START*/ //initialise static variables here
     /*PROTECTED REGION END*/
-    public Attack(AlicaEngine ae) {
-        super("Attack", ae);
+    public Attack(Object context) {
+        super("Attack", context);
         /*PROTECTED REGION ID(con1402488848841) ENABLED START*/ //Add additional options here
         this.callCounter = 0;
         this.initCounter = 0;

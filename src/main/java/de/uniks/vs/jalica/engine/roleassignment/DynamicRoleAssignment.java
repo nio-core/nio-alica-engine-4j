@@ -75,7 +75,7 @@ public class DynamicRoleAssignment extends IRoleAssignment {
             if (CommonUtils.RA_DEBUG_debug) System.out.println("DRA:        characteristic:" + roleCharacteristic.getName()+ "   similarity " + name + " " + similarity);
             matching += similarity;
         }
-        matching /= role.getCharacteristics().size();
+        matching = role.getCharacteristics().size() > 0 ? matching/role.getCharacteristics().size(): 0.0000000001;
         return matching;
     }
 
@@ -93,12 +93,12 @@ public class DynamicRoleAssignment extends IRoleAssignment {
 
         if (CommonUtils.RA_DEBUG_debug) printAvailableAgents();
 
-        for (Role role : roles.values()) {
+        for (Agent agent : this.activeAgents.values()) {
 
-            for (Agent agent : this.activeAgents.values()) {
+            for (Role role : roles.values()) {
                 double matching = calculateMatching(agent.getProperties(), role);
 
-                if (CommonUtils.RA_DEBUG_debug)  System.out.println("DRA(" + this.localAgent.getProperties().extractID(name, sc) + "): characteristic size:" + agent.getProperties().getCharacteristics().size() + "    matching " + matching +"\n");
+                if (CommonUtils.RA_DEBUG_debug)  System.out.println("DRA(" + this.localAgent.getProperties().extractID(name, sc) + "): characteristic size:" + agent.getProperties().getCharacteristics().size() + "    matching " + matching);
 
                 if (matching != 0) {
                     RoleUtility utility = new RoleUtility(matching, agent, role);
@@ -167,7 +167,7 @@ public class DynamicRoleAssignment extends IRoleAssignment {
         String name = this.localAgent.getName();
         SystemConfig sc = this.ae.getSystemConfig();
         System.out.print("DRA("+this.localAgent.getProperties().extractID(name, sc)+"): Available agents: " + this.activeAgents.size());
-        System.out.print("   agent Ids: ");
+        System.out.print("   agent Ids: " + "    active " + this.activeAgents.size() + " agents");
         System.out.println("\nDRA("+this.localAgent.getProperties().extractID(name, sc)+"): " + this.activeAgents.size());
         System.out.println("DRA("+this.localAgent.getProperties().extractID(name, sc)+"): " + this.activeAgents.keySet());
 

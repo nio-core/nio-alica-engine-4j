@@ -9,7 +9,7 @@ public class Tackle extends BasicBehaviour {
     /*PROTECTED REGION ID(staticVars1402489351885) ENABLED START*/ //initialise static variables here
     /*PROTECTED REGION END*/
 
-    public Tackle(AlicaEngine ae) {
+    public Tackle(Object context) {
         super("Tackle");
         /*PROTECTED REGION ID(con1402489351885) ENABLED START*/ //Add additional options here
         /*PROTECTED REGION END*/

@@ -19,7 +19,7 @@ public class AllocationAuthorityInfoSubscriber extends ZMQSubscriber {
         super(topic, subscriber);
         this.alicaZMQCommunication = alicaZMQCommunication;
 
-        System.out.println("AAI-Sub("+this.alicaZMQCommunication.getAe().getTeamManager().getLocalAgent().getName()+"): start");
+        System.out.println("AAI-Sub("+this.alicaZMQCommunication.getAe().getTeamManager().getLocalAgent().getId()+"): start");
 
         Thread thread = new Thread() {
 
@@ -35,11 +35,8 @@ public class AllocationAuthorityInfoSubscriber extends ZMQSubscriber {
                         }
 
                         if (CommonUtils.COMM_debug) System.out.println("AAI-Sub("+alicaZMQCommunication.getAe().getTeamManager().getLocalAgent().getName()+"): " +string);
-
-
                             JSONObject jsonObject = (JSONObject) JSONValue.parseWithException(string.replace(topic, ""));
                             AllocationAuthorityInfo allocationAuthorityInfo = new AllocationAuthorityInfo();
-
 //                            allocationAuthorityInfo.senderID = (Long) jsonObject.get("senderID");
                             allocationAuthorityInfo.senderID = alicaZMQCommunication.getAe().getId((String) jsonObject.get("senderID"));
                             allocationAuthorityInfo.planType = (Long) jsonObject.get("planType");
@@ -67,8 +64,8 @@ public class AllocationAuthorityInfoSubscriber extends ZMQSubscriber {
                     } catch (ParseException e) {
                         e.printStackTrace();
                     } catch (ZMQException e) {
-//                            System.err.println(e.getErrorCode());
-                        }
+                        System.err.println(e.getErrorCode());
+                    }
                 }
             }
         };
