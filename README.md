@@ -1,1 +1,1 @@
-# nio-alica-4j
+# Alica Engine written in Java
